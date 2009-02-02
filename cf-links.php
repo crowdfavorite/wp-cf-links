@@ -1514,9 +1514,59 @@ function cflk_widget_data($cflk_key = '', $length = 0) {
 	return apply_filters('cflk_widget_data', $ul_list, $args);
 }
 
+function cflk_get_links($key = null, $args = array()) {
+	if (!$cflk_key) { return ''; }
+	$defaults = array(
+		'before' => '<ul class="cflk-list '.$key.'">',
+		'after' => '</ul>'
+	);
+	$args = array_merge($defaults, $args);
+	extract($args, EXTR_SKIP);
+
+	$list = maybe_unserialize(get_option($key));
+	$list = apply_filters('cflk_get_links_data', $links);
+
+// call function that preps list data
+
+	$list = TODO_new_function($list);
+
+	if (!is_array($list)) { return ''; }
+
+	$return = '';
+
+	$i = 0;
+	foreach ($list as $key => $data) {
+		$li_class = '';
+//		$link = cflk_get_by_type($data, $cflk_key, $key, $length, $location);
+		if (is_array($link)) {
+			if ($i == 0) {
+				$li_class .= 'cflk-first ';
+			}
+			if ($i == (count($list) - 1)) {
+				$li_class .= 'cflk-last ';
+			}
+			if ($link['current']) {
+				$li_class .= 'cflk-current ';
+			}
+			$return .= '<li class="'.$li_class.'">'.$link['link'].'</li>';
+		}
+		$i++;
+	}
+	
+	$return = $before.$return.$after;
+
+	$return = apply_filters('cflk_get_links', $return, $links, $args);
+	return $return;
+}
+function cflk_links($key, $args = array()) {
+	echo cflk_get_links($key, $args);
+}
+
 function cflk_build_ul($cflk_key = NULL, $args = array()) {
 	$defaults = array(
-					'class' => 'cflk-list'
+					'class' => 'cflk-list',
+					'before' => '',
+					'after' => ''
 				);
 	$args = array_merge($defaults, $args);
 	extract($args, EXTR_SKIP);
@@ -1526,6 +1576,7 @@ function cflk_build_ul($cflk_key = NULL, $args = array()) {
 	$return .= '<ul class="'.$class.'">';
 	$return .= cflk_build_li($cflk_key, $args);
 	$return .= '</ul>';
+	
 	return $return;
 }
 

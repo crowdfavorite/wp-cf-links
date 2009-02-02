@@ -1,64 +1,40 @@
 (function() {
-	// Load plugin specific language pack
-	tinymce.PluginManager.requireLangPack('cflinks');
-
-	tinymce.create('tinymce.plugins.cflinks', {
-		/**
-		 * Initializes the plugin, this will be executed after the plugin has been created.
-		 * This call is done before the editor instance has finished it's initialization so use the onInit event
-		 * of the editor instance to intercept that event.
-		 *
-		 * @param {tinymce.Editor} ed Editor instance that the plugin is initialized in.
-		 * @param {string} url Absolute URL to where the plugin is located.
-		 */
-
-		init : function(ed, url) {
-			ed.addButton('cfLinksBtn', {
-				title : 'Click to insert link list',
-				image : url + '/images/cog_add.png',
-				onclick : function() {
-					tinyMCE.activeEditor.windowManager.open({
-						file : 'options-general.php?page=cf-links.php&links_page=dialog',
-						width : 250 + ed.getLang('cflinks.delta_width', 0),
-						height : 250 + ed.getLang('cflinks.delta_height', 0),
-						title: 'Select link list below',
-						inline : 1
-					});
-				}
-			});
-		},
-
-		/**
-		 * Creates control instances based in the incomming name. This method is normally not
-		 * needed since the addButton method of the tinymce.Editor class is a more easy way of adding buttons
-		 * but you sometimes need to create more complex controls like listboxes, split buttons etc then this
-		 * method can be used to create those.
-		 *
-		 * @param {String} n Name of the control to create.
-		 * @param {tinymce.ControlManager} cm Control manager to use inorder to create new control.
-		 * @return {tinymce.ui.Control} New control instance or null if no control was created.
-		 */
-		createControl : function(n, cm) {
-			return null;
-		},
-
-		/**
-		 * Returns information about the plugin as a name/value array.
-		 * The current keys are longname, author, authorurl, infourl and version.
-		 *
-		 * @return {Object} Name/value array containing information about the plugin.
-		 */
-		getInfo : function() {
-			return {
-				longname : "CF-Links",
-				author : 'CrowdFavorite',
-				authorurl : 'http://crowdfavorite.com',
-				infourl : 'http://crowdfavorite.com',
-				version : "1.1"
-			};
-		}
-	});
-
-	// Register plugin
-	tinymce.PluginManager.add('cflinks', tinymce.plugins.cflinks);
+    tinymce.create('tinymce.plugins.cflinks', {
+        init: function(ed, url) {
+            this.editor = ed;
+            ed.addCommand('cfLinks',
+            function() {
+                var se = ed.selection;
+                ed.windowManager.open({
+                    file: 'options-general.php?page=cf-links.php&cflk_page=dialog',
+                    width: 350 + parseInt(ed.getLang('cflinks.delta_width', 0)),
+                    height: 450 + parseInt(ed.getLang('cflinks.delta_height', 0)),
+                    inline: 1
+                },
+                {
+                    plugin_url: url
+                });
+            });
+            ed.addButton('cfLinksBtn', {
+                title: 'Select Link List Below',
+                cmd: 'cfLinks',
+				image : url + '/images/brick_add.png',
+            });
+            ed.addShortcut('ctrl+k', 'Select Link List', 'cfLinks');
+            ed.onNodeChange.add(function(ed, cm, n, co) {
+                cm.setDisabled('cfLinks', co && n.nodeName != 'A');
+                cm.setActive('cfLinks', n.nodeName == 'A' && !n.name);
+            });
+        },
+        getInfo: function() {
+            return {
+                longname: 'CF Links',
+                author: 'Crowd Favorite',
+                authorurl: 'http://crowdfavorite.com',
+                infourl: 'http://crowdfavorite.com',
+                version: "1.2"
+            };
+        }
+    });
+    tinymce.PluginManager.add('cflinks', tinymce.plugins.cflinks);
 })();

@@ -1,6 +1,7 @@
 (function() {
     tinymce.create('tinymce.plugins.cflinks', {
         init: function(ed, url) {
+			pluginUrl = url.replace('js', '');
             this.editor = ed;
             ed.addCommand('cfLinks',
             function() {
@@ -13,15 +14,14 @@
                     inline: 1
                 },
                 {
-                    plugin_url: url
+                    plugin_url: pluginUrl
                 });
             });
             ed.addButton('cfLinksBtn', {
                 title: 'Select Link List Below',
                 cmd: 'cfLinks',
-				image : url + '/images/brick_add.png',
+				image : pluginUrl + 'images/brick_add.png',
             });
-            ed.addShortcut('ctrl+k', 'Select Link List', 'cfLinks');
             ed.onNodeChange.add(function(ed, cm, n, co) {
                 cm.setDisabled('cfLinks', co && n.nodeName != 'A');
                 cm.setActive('cfLinks', n.nodeName == 'A' && !n.name);

@@ -23,17 +23,17 @@ Author URI: http://crowdfavorite.com
  *						'type' -> 'widget'  
  * / //<!-- there's a space here to keep the commenting correct, remove the space if you copy this
 function my_links_filter($html,$links,$args) {
-	if($args['link_key'] == 'cfl-main-nav-for-sidebar') {
+	if ($args['link_key'] == 'cfl-main-nav-for-sidebar') {
 		// see if our link to be filtered is present
 		$filtered = false;
-		foreach($links['data'] as $key => $link) {
-			if($link['type'] == 'page' && $link['link'] == 10) { 
+		foreach ($links['data'] as $key => $link) {
+			if ($link['type'] == 'page' && $link['link'] == 10) { 
 				unset($links['data'][$key]); 
 				$filtered = true;
 			}
 		}
 		// if we acted on the array then rebuild the list
-		if($filtered) {
+		if ($filtered) {
 			$html = links_build_ul($links,$args);
 		}
 	}
@@ -68,17 +68,17 @@ function cflk_link_types() {
 	$author_data = array();
 	$wordpress_data = array();
 	
-	foreach($pages as $page) {
+	foreach ($pages as $page) {
 		$data = array(sanitize_title($page->post_title) => array('link' => $page->ID, 'description' => $page->post_title));
 		$page_data = array_merge($page_data, $data);
 	}
 
-	foreach($categories as $category) {
+	foreach ($categories as $category) {
 		$data = array(sanitize_title($category->name) => array('link' => $category->term_id, 'description' => $category->name, 'count' => $category->count));
 		$category_data = array_merge($category_data, $data);
 	}
 
-	foreach($authors as $author) {
+	foreach ($authors as $author) {
 		$data = array(sanitize_title($author->display_name) => array('link' => $author->user_id, 'description' => $author->display_name));
 		$author_data = array_merge($author_data, $data);
 	}	
@@ -90,43 +90,43 @@ function cflk_link_types() {
 	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('main_rss') => array('link' => 'main_rss', 'description' => __('Site RSS','cf-links'))));
 	
 	$cflk_types = array(
-				'url' => array(
-							'type' => 'url',
-							'nicename' => __('URL','cf-links'),
-							'input' => 'text',
-							'data' => __('ex: http://example.com', 'cf-links'),
-					),
-				'rss' => array(
-							'type' => 'rss',
-							'nicename' => __('RSS','cf-links'),
-							'input' => 'text',
-							'data' => __('ex: http://example.com/feed', 'cf-links'),
-					),
-				'page' => array(
-							'type' => 'page', 
-							'nicename' => __('Page','cf-links'),
-							'input' => 'select', 
-							'data' => $page_data
-					),
-				'category' => array(
-							'type' => 'category', 
-							'nicename' => __('Category', 'cf-links'),
-							'input' => 'select', 
-							'data' => $category_data
-					),
-				'author_rss' => array(
-							'type' => 'author_rss',
-							'nicename' => __('Author RSS', 'cf-links'),
-							'input' => 'select', 
-							'data' => $author_data
-					),
-				'wordpress' => array(
-							'type' => 'wordpress', 
-							'nicename' => __('Wordpress', 'cf-links'),
-							'input' => 'select', 
-							'data' => $wordpress_data
-					),
-		);
+		'url' => array(
+			'type' => 'url',
+			'nicename' => __('URL','cf-links'),
+			'input' => 'text',
+			'data' => __('ex: http://example.com', 'cf-links'),
+		),
+		'rss' => array(
+			'type' => 'rss',
+			'nicename' => __('RSS','cf-links'),
+			'input' => 'text',
+			'data' => __('ex: http://example.com/feed', 'cf-links'),
+		),
+		'page' => array(
+			'type' => 'page', 
+			'nicename' => __('Page','cf-links'),
+			'input' => 'select', 
+			'data' => $page_data
+		),
+		'category' => array(
+			'type' => 'category', 
+			'nicename' => __('Category', 'cf-links'),
+			'input' => 'select', 
+			'data' => $category_data
+		),
+		'author_rss' => array(
+			'type' => 'author_rss',
+			'nicename' => __('Author RSS', 'cf-links'),
+			'input' => 'select', 
+			'data' => $author_data
+		),
+		'wordpress' => array(
+			'type' => 'wordpress', 
+			'nicename' => __('Wordpress', 'cf-links'),
+			'input' => 'select', 
+			'data' => $wordpress_data
+		),
+	);
 }
 add_action('init', 'cflk_link_types');
 
@@ -145,10 +145,10 @@ add_action('admin_menu', 'cflk_menu_items');
 
 function cflk_check_page() {
 	$check_page = '';
-	if(isset($_GET['cflk_page'])) {
+	if (isset($_GET['cflk_page'])) {
 		$check_page = $_GET['cflk_page'];
 	}
-	switch($check_page) {
+	switch ($check_page) {
 		case 'main':
 			cflk_options_form();
 			break;
@@ -165,25 +165,25 @@ function cflk_check_page() {
 }
 
 function cflk_request_handler() {
-	if(current_user_can('manage_options')) {
-		if(isset($_POST['cf_action']) && $_POST['cf_action'] != '') {
-			switch($_POST['cf_action']) {
+	if (current_user_can('manage_options')) {
+		if (isset($_POST['cf_action']) && $_POST['cf_action'] != '') {
+			switch ($_POST['cf_action']) {
 				case 'cflk_update_settings':
-					if(isset($_POST['cflk'])) {
+					if (isset($_POST['cflk'])) {
 						$link_data = stripslashes_deep($_POST['cflk']);
-						if(isset($_POST['cflk_key']) && $_POST['cflk_key'] != '' && isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
+						if (isset($_POST['cflk_key']) && $_POST['cflk_key'] != '' && isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
 							cflk_process($link_data, $_POST['cflk_key'], $_POST['cflk_nicename']);
 						}
 						wp_redirect(get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$_POST['cflk_key'].'&cflk_message=updated');
 					}
 					break;
 				case 'cflk_delete':
-					if(isset($_POST['cflk_key']) && $_POST['cflk_key'] != '') {
+					if (isset($_POST['cflk_key']) && $_POST['cflk_key'] != '') {
 						cflk_delete($_POST['cflk_key']);
 					}
 					break;
 				case 'cflk_delete_key':
-					if(isset($_POST['cflk_key']) && isset($_POST['key']) && $_POST['cflk_key'] != '' && $_POST['key'] != '') {
+					if (isset($_POST['cflk_key']) && isset($_POST['key']) && $_POST['cflk_key'] != '' && $_POST['key'] != '') {
 						cflk_delete_key($_POST['cflk_key'], $_POST['key']);
 					}
 					break;
@@ -191,26 +191,26 @@ function cflk_request_handler() {
 					$nicename = '';
 					$data = '';
 					
-					if(isset($_POST['cflk_create']) && $_POST['cflk_create'] == 'new_list') {
-						if(isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
+					if (isset($_POST['cflk_create']) && $_POST['cflk_create'] == 'new_list') {
+						if (isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
 							$nicename = $_POST['cflk_nicename'];
 							$data = array('data' => array('1' => array('title' => 'Name Here', 'link' => 'http://example.com', 'type' => 'url')));
 						}
 					}
-					if(isset($_POST['cflk_create']) && $_POST['cflk_create'] == 'import_list') {
-						if(isset($_POST['cflk_import']) && $_POST['cflk_import'] != '') {
+					if (isset($_POST['cflk_create']) && $_POST['cflk_create'] == 'import_list') {
+						if (isset($_POST['cflk_import']) && $_POST['cflk_import'] != '') {
 							$import = maybe_unserialize(stripslashes($_POST['cflk_import']));
 							$nicename = $import['nicename'];
 							$data = $import['data'];
 						}
 					}
-					if($nicename != '' && is_array($data)) {
+					if ($nicename != '' && is_array($data)) {
 						$cflk_key = cflk_insert_new($nicename, $data);
 					}
 					wp_redirect(get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$cflk_key);
 					break;
 				case 'cflk_edit_nicename':
-					if(isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '' && isset($_POST['cflk_key']) && $_POST['cflk_key'] != '') {
+					if (isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '' && isset($_POST['cflk_key']) && $_POST['cflk_key'] != '') {
 						cflk_edit_nicename($_POST['cflk_key'], $_POST['cflk_nicename']);
 					}
 					break;
@@ -219,8 +219,8 @@ function cflk_request_handler() {
 			}
 		}
 	}
-	if(!empty($_GET['cflk_page'])) {
-		switch($_GET['cflk_page']) {
+	if (!empty($_GET['cflk_page'])) {
+		switch ($_GET['cflk_page']) {
 			case 'cflk_admin_js':
 				cflk_admin_js();
 				break;
@@ -363,8 +363,8 @@ function cflk_admin_js() {
 		});
 	});
 	function deleteLink(cflk_key,linkID) {
-		if(confirm('Are you sure you want to delete this?')) {
-			if(cflkAJAXDeleteLink(cflk_key,linkID)) {
+		if (confirm('Are you sure you want to delete this?')) {
+			if (cflkAJAXDeleteLink(cflk_key,linkID)) {
 				jQuery('#listitem_'+linkID).remove();
 				jQuery("#message_delete").attr("style","");
 			}
@@ -372,14 +372,14 @@ function cflk_admin_js() {
 		}
 	}
 	function deleteCreated(linkID) {
-		if(confirm('Are you sure you want to delete this?')) {
+		if (confirm('Are you sure you want to delete this?')) {
 			jQuery('#listitem_'+linkID).remove();
 			return false;
 		}
 	}
 	function deleteMain(cflk_key) {
-		if(confirm('Are you sure you want to delete this?')) {
-			if(cflkAJAXDeleteMain(cflk_key)) {
+		if (confirm('Are you sure you want to delete this?')) {
+			if (cflkAJAXDeleteMain(cflk_key)) {
 				jQuery('#link_main_'+cflk_key).remove();
 				jQuery("#message_delete").attr("style","");
 			}
@@ -395,7 +395,7 @@ function cflk_admin_js() {
 		jQuery('#cflk_nicename_h3').attr('style','');
 	}
 	function saveNicename(cflk_key) {
-		if(cflkAJAXSaveNicename(cflk_key, jQuery("#cflk_nicename_new").val())) {
+		if (cflkAJAXSaveNicename(cflk_key, jQuery("#cflk_nicename_new").val())) {
 			jQuery("#message").attr("style","");
 			jQuery("#cflk_nicename_text").text(jQuery("#cflk_nicename_new").val());
 			jQuery("#cflk_nicename").text(jQuery("#cflk_nicename_new").val());
@@ -413,7 +413,7 @@ function cflk_admin_js() {
 	}
 	function showLinkType(key) {
 		var type = jQuery("#cflk_"+key+"_type").val();
-		if(type == "url") {
+		if (type == "url") {
 			jQuery("#url_"+key).attr("style", "");
 			jQuery("#rss_"+key).attr("style", "display: none;");
 			jQuery("#page_"+key).attr("style", "display: none;");													
@@ -421,7 +421,7 @@ function cflk_admin_js() {
 			jQuery("#wordpress_"+key).attr("style", "display: none;");
 			jQuery("#author_rss_"+key).attr("style", "display: none;");
 		}
-		if(type == "rss") {
+		if (type == "rss") {
 			jQuery("#url_"+key).attr("style", "display: none;");
 			jQuery("#rss_"+key).attr("style", "");
 			jQuery("#page_"+key).attr("style", "display: none;");													
@@ -429,7 +429,7 @@ function cflk_admin_js() {
 			jQuery("#wordpress_"+key).attr("style", "display: none;");
 			jQuery("#author_rss_"+key).attr("style", "display: none;");
 		}
-		if(type == "page") {
+		if (type == "page") {
 			jQuery("#url_"+key).attr("style", "display: none;");
 			jQuery("#rss_"+key).attr("style", "display: none;");
 			jQuery("#page_"+key).attr("style", "");													
@@ -437,7 +437,7 @@ function cflk_admin_js() {
 			jQuery("#wordpress_"+key).attr("style", "display: none;");
 			jQuery("#author_rss_"+key).attr("style", "display: none;");
 		}
-		if(type == "category") {
+		if (type == "category") {
 			jQuery("#url_"+key).attr("style", "display: none;");
 			jQuery("#rss_"+key).attr("style", "display: none;");
 			jQuery("#page_"+key).attr("style", "display: none;");													
@@ -445,7 +445,7 @@ function cflk_admin_js() {
 			jQuery("#wordpress_"+key).attr("style", "display: none;");
 			jQuery("#author_rss_"+key).attr("style", "display: none;");
 		}
-		if(type == "wordpress") {
+		if (type == "wordpress") {
 			jQuery("#url_"+key).attr("style", "display: none;");
 			jQuery("#rss_"+key).attr("style", "display: none;");
 			jQuery("#page_"+key).attr("style", "display: none;");													
@@ -453,7 +453,7 @@ function cflk_admin_js() {
 			jQuery("#wordpress_"+key).attr("style", "");
 			jQuery("#author_rss_"+key).attr("style", "display: none;");
 		}
-		if(type == "author_rss") {
+		if (type == "author_rss") {
 			jQuery("#url_"+key).attr("style", "display: none;");
 			jQuery("#rss_"+key).attr("style", "display: none;");
 			jQuery("#page_"+key).attr("style", "display: none;");													
@@ -497,7 +497,7 @@ function cflk_admin_head() {
 	echo '<link rel="stylesheet" href="'.trailingslashit(get_bloginfo('wpurl')).'/wp-includes/js/thickbox/thickbox.css" type="text/css" media="screen" />';
 	
 }
-if(isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
+if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	add_action('admin_head', 'cflk_admin_head');
 }
 
@@ -512,15 +512,15 @@ function cflk_options_form() {
 	
 	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
 	$form_data = array();
-	foreach($cflk_list as $cflk) {
+	foreach ($cflk_list as $cflk) {
 		$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
 		$push = array('option_name' => $cflk->option_name, 'nicename' => $options['nicename'], 'count' => count($options['data']));
 		array_push($form_data,$push);
 	}
 	if ( isset($_GET['cflk_message']) ) {
-		switch($_GET['cflk_message']) {
+		switch ($_GET['cflk_message']) {
 			case 'create':
-				print('
+				print ('
 					<script type="text/javascript">
 						jQuery(document).ready(function() {
 							jQuery("#message_create").attr("style","");
@@ -529,7 +529,7 @@ function cflk_options_form() {
 				');
 				break;
 			case 'delete':
-				print('
+				print ('
 					<script type="text/javascript">
 						jQuery(document).ready(function() {
 							jQuery("#message_delete").attr("style","");
@@ -541,7 +541,7 @@ function cflk_options_form() {
 				break;
 		}
 	}
-	print('
+	print ('
 		<div id="message_create" class="updated fade" style="display: none;">
 			<p>'.__('Links List Created.', 'cf-links').'</p>
 		</div>
@@ -562,9 +562,9 @@ function cflk_options_form() {
 					</thead>
 				</table>
 				<ul id="cflk-list">');
-					if(count($form_data) > 0) {
-						foreach($form_data as $data => $info) {
-							print('<li id="link_main_'.$info['option_name'].'">
+					if (count($form_data) > 0) {
+						foreach ($form_data as $data => $info) {
+							print ('<li id="link_main_'.$info['option_name'].'">
 								<table class="widefat">
 									<tr>
 										<td style="vertical-align: middle;">
@@ -572,7 +572,7 @@ function cflk_options_form() {
 											<br />
 											'.__('Show: ','cf-links').'<a href="#" onClick="showLinkCode(\''.$info['option_name'].'-TemplateTag\')">'.__('Template Tag','cf-links').'</a> | <a href="#" onClick="showLinkCode(\''.$info['option_name'].'-ShortCode\')">'.__('Shortcode','cf-links').'</a>
 											<div id="'.$info['option_name'].'-TemplateTag" class="cflk-codebox" style="display:none;">
-												<div style="float: left;"><code>'.htmlentities('<?php if(function_exists("cflk_template")) { cflk_template("'.$info['option_name'].'"); } ?>').'</code></div><div style="float: right;"><a href="#" onClick="showLinkCode(\''.$info['option_name'].'-TemplateTag\')">'.__('Hide','cf-links').'</a></div><div class="clear"></div>
+												<div style="float: left;"><code>'.htmlentities('<?php if (function_exists("cflk_template")) { cflk_template("'.$info['option_name'].'"); } ?>').'</code></div><div style="float: right;"><a href="#" onClick="showLinkCode(\''.$info['option_name'].'-TemplateTag\')">'.__('Hide','cf-links').'</a></div><div class="clear"></div>
 											</div>
 											<div id="'.$info['option_name'].'-ShortCode" class="cflk-codebox" style="display:none;">
 												<div style="float: left;"><code>'.htmlentities('[cfl_links name="'.$info['option_name'].'"]').'</code></div><div style="float: right;"><a href="#" onClick="showLinkCode(\''.$info['option_name'].'-ShortCode\')">'.__('Hide','cf-links').'</a></div><div class="clear"></div>
@@ -596,7 +596,7 @@ function cflk_options_form() {
 							</li>');
 						}
 					}
-				print('
+				print ('
 				</ul>
 			</form>
 		</div>
@@ -604,7 +604,7 @@ function cflk_options_form() {
 }
 
 function cflk_new() {
-	print('
+	print ('
 		<div class="wrap">
 			'.cflk_head('create').'
 			<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-create">
@@ -661,13 +661,13 @@ function cflk_new() {
 function cflk_edit() {
 	global $wpdb, $cflk_types;
 	
-	if(isset($_GET['link']) && $_GET['link'] != '') {
+	if (isset($_GET['link']) && $_GET['link'] != '') {
 		$cflk_key = $_GET['link'];
 		$cflk = maybe_unserialize(get_option($cflk_key));
 		is_array($cflk) ? $cflk_count = count($cflk) : $cflk_count = 0;
 		
 		if ( isset($_GET['cflk_message']) && $_GET['cflk_message'] = 'updated' ) {
-			print('
+			print ('
 				<script type="text/javascript">
 					jQuery(document).ready(function() {
 						jQuery("#message").attr("style","");
@@ -675,7 +675,7 @@ function cflk_edit() {
 				</script>
 			');
 		}
-		print('
+		print ('
 			<div id="message" class="updated fade" style="display: none;">
 				<p>'.__('Settings updated.', 'cf-links').'</p>
 			</div>
@@ -697,29 +697,29 @@ function cflk_edit() {
 						</thead>
 					</table>
 					<ul id="cflk-list">');
-						if($cflk_count > 0) {
-							foreach($cflk['data'] as $key => $setting) {
+						if ($cflk_count > 0) {
+							foreach ($cflk['data'] as $key => $setting) {
 								$select_settings = cflk_edit_select($setting['type']);
-								print('<li id="listitem_'.$key.'">
+								print ('<li id="listitem_'.$key.'">
 									<table class="widefat">
 										<tr>
 											<td width="40px" style="text-align: center;"><img src="'.get_bloginfo('wpurl').'/wp-content/plugins/cf-links/images/arrow_up_down.png" class="handle" alt="move" /></td>
 											<td width="90px">
 												<select name="cflk['.$key.'][type]" id="cflk_'.$key.'_type" onChange="showLinkType('.$key.')">');
-													foreach($cflk_types as $type) {
-														print('<option value="'.$type['type'].'" '.$select_settings[$type['type'].'_select'].'>'.$type['nicename'].'</option>');
+													foreach ($cflk_types as $type) {
+														print ('<option value="'.$type['type'].'" '.$select_settings[$type['type'].'_select'].'>'.$type['nicename'].'</option>');
 													}
-												print('</select>
+												print ('</select>
 											</td>
 											<td>');
-												foreach($cflk_types as $type) {
+												foreach ($cflk_types as $type) {
 													echo cflk_get_type_input($type['type'], $type['input'], $type['data'], $select_settings[$type['type'].'_show'], $key, $setting['cat_posts'], $setting['link']);
 												}
-												print('
+												print ('
 											</td>
 											<td width="250px">');
-												if(htmlspecialchars($setting['title']) == '') {
-													print('
+												if (htmlspecialchars($setting['title']) == '') {
+													print ('
 													<span id="cflk_'.$key.'_title_edit">
 														<input type="button" class="cflk_button" id="link_edit_title_'.$key.'" value="'.__('Edit Title', 'cf-links').'" onClick="editTitle(\''.$key.'\')" />
 													</span>
@@ -730,11 +730,11 @@ function cflk_edit() {
 													');
 												}
 												else {
-													print('
+													print ('
 													<input type="text" size="28" name="cflk['.$key.'][title]" value="'.htmlspecialchars($setting['title']).'" />
 													');
 												}
-											print('
+											print ('
 											</td>
 											<td width="60px" style="text-align: center;">
 												<input type="button" class="cflk_button" id="link_delete_'.$key.'" value="'.__('Delete', 'cf-links').'" onClick="deleteLink(\''.$cflk_key.'\',\''.$key.'\')" />
@@ -744,7 +744,7 @@ function cflk_edit() {
 								</li>');
 							}
 						}
-						print('
+						print ('
 					</ul>
 					<table class="widefat">
 						<tr>
@@ -771,36 +771,36 @@ function cflk_edit() {
 						</p>
 					</div>
 				</form>');
-			print('<div id="newitem_SECTION">
+			print ('<div id="newitem_SECTION">
 				<li id="listitem_###SECTION###" style="display:none;">
 					<table class="widefat">
 						<tr>
 							<td width="40px" style="text-align: center;"><img src="'.get_bloginfo('wpurl').'/wp-content/plugins/cf-links/images/arrow_up_down.png" class="handle" alt="move" /></td>
 							<td width="90px">
 								<select name="cflk[###SECTION###][type]" id="cflk_###SECTION###_type" onChange="showLinkType(###SECTION###)">');
-									foreach($cflk_types as $type) {
+									foreach ($cflk_types as $type) {
 										$select_settings[$type['type'].'_select'] = '';
-										if($type['type'] == 'url') {
+										if ($type['type'] == 'url') {
 											$select_settings[$type['type'].'_select'] = 'selected=selected';
 										}
-										print('<option value="'.$type['type'].'" '.$select_settings[$type['type'].'_select'].'>'.$type['nicename'].'</option>');
+										print ('<option value="'.$type['type'].'" '.$select_settings[$type['type'].'_select'].'>'.$type['nicename'].'</option>');
 									}
-								print('</select>
+								print ('</select>
 							</td>
 							<td>');
 								$key = '###SECTION###';
-								foreach($cflk_types as $type) {
+								foreach ($cflk_types as $type) {
 									$select_settings[$type['type'].'_show'] = 'style="display: none;"';
-									if($type['type'] == 'url') {
+									if ($type['type'] == 'url') {
 										$select_settings[$type['type'].'_show'] = 'style=""';
 									}
 									echo cflk_build_input($type['type'], $type['input'], $type['data'], $select_settings[$type['type'].'_show'], $key, '', '');
 								}
-								print('
+								print ('
 							</td>
 							<td width="250px">');
-								if(htmlspecialchars($setting['title']) == '') {
-									print('
+								if (htmlspecialchars($setting['title']) == '') {
+									print ('
 									<span id="cflk_###SECTION###_title_edit">
 										<input type="button" class="cflk_button" id="link_edit_title_###SECTION###" value="'.__('Edit Title', 'cf-links').'" onClick="editTitle(\'###SECTION###\')" />
 									</span>
@@ -811,11 +811,11 @@ function cflk_edit() {
 									');
 								}
 								else {
-									print('
+									print ('
 									<input type="text" size="28" name="cflk[###SECTION###][title]" value="'.htmlspecialchars($setting['title']).'" />
 									');
 								}
-							print('
+							print ('
 							</td>
 							<td width="60px" style="text-align: center;">
 								<input type="button" class="cflk_button" id="link_delete_###SECTION###" value="'.__('Delete', 'cf-links').'" onClick="deleteLink(\''.$cflk_key.'\',\'###SECTION###\')" />
@@ -824,10 +824,10 @@ function cflk_edit() {
 					</table>
 				</li>
 			</div>');
-			print('</div>
+			print ('</div>
 		');
 	} else {
-		print('
+		print ('
 			<div id="message" class="updated fade">
 				<p>'.__('You were directed to this page in error.  Please <a href="'.get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php">go here</a> to edit options for this plugin.', 'cf-links').'</p>
 			</div>
@@ -838,7 +838,7 @@ function cflk_edit() {
 function cflk_head($page = '', $list = '') {
 	$cflk_head = '';
 	$cflk_head .= '<h2>'.__('Links Options', 'cf-links');
-	if($list != '') {
+	if ($list != '') {
 		$cflk_head .= ' '.__('for: ','cf-links').'<span id="cflk_nicename_h3">'.$list.' <a href="#" class="cflk_edit_link" onClick="editNicename()">Edit</a></span>';
 		$cflk_head .= '<span id="cflk_nicename_input" style="display: none;">
 							<input type="text" name="cflk_nicename" id="cflk_nicename" value="'.attribute_escape($list).'" />
@@ -883,7 +883,7 @@ function cflk_head($page = '', $list = '') {
 
 function cflk_edit_select($type) {
 	$select = array();
-	switch($type) {
+	switch ($type) {
 		case 'url':
 			$select[url_show] = 'style=""';
 			$select[url_select] = 'selected=selected';
@@ -988,19 +988,19 @@ function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $va
 	$return = '';
 	
 	$return .= '<span id="'.$type.'_'.$key.'" '.$show.'>';
-	switch($input) {
+	switch ($input) {
 		case 'text':
 			$return .= '<input type="text" name="cflk['.$key.']['.$type.']" id="cflk_'.$key.'_'.$type.'" size="50" value="'.htmlspecialchars($value).'" /><br />'.$data;
 			break;
 		case 'select':
 			$return .= '<select name="cflk['.$key.']['.$type.']" id="cflk_'.$key.'_'.$type.'" style="max-width: 410px; width: 410px;">';
-			foreach($data as $info) {
+			foreach ($data as $info) {
 				$selected = '';
 				$count_text = '';
-				if($value == $info['link']) {
+				if ($value == $info['link']) {
 					$selected = ' selected=selected';
 				}
-				if($show_count == 'yes' && isset($info['count'])) {
+				if ($show_count == 'yes' && isset($info['count'])) {
 					$count_text = ' ('.$info['count'].')';
 				}
 				$return .= '<option value="'.$info['link'].'"'.$selected.'>'.$info['description'].$count_text.'</option>';
@@ -1022,14 +1022,14 @@ function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $va
 function cflk_dialog() {
 	global $wpdb;
 	?>
-	<script type='text/javascript' src='<?php print(get_bloginfo('url')); ?>/wp-includes/js/jquery/jquery.js'></script>
-	<script type='text/javascript' src='<?php print(get_bloginfo('url')); ?>/wp-includes/js/quicktags.js'></script>
+	<script type='text/javascript' src='<?php print (get_bloginfo('url')); ?>/wp-includes/js/jquery/jquery.js'></script>
+	<script type='text/javascript' src='<?php print (get_bloginfo('url')); ?>/wp-includes/js/quicktags.js'></script>
 	<script type="text/javascript">
 		function cflkSetText(text) {
 			var length = jQuery('#cflk_dialog_length').val();
 			
 			text = '<p>[cflk_links name="' + text + '"';
-			if(length > 0) {
+			if (length > 0) {
 				text = text + ' length="' + length + '"';
 			}
 			text = text + ']</p>';
@@ -1043,11 +1043,11 @@ function cflk_dialog() {
 		<ul>
 		<?
 		$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
-		foreach($cflk_list as $cflk) {
+		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
 			?>
 			<li>
-				<a href="#" onclick="cflkSetText('<?php print(htmlspecialchars($cflk->option_name)); ?>')"><?php print(htmlspecialchars($options['nicename'])); ?></a>
+				<a href="#" onclick="cflkSetText('<?php print (htmlspecialchars($cflk->option_name)); ?>')"><?php print (htmlspecialchars($options['nicename'])); ?></a>
 			</li>
 			<?php
 		}
@@ -1087,8 +1087,8 @@ add_action('init', 'cflk_addtinymce');
 function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '') {
 	$new_data = array();
 
-	foreach($cflk_data as $key => $info) {
-		if($info['type'] == '') {
+	foreach ($cflk_data as $key => $info) {
+		if ($info['type'] == '') {
 			unset($cflk_data[$key]);
 		} else {
 			$check_ok = true;
@@ -1096,40 +1096,40 @@ function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '')
 			$type = $info['type'];
 			$cflk = '';
 			$cat_posts = false;
-			switch($type) {
+			switch ($type) {
 				case 'url':
-					if($info['url'] != '') { $cflk = stripslashes($info['url']); } else { $check_ok = false; }
+					if ($info['url'] != '') { $cflk = stripslashes($info['url']); } else { $check_ok = false; }
 					break;
 				case 'rss':
-					if($info['rss'] != '') { $cflk = stripslashes($info['rss']); } else { $check_ok = false; }
+					if ($info['rss'] != '') { $cflk = stripslashes($info['rss']); } else { $check_ok = false; }
 					break;
 				case 'post':
-					if($info['post'] != '') { $cflk = stripslashes($info['post']); } else { $check_ok = false; }
+					if ($info['post'] != '') { $cflk = stripslashes($info['post']); } else { $check_ok = false; }
 					break;
 				case 'page':
-					if($info['page'] != '') { $cflk = stripslashes($info['page']); } else { $check_ok = false; }
+					if ($info['page'] != '') { $cflk = stripslashes($info['page']); } else { $check_ok = false; }
 					break;
 				case 'category':
-					if($info['category'] != '') { $cflk = stripslashes($info['category']); } else { $check_ok = false; }
-					if($info['category_posts'] != '') { $cat_posts = true; } else { $cat_posts = false; }
+					if ($info['category'] != '') { $cflk = stripslashes($info['category']); } else { $check_ok = false; }
+					if ($info['category_posts'] != '') { $cat_posts = true; } else { $cat_posts = false; }
 					break;
 				case 'wordpress':
-					if($info['wordpress'] != '') { $cflk = stripslashes($info['wordpress']); } else { $check_ok = false; }
+					if ($info['wordpress'] != '') { $cflk = stripslashes($info['wordpress']); } else { $check_ok = false; }
 					break;
 				case 'author_rss':
-					if($info['author_rss'] != '') { $cflk = stripslashes($info['author_rss']); } else { $check_ok = false; }
+					if ($info['author_rss'] != '') { $cflk = stripslashes($info['author_rss']); } else { $check_ok = false; }
 					break;
 				default:
-					if($info['url'] != '') { $cflk = stripslashes($info['url']); } else { $check_ok = false; }
+					if ($info['url'] != '') { $cflk = stripslashes($info['url']); } else { $check_ok = false; }
 					break;
 			}
-			if($check_ok) {
+			if ($check_ok) {
 				$cflk = trim(strip_tags(stripslashes($cflk)));
 				array_push($new_data,array('title' => $title, 'type' => $type, 'link' => $cflk, 'cat_posts' => $cat_posts));
 			}
 		}
 	}
-	if($cflk_key != '' && $cflk_nicename != '') {
+	if ($cflk_key != '' && $cflk_nicename != '') {
 		$settings = array('nicename' => stripslashes($cflk_nicename), 'data' => $new_data);
 		update_option($cflk_key, $settings);
 	}
@@ -1137,8 +1137,8 @@ function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '')
 
 function cflk_delete_key($cflk_key, $remove_key) {
 	$cflk = maybe_unserialize(get_option($cflk_key));
-	foreach($cflk['data'] as $key => $value) {
-		if($key == $remove_key) {
+	foreach ($cflk['data'] as $key => $value) {
+		if ($key == $remove_key) {
 			unset($cflk['data'][$key]);
 		}
 	}
@@ -1147,25 +1147,25 @@ function cflk_delete_key($cflk_key, $remove_key) {
 }
 
 function cflk_delete($cflk_key) {
-	if($cflk_key != '') {
+	if ($cflk_key != '') {
 		delete_option($cflk_key);
 	}
 	$delete_keys = array();
 	$widgets = maybe_unserialize(get_option('cf_links_widget'));
 	$sidebars = maybe_unserialize(get_option('sidebars_widgets'));
-	foreach($widgets as $key => $widget) {
-		if($widget[select] == $cflk_key) {
+	foreach ($widgets as $key => $widget) {
+		if ($widget[select] == $cflk_key) {
 			array_push($delete_keys, $key);
 		}
 	}
-	if($delete_keys != '') {
-		foreach($delete_keys as $key) {
+	if ($delete_keys != '') {
+		foreach ($delete_keys as $key) {
 			unset($widgets[$key]);
-			foreach($sidebars as $sidebars_key => $sidebar) {
-				if(is_array($sidebar)) {
+			foreach ($sidebars as $sidebars_key => $sidebar) {
+				if (is_array($sidebar)) {
 					$check_key = 'cf-links-'.$key;
-					foreach($sidebar as $sidebar_key => $item) {
-						if($item == $check_key) {
+					foreach ($sidebar as $sidebar_key => $item) {
+						if ($item == $check_key) {
 							unset($sidebar[$sidebar_key]);
 						}
 					}
@@ -1179,7 +1179,7 @@ function cflk_delete($cflk_key) {
 }
 
 function cflk_insert_new($nicename = '', $data = array()) {
-	if($nicename != '') {
+	if ($nicename != '') {
 		$check_name = cflk_name_check(stripslashes($nicename));
 		$settings = array('nicename' => $check_name[1], 'data' => $data);
 	}
@@ -1203,9 +1203,9 @@ function cflk_name_check($name) {
 }
 
 function cflk_edit_nicename($cflk_key = '', $cflk_nicename = '') {
-	if($cflk_key != '' && $cflk_nicename != '') {
+	if ($cflk_key != '' && $cflk_nicename != '') {
 		$cflk = maybe_unserialize(get_option($cflk_key));
-		if($cflk[nicename] != $cflk_nicename) {
+		if ($cflk[nicename] != $cflk_nicename) {
 			$cflk[nicename] = stripslashes($cflk_nicename);
 		}
 		update_option($cflk_key, $cflk);
@@ -1217,14 +1217,14 @@ function cflk_get_list_links() {
 
 	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
 	$return = array();
-	if(is_array($cflk_list)) {
-		foreach($cflk_list as $cflk) {
+	if (is_array($cflk_list)) {
+		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
 			$push = array('option_name' => $cflk->option_name, 'nicename' => $options['nicename'], 'count' => count($options['data']));
 			array_push($return,$push);
 		}
 		
-		if(is_array($return)) {
+		if (is_array($return)) {
 			return $return;
 		}
 		else {
@@ -1256,7 +1256,7 @@ function cflk_widget( $args, $widget_args = 1 ) {
 	$select = $options[$number]['select'];
 	
 	echo $before_widget;
-	if(!empty($title)) {
+	if (!empty($title)) {
 		echo $before_title . $title . $after_title;
 	}
 	echo cflk_get_links($select);
@@ -1312,7 +1312,7 @@ function cflk_widget_control( $widget_args = 1 ) {
 
 	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
 	$form_data = array();
-	foreach($cflk_list as $cflk) {
+	foreach ($cflk_list as $cflk) {
 		$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
 		$push = array('option_name' => $cflk->option_name, 'nicename' => $options['nicename']);
 		array_push($form_data,$push);
@@ -1321,22 +1321,22 @@ function cflk_widget_control( $widget_args = 1 ) {
 	<p>
 		<label for="cfl-links-title-<?php echo $number; ?>"><?php _e('Title: ', 'cf-links'); ?></label>
 		<br />
-		<input id="cfl-links-title-<?php echo $number; ?>" name="cfl-links[<?php echo $number; ?>][title]" class="widefat" type="text" value="<?php print(htmlspecialchars($title)); ?>" />
+		<input id="cfl-links-title-<?php echo $number; ?>" name="cfl-links[<?php echo $number; ?>][title]" class="widefat" type="text" value="<?php print (htmlspecialchars($title)); ?>" />
 	</p>
 	<p>
 		<label for="cfl-links-select-<?php echo $number; ?>"><?php _e('Links List: ', 'cf-links'); ?></label>
 		<br />
 		<select id="cfl-links-select-<?php echo $number; ?>" name="cfl-links[<?php echo $number; ?>][select]" class="widefat">
 			<?php
-			foreach($form_data as $data => $info) {
-				if($info['option_name'] == $select) {
+			foreach ($form_data as $data => $info) {
+				if ($info['option_name'] == $select) {
 					$selected = 'selected=selected';
 				} 
 				else {
 					$selected = '';
 				}
 				?>
-				<option value="<?php print(htmlspecialchars($info['option_name'])); ?>" <?php print($selected); ?>><?php print(htmlspecialchars($info['nicename'])); ?></option>
+				<option value="<?php print (htmlspecialchars($info['option_name'])); ?>" <?php print ($selected); ?>><?php print (htmlspecialchars($info['nicename'])); ?></option>
 				<?php
 			}
 			?>
@@ -1378,7 +1378,7 @@ add_action( 'widgets_init', 'cflk_widget_register' );
  */
 
 function cflk_handle_shortcode($attrs, $content=null) {
-	if(is_array($attrs) && isset($attrs['name'])) {
+	if (is_array($attrs) && isset($attrs['name'])) {
 		return cflk_get_links($attrs['name']);
 	}
 	return false;
@@ -1435,13 +1435,13 @@ function cflk_links($key, $args = array()) {
 
 function cflk_get_link_info($link_list, $list_key) {
 	$data = array();
-	foreach($link_list['data'] as $key => $link) {
+	foreach ($link_list['data'] as $key => $link) {
 		$href = '';
 		$text = '';
 		$type_text = '';
 		$other = '';
 	
-		switch($link['type']) {
+		switch ($link['type']) {
 			case 'url':
 				$href = htmlspecialchars($link['link']);
 				$type_text = htmlspecialchars($link['link']);
@@ -1460,16 +1460,16 @@ function cflk_get_link_info($link_list, $list_key) {
 				$cat_info = get_category(htmlspecialchars($link['link']),OBJECT,'display');
 				$href = get_category_link($cat_info->term_id);
 				$type_text = attribute_escape($link_cat_info->cat_name);
-				if($link['cat_posts']) {
+				if ($link['cat_posts']) {
 					$type_text .= ' ('.$link_cat_info->count.')';
 				}
 				break;
 			case 'wordpress':
 				$get_link = cflk_get_wp_type($link['link']);
-				if(is_array($get_link)) {
+				if (is_array($get_link)) {
 					$href = $get_link['link'];
 					$type_text = $get_link['text'];
-					if($link['link'] == 'main_rss') {
+					if ($link['link'] == 'main_rss') {
 						$other = 'rss';
 					}
 				}
@@ -1483,7 +1483,7 @@ function cflk_get_link_info($link_list, $list_key) {
 			default:
 				break;
 		}
-		if(empty($link['title'])) {
+		if (empty($link['title'])) {
 			$text = $type_text;
 		}
 		else {
@@ -1492,7 +1492,7 @@ function cflk_get_link_info($link_list, $list_key) {
 		$sanitized_href = str_replace(get_bloginfo('home'),'',$href);
 		$sanitized_href = str_replace(array('/','.',':'),'_',$sanitized_href);
 		$id = $list_key.'-'.$sanitized_href;
-		if($href != '') {
+		if ($href != '') {
 			array_push($data, array('href' => $href, 'text' => $text, 'id' => $id));
 		}
 	}
@@ -1508,7 +1508,7 @@ function cflk_get_wp_type($type) {
 			$text = 'Home';
 			break;
 		case 'loginout':
-			if(!is_user_logged_in()) {
+			if (!is_user_logged_in()) {
 				$link = wp_login_url();
 				$text = 'Log in';
 			}
@@ -1518,21 +1518,21 @@ function cflk_get_wp_type($type) {
 			}
 			break;
 		case 'register':
-			if(!is_user_logged_in()) {
-				if(get_option('users_can_register')) {
+			if (!is_user_logged_in()) {
+				if (get_option('users_can_register')) {
 					$link = site_url('wp-login.php?action=register','login');
 					$text = 'Register';
 				}
 			}
 			else {
-				if(current_user_can('manage_options')) {
+				if (current_user_can('manage_options')) {
 					$link = admin_url();
 					$text = 'Site Admin';
 				}
 			}
 			break;
 		case 'profile':
-			if(is_user_logged_in()) {
+			if (is_user_logged_in()) {
 				$link = admin_url('profile.php');
 				$text = 'Profile';
 			}
@@ -1542,7 +1542,7 @@ function cflk_get_wp_type($type) {
 			$link = get_bloginfo('rss2_url');
 			break;
 	}
-	if($link != '' && $text != '') {
+	if ($link != '' && $text != '') {
 		return array('text' => $text, 'link' => $link);
 	}
 	return false;
@@ -1551,10 +1551,10 @@ function cflk_get_wp_type($type) {
 function cflk_export_list($key) {
 	global $wpdb;
 	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE '$key'");
-	foreach($cflk_list as $key => $value) {
-		print('<textarea rows="20" style="width:600px;">');
-		print_r($value->option_value);
-		print('</textarea>');
+	foreach ($cflk_list as $key => $value) {
+		print ('<textarea rows="20" style="width:600px;">');
+		print_r ($value->option_value);
+		print ('</textarea>');
 	}
 	die();
 }

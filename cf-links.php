@@ -1064,7 +1064,7 @@ function cflk_register_button($buttons) {
 }
 
 function cflk_add_tinymce_plugin($plugin_array) {
-	$plugin_array['cflinks'] = get_bloginfo('wpurl') . '/wp-content/plugins/cf-links/editor_plugin.js';
+	$plugin_array['cflinks'] = get_bloginfo('wpurl') . '/wp-content/plugins/cf-links/js/editor_plugin.js';
 	return $plugin_array;
 }
 

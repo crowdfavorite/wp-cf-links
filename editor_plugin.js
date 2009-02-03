@@ -6,6 +6,7 @@
             function() {
                 var se = ed.selection;
                 ed.windowManager.open({
+					title: 'Select Links List',
                     file: 'options-general.php?page=cf-links.php&cflk_page=dialog',
                     width: 350 + parseInt(ed.getLang('cflinks.delta_width', 0)),
                     height: 450 + parseInt(ed.getLang('cflinks.delta_height', 0)),

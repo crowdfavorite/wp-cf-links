@@ -59,7 +59,10 @@ $cflk_types = array();
 function cflk_link_types() {
 	global $wpdb, $cflk_types, $blog_id;
 	
+	// @TODO use get_pages
 	$pages = $wpdb->get_results("SELECT ID,post_title,post_status,post_type FROM $wpdb->posts WHERE post_status='publish' AND post_type='page' ORDER BY post_title ASC");
+	
+	// @TODO use get_categories
 	$categories = $wpdb->get_results("SELECT $wpdb->terms.name, $wpdb->terms.term_id FROM $wpdb->term_taxonomy left join $wpdb->terms on $wpdb->term_taxonomy.term_id = $wpdb->terms.term_id where $wpdb->term_taxonomy.taxonomy = 'category'");
 	$authors = get_users_of_blog($wpdb->blog_id);
 	
@@ -70,20 +73,25 @@ function cflk_link_types() {
 	$blog_data = array();
 	
 	foreach ($pages as $page) {
+		// @TODO - after change to use get_pages above use $post->post_name instead of sanitizing the post_title - post_name is already unique, so is $page->ID
 		$data = array(sanitize_title($page->post_title) => array('link' => $page->ID, 'description' => $page->post_title));
 		$page_data = array_merge($page_data, $data);
 	}
 
 	foreach ($categories as $category) {
+		// @TODO - use cat slug instead of sanitizing the name, slug is already a sanitized version of the name, could also use the term_id since it is unique
 		$data = array(sanitize_title($category->name) => array('link' => $category->term_id, 'description' => $category->name, 'count' => $category->count));
 		$category_data = array_merge($category_data, $data);
 	}
 
 	foreach ($authors as $author) {
+		// @TODO - user_login or user_nicename should be usable instead of sanitizing the display_name, could also just use the ID since it is unique
 		$data = array(sanitize_title($author->display_name) => array('link' => $author->user_id, 'description' => $author->display_name));
 		$author_data = array_merge($author_data, $data);
 	}	
 	
+	// @TODO - no need to do a series of array merges - just make an array like the link types below
+	// could even move to a function to shorten this function - link types below could be done like that as well
 	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('home') => array('link' => 'home', 'description' => __('Home','cf-links'))));
 	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('loginout') => array('link' => 'loginout', 'description' => __('Log In/Out','cf-links'))));
 	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('register') => array('link' => 'register', 'description' => __('Register/Site Admin','cf-links'))));
@@ -95,6 +103,7 @@ function cflk_link_types() {
 		foreach($blogs as $blog) {
 			if($blog_id != $blog['blog_id']) {
 				$details = get_blog_details($blog['blog_id']);
+				// @TODO - no need to sanitize the blog_id
 				$data = array(sanitize_title($details->blog_id) => array('link' => $details->siteurl, 'description' => $details->blogname));
 				$blog_data = array_merge($blog_data, $data);
 			}
@@ -288,6 +297,7 @@ function cflk_ajax() {
 	?>
 	<script type="text/javascript">
 		//<![CDATA[
+		// @TODO keep the unique functions for unique functionality, but take repeated code and move it to a separate function that each of these functions then pass config variables to
 		function cflkAJAXDeleteLink(cflk_key,key) {
 			var cflk_sack = new sack("<?php bloginfo('url'); ?>/wp-admin/admin-ajax.php");
 			cflk_sack.execute = 1;
@@ -451,6 +461,8 @@ function cflk_admin_js() {
 		var type = jQuery("#cflk_"+key+"_type").val();
 		if (type == "url") {
 			jQuery("#url_"+key).attr("style", "");
+			// @TODO - might be able to do jQuery("#url_"+key).attr("style","").siblings().attr("style","display: none;");
+			// that assumes that they are siblings, there is probably a way to one line all of these
 			jQuery("#rss_"+key).attr("style", "display: none;");
 			jQuery("#page_"+key).attr("style", "display: none;");													
 			jQuery("#category_"+key).attr("style", "display: none;");
@@ -568,6 +580,8 @@ function cflk_options_form() {
 		$push = array('option_name' => $cflk->option_name, 'nicename' => $options['nicename'], 'count' => count($options['data']));
 		array_push($form_data,$push);
 	}
+	
+	// @TODO - why not instead only write these divs to the page if there's something to display instead?
 	if ( isset($_GET['cflk_message']) ) {
 		switch ($_GET['cflk_message']) {
 			case 'create':
@@ -719,6 +733,7 @@ function cflk_edit() {
 		$cflk = maybe_unserialize(get_option($cflk_key));
 		is_array($cflk) ? $cflk_count = count($cflk) : $cflk_count = 0;
 		
+		// @TODO - instead of a show/hide of a standard message just don't write the message to the page if the message isn't relevant
 		if ( isset($_GET['cflk_message']) && $_GET['cflk_message'] = 'updated' ) {
 			print ('
 				<script type="text/javascript">
@@ -963,6 +978,7 @@ function cflk_head($page = '', $list = '') {
 }
 
 function cflk_edit_select($type) {
+	// @TODO - since the switch changes defaults, set the defaults on the next line and use the switch to only alter the keys that need to change
 	$select = array();
 	switch ($type) {
 		case 'url':
@@ -1194,12 +1210,28 @@ add_action('init', 'cflk_addtinymce');
  */
 
 function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '', $cflk_description = '') {
+	// @TODO instead of not saving later on if nicename & key are empty the function should return here
+	// if nothing is going to be saved then don't bother processing any data
+	
 	$new_data = array();
 
 	foreach ($cflk_data as $key => $info) {
 		if ($info['type'] == '') {
 			unset($cflk_data[$key]);
 		} else {
+			// @TODO - this next block can be reduced in size with:
+			// not tested, probably has a typo or something
+			/*
+			if(isset($info[$type]) && $info['type'] != '') { 
+				$add = array(
+					'title' => stripslashes($info['title']),
+					'type' => $type,
+					'link' => stripslashes($info[$type]),
+					'cat_posts' => ($key == 'category' && isset($info['category_posts']) && $info['category_posts'] != '' ? true : false)
+				);
+				array_push($new_data,$add);	
+			} 
+			*/
 			$check_ok = true;
 			$title = stripslashes($info['title']);
 			$type = $info['type'];
@@ -1249,6 +1281,12 @@ function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '',
 
 function cflk_delete_key($cflk_key, $remove_key) {
 	$cflk = maybe_unserialize(get_option($cflk_key));
+	// @TODO can remove the loop by doing something like:
+	/*
+		if(isset($cflk['data'][$remove_key])) {
+			unset($cflk['data'][$remove_key]);
+		}
+	*/
 	foreach ($cflk['data'] as $key => $value) {
 		if ($key == $remove_key) {
 			unset($cflk['data'][$key]);
@@ -1266,8 +1304,9 @@ function cflk_delete($cflk_key) {
 	$widgets = maybe_unserialize(get_option('cf_links_widget'));
 	$sidebars = maybe_unserialize(get_option('sidebars_widgets'));
 	foreach ($widgets as $key => $widget) {
-		if ($widget[select] == $cflk_key) {
+		if ($widget['select'] == $cflk_key) {
 			array_push($delete_keys, $key);
+			// @TODO - can the delete from the sidebar be done here to remove another loop?
 		}
 	}
 	if ($delete_keys != '') {
@@ -1276,6 +1315,12 @@ function cflk_delete($cflk_key) {
 			foreach ($sidebars as $sidebars_key => $sidebar) {
 				if (is_array($sidebar)) {
 					$check_key = 'cf-links-'.$key;
+					// @TODO - use in_array() instead of a loop?
+					/*
+						if(in_array($key,$sidebar)) {
+							unset($sidebar[$check_key]);
+						}
+					*/
 					foreach ($sidebar as $sidebar_key => $item) {
 						if ($item == $check_key) {
 							unset($sidebar[$sidebar_key]);
@@ -1295,6 +1340,7 @@ function cflk_insert_new($nicename = '', $data = array()) {
 		$check_name = cflk_name_check(stripslashes($nicename));
 		$settings = array('nicename' => $check_name[1], 'data' => $data);
 	}
+	// @TODO - what happens if $nicename == '' ?
 	add_option($check_name[0], $settings);
 	return $check_name[0];
 }
@@ -1329,6 +1375,20 @@ function cflk_get_list_links() {
 
 	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
 	$return = array();
+
+	// @TODO - can be streamlined by putting a single return false; at the end of the function and letting a positive return just make that code unreachable
+	// ie:
+	/*
+		if(is_array($cflk_list)) {
+			foreach($cflk_list as $cflk) {
+				... do stuff
+			}
+			if(is_array($ret)) {
+				return $ret;
+			}
+		}
+		return false;
+	*/
 	if (is_array($cflk_list)) {
 		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));

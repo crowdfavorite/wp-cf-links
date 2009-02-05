@@ -70,32 +70,23 @@ function cflk_link_types() {
 	$blog_data = array();
 	
 	foreach ($pages as $page) {
-		$data = array(
-			$page->post_name => array(
-				'link' => $page->ID, 
-				'description' => $page->post_title
-			)
+		$page_data[$page->post_name] => array(
+			'link' => $page->ID, 
+			'description' => $page->post_title
 		);
-		$page_data = array_merge($page_data, $data);
 	}
 	foreach ($categories as $category) {
-		$data = array(
-				$category->slug => array(
-						'link' => $category->term_id, 
-						'description' => $category->name, 
-						'count' => $category->count
-				)
+		$category_data[$category->slug] => array(
+				'link' => $category->term_id, 
+				'description' => $category->name, 
+				'count' => $category->count
 		);
-		$category_data = array_merge($category_data, $data);
 	}
 	foreach ($authors as $author) {
-		$data = array(
-				$author->user_login => array(
-						'link' => $author->user_id, 
-						'description' => $author->display_name
-				)
+		$author_data[$author->user_login] => array(
+				'link' => $author->user_id, 
+				'description' => $author->display_name
 		);
-		$author_data = array_merge($author_data, $data);
 	}	
 	$wordpress_data = array(
 		'home' => array(
@@ -124,13 +115,10 @@ function cflk_link_types() {
 		foreach ($blogs as $blog) {
 			if ($blog_id != $blog['blog_id']) {
 				$details = get_blog_details($blog['blog_id']);
-				$data = array(
-						$details->blog_id => array(
-								'link' => $details->siteurl, 
-								'description' => $details->blogname
-						)
+				$blog_data[$details->blog_id] => array(
+						'link' => $details->siteurl, 
+						'description' => $details->blogname
 				);
-				$blog_data = array_merge($blog_data, $data);
 			}
 		}
 	}

@@ -70,20 +70,20 @@ function cflk_link_types() {
 	$blog_data = array();
 	
 	foreach ($pages as $page) {
-		$page_data[$page->post_name] => array(
+		$page_data[$page->post_name] = array(
 			'link' => $page->ID, 
 			'description' => $page->post_title
 		);
 	}
 	foreach ($categories as $category) {
-		$category_data[$category->slug] => array(
+		$category_data[$category->slug] = array(
 				'link' => $category->term_id, 
 				'description' => $category->name, 
 				'count' => $category->count
 		);
 	}
 	foreach ($authors as $author) {
-		$author_data[$author->user_login] => array(
+		$author_data[$author->user_login] = array(
 				'link' => $author->user_id, 
 				'description' => $author->display_name
 		);
@@ -115,7 +115,7 @@ function cflk_link_types() {
 		foreach ($blogs as $blog) {
 			if ($blog_id != $blog['blog_id']) {
 				$details = get_blog_details($blog['blog_id']);
-				$blog_data[$details->blog_id] => array(
+				$blog_data[$details->blog_id] = array(
 						'link' => $details->siteurl, 
 						'description' => $details->blogname
 				);

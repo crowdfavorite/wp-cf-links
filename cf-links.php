@@ -59,13 +59,10 @@ $cflk_types = array();
 function cflk_link_types() {
 	global $wpdb, $cflk_types, $blog_id;
 	
-	// @TODO use get_pages
-	$pages = $wpdb->get_results("SELECT ID,post_title,post_status,post_type FROM $wpdb->posts WHERE post_status='publish' AND post_type='page' ORDER BY post_title ASC");
-	
-	// @TODO use get_categories
-	$categories = $wpdb->get_results("SELECT $wpdb->terms.name, $wpdb->terms.term_id FROM $wpdb->term_taxonomy left join $wpdb->terms on $wpdb->term_taxonomy.term_id = $wpdb->terms.term_id where $wpdb->term_taxonomy.taxonomy = 'category'");
+	$pages = get_pages();
+	$categories = get_categories('get=all');
 	$authors = get_users_of_blog($wpdb->blog_id);
-	
+
 	$page_data = array();
 	$category_data = array();
 	$author_data = array();
@@ -73,43 +70,49 @@ function cflk_link_types() {
 	$blog_data = array();
 	
 	foreach ($pages as $page) {
-		// @TODO - after change to use get_pages above use $post->post_name instead of sanitizing the post_title - post_name is already unique, so is $page->ID
-		$data = array(sanitize_title($page->post_title) => array('link' => $page->ID, 'description' => $page->post_title));
+		$data = array($page->post_name => array('link' => $page->ID, 'description' => $page->post_title));
 		$page_data = array_merge($page_data, $data);
 	}
-
 	foreach ($categories as $category) {
-		// @TODO - use cat slug instead of sanitizing the name, slug is already a sanitized version of the name, could also use the term_id since it is unique
-		$data = array(sanitize_title($category->name) => array('link' => $category->term_id, 'description' => $category->name, 'count' => $category->count));
+		$data = array($category->slug => array('link' => $category->term_id, 'description' => $category->name, 'count' => $category->count));
 		$category_data = array_merge($category_data, $data);
 	}
-
 	foreach ($authors as $author) {
-		// @TODO - user_login or user_nicename should be usable instead of sanitizing the display_name, could also just use the ID since it is unique
-		$data = array(sanitize_title($author->display_name) => array('link' => $author->user_id, 'description' => $author->display_name));
+		$data = array($author->user_login => array('link' => $author->user_id, 'description' => $author->display_name));
 		$author_data = array_merge($author_data, $data);
 	}	
-	
-	// @TODO - no need to do a series of array merges - just make an array like the link types below
-	// could even move to a function to shorten this function - link types below could be done like that as well
-	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('home') => array('link' => 'home', 'description' => __('Home','cf-links'))));
-	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('loginout') => array('link' => 'loginout', 'description' => __('Log In/Out','cf-links'))));
-	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('register') => array('link' => 'register', 'description' => __('Register/Site Admin','cf-links'))));
-	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('profile') => array('link' => 'profile', 'description' => __('Profile','cf-links'))));
-	$wordpress_data = array_merge($wordpress_data, array(sanitize_title('main_rss') => array('link' => 'main_rss', 'description' => __('Site RSS','cf-links'))));
-	
-	if(function_exists('get_blog_list')) {
+	$wordpress_data = array(
+		'home' => array(
+			'link' => 'home',
+			'description' => __('Home','cf-links'),
+		),
+		'loginout' => array(
+			'link' => 'loginout',
+			'description' => __('Log In/Out','cf-links'),
+		),
+		'register' => array(
+			'link' => 'register',
+			'description' => __('Register/Site Admin','cf-links'),
+		),
+		'profile' => array(
+			'link' => 'profile',
+			'description' => __('Profile','cf-links'),
+		),
+		'main_rss' => array(
+			'link' => 'main_rss',
+			'description' => __('Site RSS','cf-links'),
+		),
+	);
+	if (function_exists('get_blog_list')) {
 		$blogs = get_blog_list();
-		foreach($blogs as $blog) {
-			if($blog_id != $blog['blog_id']) {
+		foreach ($blogs as $blog) {
+			if ($blog_id != $blog['blog_id']) {
 				$details = get_blog_details($blog['blog_id']);
-				// @TODO - no need to sanitize the blog_id
-				$data = array(sanitize_title($details->blog_id) => array('link' => $details->siteurl, 'description' => $details->blogname));
+				$data = array($details->blog_id => array('link' => $details->siteurl, 'description' => $details->blogname));
 				$blog_data = array_merge($blog_data, $data);
 			}
 		}
 	}
-	krsort($blog_data);
 	
 	$cflk_types = array(
 		'url' => array(
@@ -150,6 +153,7 @@ function cflk_link_types() {
 		),
 	);
 	if(function_exists('get_blog_list')) {
+		krsort($blog_data);
 		$blog_type = array(
 			'blog' => array(
 				'type' => 'blog', 
@@ -191,6 +195,9 @@ function cflk_check_page() {
 		case 'create':
 			cflk_new();
 			break;
+		case 'import':
+			cflk_import();
+			break;
 		default:
 			cflk_options_form();
 			break;
@@ -222,6 +229,7 @@ function cflk_request_handler() {
 					break;
 				case 'cflk_insert_new':
 					$nicename = '';
+					$description = '';
 					$data = '';
 					
 					if (isset($_POST['cflk_create']) && $_POST['cflk_create'] == 'new_list') {
@@ -234,11 +242,12 @@ function cflk_request_handler() {
 						if (isset($_POST['cflk_import']) && $_POST['cflk_import'] != '') {
 							$import = maybe_unserialize(stripslashes($_POST['cflk_import']));
 							$nicename = $import['nicename'];
+							$description = $import['description'];
 							$data = $import['data'];
 						}
 					}
 					if ($nicename != '' && is_array($data)) {
-						$cflk_key = cflk_insert_new($nicename, $data);
+						$cflk_key = cflk_insert_new($nicename, $description, $data);
 					}
 					wp_redirect(get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$cflk_key);
 					break;
@@ -273,24 +282,6 @@ function cflk_request_handler() {
 }
 add_action('init', 'cflk_request_handler');
 add_action('wp_ajax_cflk_update_settings', 'cflk_request_handler');
-
-wp_enqueue_script('jquery');
-wp_enqueue_script('jquery-ui', get_bloginfo('wpurl').'/wp-content/plugins/cf-links/js/jquery-ui.js', 'jquery');
-wp_enqueue_script('thickbox');
-if (!function_exists('wp_prototype_before_jquery')) {
-	function wp_prototype_before_jquery( $js_array ) {
-		if ( false === $jquery = array_search( 'jquery', $js_array ) )
-			return $js_array;
-		if ( false === $prototype = array_search( 'prototype', $js_array ) )
-			return $js_array;
-		if ( $prototype < $jquery )
-			return $js_array;
-		unset($js_array[$prototype]);
-		array_splice( $js_array, $jquery, 0, 'prototype' );
-		return $js_array;
-	}
-    add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );
-}
 
 function cflk_ajax() {
 	wp_print_scripts(array('sack'));
@@ -394,6 +385,12 @@ function cflk_admin_js() {
 		jQuery('input[name="link_edit"]').click(function() {
 			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
 			return false;
+		});
+		jQuery('select option:selected').each(function() {
+			if(jQuery(this).val() == 'HOLDER') {
+				jQuery(this).parents("tr").css({'background-color':'#686868'});
+				jQuery('#message_import_problem').attr('style','');
+			}
 		});
 	});
 	function deleteLink(cflk_key,linkID) {
@@ -561,6 +558,23 @@ function cflk_admin_head() {
 	
 }
 if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
+	wp_enqueue_script('jquery');
+	wp_enqueue_script('jquery-ui', get_bloginfo('wpurl').'/wp-content/plugins/cf-links/js/jquery-ui.js', 'jquery');
+	wp_enqueue_script('thickbox');
+	if (!function_exists('wp_prototype_before_jquery')) {
+		function wp_prototype_before_jquery( $js_array ) {
+			if ( false === $jquery = array_search( 'jquery', $js_array ) )
+				return $js_array;
+			if ( false === $prototype = array_search( 'prototype', $js_array ) )
+				return $js_array;
+			if ( $prototype < $jquery )
+				return $js_array;
+			unset($js_array[$prototype]);
+			array_splice( $js_array, $jquery, 0, 'prototype' );
+			return $js_array;
+		}
+	    add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );
+	}	
 	add_action('admin_head', 'cflk_admin_head');
 }
 
@@ -572,7 +586,6 @@ if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 
 function cflk_options_form() {
 	global $wpdb;
-	
 	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
 	$form_data = array();
 	foreach ($cflk_list as $cflk) {
@@ -581,25 +594,20 @@ function cflk_options_form() {
 		array_push($form_data,$push);
 	}
 	
-	// @TODO - why not instead only write these divs to the page if there's something to display instead?
 	if ( isset($_GET['cflk_message']) ) {
 		switch ($_GET['cflk_message']) {
 			case 'create':
 				print ('
-					<script type="text/javascript">
-						jQuery(document).ready(function() {
-							jQuery("#message_create").attr("style","");
-						});
-					</script>
+					<div id="message_create" class="updated fade">
+						<p>'.__('Links List Created.', 'cf-links').'</p>
+					</div>
 				');
 				break;
 			case 'delete':
 				print ('
-					<script type="text/javascript">
-						jQuery(document).ready(function() {
-							jQuery("#message_delete").attr("style","");
-						});
-					</script>
+					<div id="message_delete" class="updated fade">
+						<p>'.__('Links List Deleted.', 'cf-links').'</p>
+					</div>
 				');
 				break;
 			default:
@@ -607,12 +615,6 @@ function cflk_options_form() {
 		}
 	}
 	print ('
-		<div id="message_create" class="updated fade" style="display: none;">
-			<p>'.__('Links List Created.', 'cf-links').'</p>
-		</div>
-		<div id="message_delete" class="updated fade" style="display: none;">
-			<p>'.__('Links List Deleted.', 'cf-links').'</p>
-		</div>
 		<div class="wrap">
 			'.cflk_head('main').'
 			<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-form">
@@ -673,52 +675,53 @@ function cflk_new() {
 		<div class="wrap">
 			'.cflk_head('create').'
 			<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-create">
-				<div id="name">
-					<table class="widefat">
-						<thead>
-							<tr>
-								<th scope="col" colspan="2">'.__('Link List Name', 'cf-links').'</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>
-									<input type="text" name="cflk_nicename" size="55" />
-								</td>
-								<td width="25%">
-									<p class="submit" style="border-top: none; padding:0;">
-										<input type="button" class="cflk_import" value="'.__('Import List', 'cf-links').'" onClick="importList()" />
-									</p>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<div id="import" style="display:none;">
-					<table class="widefat">
-						<thead>
-							<tr>
-								<th scope="col" colspan="2">'.__('Enter Data From Export', 'cf-links').'</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>
-									<textarea name="cflk_import" rows="15" style="width:600px;"></textarea>
-								</td>
-								<td width="25%">
-									<p class="submit" style="border-top: none; padding:0;">
-										<input type="button" class="cflk_import" value="'.__('New List', 'cf-links').'" onClick="notImportList()" />
-									</p>
-								</td>
-							</tr>
-						</tbody>
-					</table>				
-				</div>
+				<table class="widefat">
+					<thead>
+						<tr>
+							<th scope="col">'.__('Link List Name', 'cf-links').'</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<input type="text" name="cflk_nicename" size="55" />
+							</td>
+						</tr>
+					</tbody>
+				</table>
 				<p class="submit" style="border-top: none;">
 					<input type="hidden" name="cf_action" value="cflk_insert_new" />
 					<input type="hidden" name="cflk_create" id="cflk_create" value="new_list" />
 					<input type="submit" name="submit" id="cflk-submit" value="'.__('Create List', 'cf-links').'" />
+				</p>
+			</form>
+		</div>
+	');
+}
+
+function cflk_import() {
+	print('
+		<div class="wrap">
+			'.cflk_head('import').'
+			<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-create">
+				<table class="widefat">
+					<thead>
+						<tr>
+							<th scope="col">'.__('Enter Data From Export', 'cf-links').'</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<textarea name="cflk_import" rows="15" style="width:600px;"></textarea>
+							</td>
+						</tr>
+					</tbody>
+				</table>				
+				<p class="submit" style="border-top: none;">
+					<input type="hidden" name="cf_action" value="cflk_insert_new" />
+					<input type="hidden" name="cflk_create" id="cflk_create" value="import_list" />
+					<input type="submit" name="submit" id="cflk-submit" value="'.__('Import List', 'cf-links').'" />
 				</p>
 			</form>
 		</div>
@@ -733,22 +736,19 @@ function cflk_edit() {
 		$cflk = maybe_unserialize(get_option($cflk_key));
 		is_array($cflk) ? $cflk_count = count($cflk) : $cflk_count = 0;
 		
-		// @TODO - instead of a show/hide of a standard message just don't write the message to the page if the message isn't relevant
 		if ( isset($_GET['cflk_message']) && $_GET['cflk_message'] = 'updated' ) {
 			print ('
-				<script type="text/javascript">
-					jQuery(document).ready(function() {
-						jQuery("#message").attr("style","");
-					});
-				</script>
+				<div id="message" class="updated fade">
+					<p>'.__('Settings updated.', 'cf-links').'</p>
+				</div>
 			');
 		}
 		print ('
-			<div id="message" class="updated fade" style="display: none;">
-				<p>'.__('Settings updated.', 'cf-links').'</p>
-			</div>
 			<div id="message_delete" class="updated fade" style="display: none;">
 				<p>'.__('Link deleted.', 'cf-links').'</p>
+			</div>			
+			<div id="message_import_problem" class="updated fade" style="display: none;">
+				<p>'.__('A problem has been detected while using the import.  Please see highlighted items below to fix.', 'cf-links').'</p>
 			</div>			
 			<div class="wrap">
 				<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-form">
@@ -894,24 +894,14 @@ function cflk_edit() {
 								}
 								print ('
 							</td>
-							<td width="250px">');
-								if (htmlspecialchars($setting['title']) == '') {
-									print ('
-									<span id="cflk_###SECTION###_title_edit">
-										<input type="button" class="cflk_button" id="link_edit_title_###SECTION###" value="'.__('Edit Title', 'cf-links').'" onClick="editTitle(\'###SECTION###\')" />
-									</span>
-									<span id="cflk_###SECTION###_title_input" style="display: none">
-										<input type="text" name="cflk[###SECTION###][title]" value="'.htmlspecialchars($setting['title']).'" style="max-width: 195px;" />
-										<input type="button" class="cflk_button" id="link_cancel_title_###SECTION###" value="'.__('Cancel', 'cf-links').'" onClick="cancelTitle(\'###SECTION###\')" />
-									</span>
-									');
-								}
-								else {
-									print ('
-									<input type="text" size="28" name="cflk[###SECTION###][title]" value="'.htmlspecialchars($setting['title']).'" />
-									');
-								}
-							print ('
+							<td width="250px">
+								<span id="cflk_###SECTION###_title_edit">
+									<input type="button" class="cflk_button" id="link_edit_title_###SECTION###" value="'.__('Edit Title', 'cf-links').'" onClick="editTitle(\'###SECTION###\')" />
+								</span>
+								<span id="cflk_###SECTION###_title_input" style="display: none">
+									<input type="text" name="cflk[###SECTION###][title]" value="" style="max-width: 195px;" />
+									<input type="button" class="cflk_button" id="link_cancel_title_###SECTION###" value="'.__('Cancel', 'cf-links').'" onClick="cancelTitle(\'###SECTION###\')" />
+								</span>
 							</td>
 							<td width="60px" style="text-align: center;">
 								<input type="button" class="cflk_button" id="link_delete_###SECTION###" value="'.__('Delete', 'cf-links').'" onClick="deleteLink(\''.$cflk_key.'\',\'###SECTION###\')" />
@@ -950,6 +940,7 @@ function cflk_head($page = '', $list = '') {
 	
 	$main_text = '';
 	$add_text = '';
+	$import_text = '';
 	
 	switch ($page) {
 		case 'main':
@@ -957,6 +948,9 @@ function cflk_head($page = '', $list = '') {
 			break;
 		case 'create':
 			$add_text = ' class="current"';
+			break;
+		case 'import':
+			$import_text = ' class="current"';
 			break;
 		default:
 			break;
@@ -970,6 +964,9 @@ function cflk_head($page = '', $list = '') {
 				<a href="'.get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=create" '.$add_text.'>'.__('Add Links List', 'cf-links').'</a> | 
 			</li>
 			<li>
+				<a href="'.get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=import" '.$import_text.'>'.__('Import Links List', 'cf-links').'</a> | 
+			</li>
+			<li>
 				<a href="'.get_bloginfo('wpurl').'/wp-admin/widgets.php">'.__('Edit Widgets','cf-links').'</a>
 			</li>
 		</ul>
@@ -978,132 +975,55 @@ function cflk_head($page = '', $list = '') {
 }
 
 function cflk_edit_select($type) {
-	// @TODO - since the switch changes defaults, set the defaults on the next line and use the switch to only alter the keys that need to change
 	$select = array();
+	
+	$select[url_show] = 'style="display: none;"';
+	$select[url_select] = '';
+	$select[rss_show] = 'style="display: none;"';
+	$select[rss_select] = '';
+	$select[page_show] = 'style="display: none;"';
+	$select[page_select] = '';
+	$select[category_show] = 'style="display: none;"';
+	$select[category_select] = '';
+	$select[wordpress_show] = 'style="display: none;"';
+	$select[wordpress_select] = '';
+	$select[author_rss_show] = 'style="display: none;"';
+	$select[author_rss_select] = '';
+	$select[blog_show] = 'style="display: none;"';
+	$select[blog_select] = '';
+	
 	switch ($type) {
 		case 'url':
 			$select[url_show] = 'style=""';
 			$select[url_select] = 'selected=selected';
-			$select[rss_show] = 'style="display: none;"';
-			$select[rss_select] = '';
-			$select[page_show] = 'style="display: none;"';
-			$select[page_select] = '';
-			$select[category_show] = 'style="display: none;"';
-			$select[category_select] = '';
-			$select[wordpress_show] = 'style="display: none;"';
-			$select[wordpress_select] = '';
-			$select[author_rss_show] = 'style="display: none;"';
-			$select[author_rss_select] = '';
-			$select[blog_show] = 'style="display: none;"';
-			$select[blog_select] = '';
 			break;
 		case 'rss':
-			$select[url_show] = 'style="display: none;"';
-			$select[url_select] = '';
 			$select[rss_show] = 'style=""';
 			$select[rss_select] = 'selected=selected';
-			$select[page_show] = 'style="display: none;"';
-			$select[page_select] = '';
-			$select[category_show] = 'style="display: none;"';
-			$select[category_select] = '';
-			$select[wordpress_show] = 'style="display: none;"';
-			$select[wordpress_select] = '';
-			$select[author_rss_show] = 'style="display: none;"';
-			$select[author_rss_select] = '';
-			$select[blog_show] = 'style="display: none;"';
-			$select[blog_select] = '';
 			break;
 		case 'page':
-			$select[url_show] = 'style="display: none;"';
-			$select[url_select] = '';
-			$select[rss_show] = 'style="display: none;"';
-			$select[rss_select] = '';
 			$select[page_show] = 'style=""';
 			$select[page_select] = 'selected=selected';
-			$select[category_show] = 'style="display: none;"';
-			$select[category_select] = '';
-			$select[wordpress_show] = 'style="display: none;"';
-			$select[wordpress_select] = '';
-			$select[author_rss_show] = 'style="display: none;"';
-			$select[author_rss_select] = '';
-			$select[blog_show] = 'style="display: none;"';
-			$select[blog_select] = '';
 			break;
 		case 'category':
-			$select[url_show] = 'style="display: none;"';
-			$select[url_select] = '';
-			$select[rss_show] = 'style="display: none;"';
-			$select[rss_select] = '';
-			$select[page_show] = 'style="display: none;"';
-			$select[page_select] = '';
 			$select[category_show] = 'style=""';
 			$select[category_select] = 'selected=selected';
-			$select[wordpress_show] = 'style="display: none;"';
-			$select[wordpress_select] = '';
-			$select[author_rss_show] = 'style="display: none;"';
-			$select[author_rss_select] = '';
-			$select[blog_show] = 'style="display: none;"';
-			$select[blog_select] = '';
 			break;	
 		case 'wordpress':
-			$select[url_show] = 'style="display: none;"';
-			$select[url_select] = '';
-			$select[rss_show] = 'style="display: none;"';
-			$select[rss_select] = '';
-			$select[page_show] = 'style="display: none;"';
-			$select[page_select] = '';
-			$select[category_show] = 'style="display: none;"';
-			$select[category_select] = '';
 			$select[wordpress_show] = 'style=""';
 			$select[wordpress_select] = 'selected=selected';
-			$select[author_rss_show] = 'style="display: none;"';
-			$select[author_rss_select] = '';
-			$select[blog_show] = 'style="display: none;"';
-			$select[blog_select] = '';
 			break;	
 		case 'author_rss':
-			$select[url_show] = 'style="display: none;"';
-			$select[url_select] = '';
-			$select[rss_show] = 'style="display: none;"';
-			$select[rss_select] = '';
-			$select[page_show] = 'style="display: none;"';
-			$select[page_select] = '';
-			$select[category_show] = 'style="display: none;"';
-			$select[category_select] = '';
-			$select[wordpress_show] = 'style="display: none;"';
-			$select[wordpress_select] = '';
 			$select[author_rss_show] = 'style=""';
 			$select[author_rss_select] = 'selected=selected';
-			$select[blog_show] = 'style="display: none;"';
-			$select[blog_select] = '';
 			break;	
 		case 'blog':
-			$select[url_show] = 'style="display: none;"';
-			$select[url_select] = '';
-			$select[rss_show] = 'style="display: none;"';
-			$select[rss_select] = '';
-			$select[page_show] = 'style="display: none;"';
-			$select[page_select] = '';
-			$select[category_show] = 'style="display: none;"';
-			$select[category_select] = '';
-			$select[wordpress_show] = 'style="display: none;"';
-			$select[wordpress_select] = '';
-			$select[author_rss_show] = 'style="display: none;"';
-			$select[author_rss_select] = '';
 			$select[blog_show] = 'style=""';
 			$select[blog_select] = 'selected=selected';
 			break;	
 		default:
 			$select[url_show] = 'style=""';
 			$select[url_select] = 'selected=selected';
-			$select[rss_show] = 'style="display: none;"';
-			$select[rss_select] = '';
-			$select[page_show] = 'style="display: none;"';
-			$select[page_select] = '';
-			$select[category_show] = 'style="display: none;"';
-			$select[category_select] = '';
-			$select[wordpress_show] = 'style="display: none;"';
-			$select[wordpress_select] = '';
 			break;
 	}
 	return $select;
@@ -1130,7 +1050,25 @@ function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $va
 				}
 				$return .= '<option value="'.$info['link'].'"'.$selected.'>'.$info['description'].$count_text.'</option>';
 			}
+			if($value == 'HOLDER' && $show == 'style=""') {
+				$return .= '<option value="HOLDER" selected=selected>'.__('IMPORTED ITEM DOES NOT EXIST, PLEASE CHOOSE ANOTHER ITEM', 'cf-links').'</option>';
+			}
 			$return .= '</select>';
+			if ($value == 'HOLDER' && $show == 'style=""') {
+				switch ($type) {
+					case 'page':
+						$type_show = 'Page';
+						break;
+					case 'category':
+						$type_show = 'Category';
+						break;
+					case 'author_rss':
+						$type_show = 'Author';
+						break;
+					
+				}
+				$return .= '<br /><span id="holder_'.$type.'_'.$key.'" style="color:#FFFFFF; font-weight:bold;">'.__('Imported item ID does not exist in the system.<br />Please create a new '.$type_show.', then select it from the list above.','cf-links').'</span>';
+			}
 			break;
 		
 	}
@@ -1210,137 +1148,112 @@ add_action('init', 'cflk_addtinymce');
  */
 
 function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '', $cflk_description = '') {
-	// @TODO instead of not saving later on if nicename & key are empty the function should return here
-	// if nothing is going to be saved then don't bother processing any data
-	
+	if ($cflk_key == '' && $cflk_nicename == '') { return false; }
 	$new_data = array();
-
 	foreach ($cflk_data as $key => $info) {
 		if ($info['type'] == '') {
 			unset($cflk_data[$key]);
 		} else {
-			// @TODO - this next block can be reduced in size with:
-			// not tested, probably has a typo or something
-			/*
-			if(isset($info[$type]) && $info['type'] != '') { 
+			$type = $info['type'];
+			if (isset($type) && $type != '') {
 				$add = array(
 					'title' => stripslashes($info['title']),
 					'type' => $type,
 					'link' => stripslashes($info[$type]),
-					'cat_posts' => ($key == 'category' && isset($info['category_posts']) && $info['category_posts'] != '' ? true : false)
+					'cat_posts' => ($type == 'category' && isset($info['category_posts']) && $info['category_posts'] != '' ? true : false),
 				);
-				array_push($new_data,$add);	
-			} 
-			*/
-			$check_ok = true;
-			$title = stripslashes($info['title']);
-			$type = $info['type'];
-			$cflk = '';
-			$cat_posts = false;
-			switch ($type) {
-				case 'url':
-					if ($info['url'] != '') { $cflk = stripslashes($info['url']); } else { $check_ok = false; }
-					break;
-				case 'rss':
-					if ($info['rss'] != '') { $cflk = stripslashes($info['rss']); } else { $check_ok = false; }
-					break;
-				case 'post':
-					if ($info['post'] != '') { $cflk = stripslashes($info['post']); } else { $check_ok = false; }
-					break;
-				case 'page':
-					if ($info['page'] != '') { $cflk = stripslashes($info['page']); } else { $check_ok = false; }
-					break;
-				case 'category':
-					if ($info['category'] != '') { $cflk = stripslashes($info['category']); } else { $check_ok = false; }
-					if ($info['category_posts'] != '') { $cat_posts = true; } else { $cat_posts = false; }
-					break;
-				case 'wordpress':
-					if ($info['wordpress'] != '') { $cflk = stripslashes($info['wordpress']); } else { $check_ok = false; }
-					break;
-				case 'author_rss':
-					if ($info['author_rss'] != '') { $cflk = stripslashes($info['author_rss']); } else { $check_ok = false; }
-					break;
-				case 'blog':
-					if ($info['blog'] != '') { $cflk = stripslashes($info['blog']); } else { $check_ok = false; }
-					break;
-				default:
-					if ($info['url'] != '') { $cflk = stripslashes($info['url']); } else { $check_ok = false; }
-					break;
-			}
-			if ($check_ok) {
-				$cflk = trim(strip_tags(stripslashes($cflk)));
-				array_push($new_data,array('title' => $title, 'type' => $type, 'link' => $cflk, 'cat_posts' => $cat_posts));
+				array_push($new_data, $add);
 			}
 		}
 	}
-	if ($cflk_key != '' && $cflk_nicename != '') {
-		$settings = array('nicename' => stripslashes($cflk_nicename), 'description' => stripslashes($cflk_description), 'data' => $new_data);
-		update_option($cflk_key, $settings);
-	}
+	$settings = array('nicename' => stripslashes($cflk_nicename), 'description' => stripslashes($cflk_description), 'data' => $new_data);
+	update_option($cflk_key, $settings);
 }
 
 function cflk_delete_key($cflk_key, $remove_key) {
 	$cflk = maybe_unserialize(get_option($cflk_key));
-	// @TODO can remove the loop by doing something like:
-	/*
-		if(isset($cflk['data'][$remove_key])) {
-			unset($cflk['data'][$remove_key]);
-		}
-	*/
-	foreach ($cflk['data'] as $key => $value) {
-		if ($key == $remove_key) {
-			unset($cflk['data'][$key]);
-		}
+	if(isset($cflk['data'][$remove_key])) {
+		unset($cflk['data'][$remove_key]);
 	}
 	update_option($cflk_key, $cflk);
 	return true;
 }
 
 function cflk_delete($cflk_key) {
-	if ($cflk_key != '') {
-		delete_option($cflk_key);
-	}
+	if ($cflk_key == '') { return false; }
 	$delete_keys = array();
 	$widgets = maybe_unserialize(get_option('cf_links_widget'));
 	$sidebars = maybe_unserialize(get_option('sidebars_widgets'));
+
 	foreach ($widgets as $key => $widget) {
 		if ($widget['select'] == $cflk_key) {
-			array_push($delete_keys, $key);
-			// @TODO - can the delete from the sidebar be done here to remove another loop?
-		}
-	}
-	if ($delete_keys != '') {
-		foreach ($delete_keys as $key) {
 			unset($widgets[$key]);
 			foreach ($sidebars as $sidebars_key => $sidebar) {
 				if (is_array($sidebar)) {
-					$check_key = 'cf-links-'.$key;
-					// @TODO - use in_array() instead of a loop?
-					/*
-						if(in_array($key,$sidebar)) {
-							unset($sidebar[$check_key]);
-						}
-					*/
-					foreach ($sidebar as $sidebar_key => $item) {
-						if ($item == $check_key) {
-							unset($sidebar[$sidebar_key]);
+					foreach ($sidebar as $sb_key => $value) {
+						if($value == 'cf-links-'.$key) {
+							unset($sidebar[$sb_key]);
 						}
 					}
 					$sidebars[$sidebars_key] = $sidebar;
 				}
 			}
+			update_option('sidebars_widgets', $sidebars);
 		}
-		update_option('sidebars_widgets', $sidebars);
 	}
-	
+	delete_option($cflk_key);
 }
 
-function cflk_insert_new($nicename = '', $data = array()) {
-	if ($nicename != '') {
-		$check_name = cflk_name_check(stripslashes($nicename));
-		$settings = array('nicename' => $check_name[1], 'data' => $data);
+function cflk_insert_new($nicename = '', $description = '', $data = array()) {
+	if ($nicename == '') { return false; }
+	
+	$pages = $categories = $authors = $blogs = array();
+	$page_object = get_pages();
+	foreach ($page_object as $page) {
+		array_push ($pages, $page->ID);
 	}
-	// @TODO - what happens if $nicename == '' ?
+	$category_object = get_categories('get=all');
+	foreach ($category_object as $category) {
+		array_push ($categories, $category->term_id);
+	}
+	$author_object = get_users_of_blog($wpdb->blog_id);
+	foreach ($author_object as $author) {
+		array_push ($authors, $author->user_id);
+	}
+	if (function_exists ('get_blog_list')) {
+		$blog_object = get_blog_list();
+		foreach ($blog_object as $key => $blog) {
+			array_push ($blogs, $blog['blog_id']);
+		}
+	}
+	
+	$check_name = cflk_name_check(stripslashes($nicename));
+	foreach ($data as $key => $item) {
+		if ($item['type'] == 'page') {
+			if(!in_array($item['link'],$pages)) {
+				$item['link'] = 'HOLDER';
+			}
+		}
+		if ($item['type'] == 'category') {
+			if(!in_array($item['link'],$categories)) {
+				$item['link'] = 'HOLDER';
+			}
+		}
+		if ($item['type'] == 'author_rss') {
+			if(!in_array($item['link'],$authors)) {
+				$item['link'] = 'HOLDER';
+			}
+		}
+		if (function_exists('get_blog_list')) {
+			if ($item['type'] == 'blog') {
+				if(!in_array($item['link'],$blogs)) {
+					$item['link'] = 'HOLDER';
+				}
+			}
+		}
+		$data[$key]['link'] = $item['link'];
+	}
+	$settings = array('nicename' => $check_name[1], 'description' => $description, 'data' => $data);
 	add_option($check_name[0], $settings);
 	return $check_name[0];
 }
@@ -1376,36 +1289,18 @@ function cflk_get_list_links() {
 	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
 	$return = array();
 
-	// @TODO - can be streamlined by putting a single return false; at the end of the function and letting a positive return just make that code unreachable
-	// ie:
-	/*
-		if(is_array($cflk_list)) {
-			foreach($cflk_list as $cflk) {
-				... do stuff
-			}
-			if(is_array($ret)) {
-				return $ret;
-			}
-		}
-		return false;
-	*/
 	if (is_array($cflk_list)) {
 		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
-			$push = array('option_name' => $cflk->option_name, 'nicename' => $options['nicename'], 'count' => count($options['data']));
-			array_push($return,$push);
+			$return[$cflk->option_name] = array(
+				'nicename' => $options['nicename'], 
+				'description' => $options['description'],
+				'count' => count($options['data'])
+			);
 		}
-		
-		if (is_array($return)) {
-			return $return;
-		}
-		else {
-			return false;
-		}
+		return $return;
 	}
-	else {
-		return false;
-	}
+	return false;
 }
 
 /**
@@ -1612,6 +1507,7 @@ function cflk_get_link_info($link_list, $list_key) {
 		$text = '';
 		$type_text = '';
 		$other = '';
+		$sanitized_href = '';
 	
 		switch ($link['type']) {
 			case 'url':
@@ -1624,16 +1520,20 @@ function cflk_get_link_info($link_list, $list_key) {
 				break;
 			case 'post':
 			case 'page':
-				$href = get_permalink(htmlspecialchars($link['link']));
 				$postinfo = get_post(htmlspecialchars($link['link']));
-				$type_text = $postinfo->post_title;
+				if (is_a($postinfo, 'stdClass')) {
+					$type_text = $postinfo->post_title;
+					$href = get_permalink(htmlspecialchars($link['link']));
+				}
 				break;
 			case 'category':
 				$cat_info = get_category(htmlspecialchars($link['link']),OBJECT,'display');
-				$href = get_category_link($cat_info->term_id);
-				$type_text = attribute_escape($link_cat_info->cat_name);
-				if ($link['cat_posts']) {
-					$type_text .= ' ('.$link_cat_info->count.')';
+				if (is_a($cat_info,'stdClass')) {
+					$href = get_category_link($cat_info->term_id);
+					$type_text = attribute_escape($cat_info->cat_name);
+					if ($link['cat_posts']) {
+						$type_text .= ' ('.$link_cat_info->count.')';
+					}
 				}
 				break;
 			case 'wordpress':
@@ -1647,10 +1547,12 @@ function cflk_get_link_info($link_list, $list_key) {
 				}
 				break;
 			case 'author_rss':
-				$href = get_author_rss_link(false,$link['link']);
 				$userdata = get_userdata($link['link']);
-				$type_text = $userdata->display_name;
-				$other = 'rss';
+				if (is_a($userdata, 'stdClass')) {
+					$type_text = $userdata->display_name;
+					$other = 'rss';
+					$href = get_author_rss_link(false,$link['link']);
+				}
 				break;
 			default:
 				break;
@@ -1661,7 +1563,6 @@ function cflk_get_link_info($link_list, $list_key) {
 		else {
 			$text = htmlspecialchars($link['title']);
 		}
-		$sanitized_href = str_replace(get_bloginfo('home'),'',$href);
 		$sanitized_href = str_replace(array('/','.',':'),'_',$sanitized_href);
 		$id = $list_key.'-'.$sanitized_href;
 		if ($href != '') {

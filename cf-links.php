@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced options for adding links
-Version: 1.3
+Version: 1.1b3
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -44,8 +44,7 @@ add_filter('cflk_template_data','my_links_filter',10,3); // applies filter only 
 
 */
 
-// ini_set('display_errors', '1');
-// ini_set('error_reporting', E_ALL);
+// ini_set('display_errors', '1'); ini_set('error_reporting', E_ALL);
 
 /**
  * 
@@ -377,7 +376,7 @@ function cflk_admin_js() {
 		});
 		jQuery('select option:selected').each(function() {
 			if(jQuery(this).val() == 'HOLDER') {
-				jQuery(this).parents("tr").css({'background-color':'#999999'});
+				jQuery(this).parents("tr").css({'background-color':'#FFF07E'});
 				jQuery('#message_import_problem').attr('style','');
 			}
 		});
@@ -1044,7 +1043,7 @@ function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $va
 						break;
 					
 				}
-				$return .= '<br /><span id="holder_'.$type.'_'.$key.'" style="color:#FFFFFF; font-weight:bold;">'.__('Imported item ID does not exist in the system.<br />Please create a new '.$type_show.', then select it from the list above.','cf-links').'</span>';
+				$return .= '<br /><span id="holder_'.$type.'_'.$key.'" style="font-weight:bold;">'.__('Imported item ID does not exist in the system.<br />Please create a new '.$type_show.', then select it from the list above.','cf-links').'</span>';
 			}
 			break;
 		
@@ -1465,8 +1464,8 @@ function cflk_get_links($key = null, $args = array()) {
 				$li_class .= 'cflk-current ';
 			}
 			$return .= '<li id="'.$data['id'].'" class="'.$li_class.'"><a href="'.$data['href'].'" title="'.sanitize_title($data['text']).'">'.$data['text'].'</a></li>';
+			$i++;
 		}
-		$i++;
 	}
 	$return = $before.$return.$after;
 	$return = apply_filters('cflk_get_links', $return, $links, $args);
@@ -1540,8 +1539,8 @@ function cflk_get_link_info($link_list, $list_key) {
 		else {
 			$text = htmlspecialchars($link['title']);
 		}
-		$sanitized_href = str_replace(array('/','.',':'),'_',$sanitized_href);
-		$id = $list_key.'-'.$sanitized_href;
+		$sanitized_text = str_replace(array('/','.',':',' '),'_',$text);
+		$id = $list_key.'-'.$sanitized_text;
 		if ($href != '') {
 			array_push($data, array('href' => $href, 'text' => $text, 'id' => $id));
 		}
@@ -1607,6 +1606,27 @@ function cflk_export_list($key) {
 		print ('</textarea>');
 	}
 	die();
+}
+
+/**
+ * 
+ * CF Links Deprecated Functions
+ * 
+ */
+
+function get_links_template($key) {
+	return cflk_get_links($key);
+}
+
+function links_template($key, $before = '', $after = '') {
+	$args = array();
+	if($before != '') {
+		$args['before'] = $before;
+	}
+	if($after != '') {
+		$args['after'] = $after;
+	}
+	echo cflk_get_links($key, $args);
 }
 
 ?>

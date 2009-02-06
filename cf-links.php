@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced options for adding links
-Version: 1.1b3
+Version: 1.1
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */

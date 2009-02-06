@@ -243,7 +243,7 @@ function cflk_request_handler() {
 					if (isset($_POST['cflk_create']) && $_POST['cflk_create'] == 'new_list') {
 						if (isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
 							$nicename = $_POST['cflk_nicename'];
-							$data = array('1' => array('title' => 'Name Here', 'link' => 'http://example.com', 'type' => 'url'));
+							$data = array();
 						}
 					}
 					if (isset($_POST['cflk_create']) && $_POST['cflk_create'] == 'import_list') {
@@ -355,6 +355,9 @@ function cflk_admin_css() {
 		background-color: #E4F2FD;
 		border: 1px solid #C6D9E9;
 	}
+	.tr_holder {
+		background-color: #FFF07E;
+	}
 	<?php
 	die();
 }
@@ -374,11 +377,8 @@ function cflk_admin_js() {
 			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
 			return false;
 		});
-		jQuery('select option:selected').each(function() {
-			if(jQuery(this).val() == 'HOLDER') {
-				jQuery(this).parents("tr").css({'background-color':'#FFF07E'});
-				jQuery('#message_import_problem').attr('style','');
-			}
+		jQuery('tr.tr_holder').each(function() {
+			jQuery('#message_import_problem').attr('style','');
 		});
 	});
 	function deleteLink(cflk_key,linkID) {
@@ -448,9 +448,11 @@ function cflk_admin_js() {
 		switch (jQuery("#cflk_"+key+"_type").val()) {
 			case 'url':
 				jQuery("#url_"+key).attr("style", "").siblings().attr("style", "display: none;");
+				editTitle(key);
 				break;
 			case 'rss':
 				jQuery("#rss_"+key).attr("style", "").siblings().attr("style", "display: none;");
+				editTitle(key);
 				break;
 			case 'page':
 				if(text == '') {
@@ -512,7 +514,8 @@ function cflk_admin_head() {
 }
 if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	wp_enqueue_script('jquery');
-	wp_enqueue_script('jquery-ui', get_bloginfo('wpurl').'/wp-content/plugins/cf-links/js/jquery-ui.js', 'jquery');
+	wp_enqueue_script('jquery-ui-core');
+	wp_enqueue_script('jquery-ui-sortable');
 	wp_enqueue_script('thickbox');
 	if (!function_exists('wp_prototype_before_jquery')) {
 		function wp_prototype_before_jquery( $js_array ) {
@@ -784,9 +787,13 @@ function cflk_edit() {
 						if ($cflk_count > 0) {
 							foreach ($cflk['data'] as $key => $setting) {
 								$select_settings = cflk_edit_select($setting['type']);
+								$tr_class = '';
+								if($setting['link'] == 'HOLDER') {
+									$tr_class = ' class="tr_holder"';
+								}
 								print ('<li id="listitem_'.$key.'">
 									<table class="widefat">
-										<tr>
+										<tr'.$tr_class.'>
 											<td width="40px" style="text-align: center;"><img src="'.get_bloginfo('wpurl').'/wp-content/plugins/cf-links/images/arrow_up_down.png" class="handle" alt="move" /></td>
 											<td width="90px">
 												<select name="cflk['.$key.'][type]" id="cflk_'.$key.'_type" onChange="showLinkType('.$key.')">');
@@ -872,12 +879,14 @@ function cflk_edit() {
 								print ('
 							</td>
 							<td width="250px">
-								<span id="cflk_###SECTION###_title_edit">
+								<span id="cflk_###SECTION###_title_edit" style="display: none">
 									<input type="button" class="button" id="link_edit_title_###SECTION###" value="'.__('Edit Text', 'cf-links').'" onClick="editTitle(\'###SECTION###\')" />
 								</span>
-								<span id="cflk_###SECTION###_title_input" style="display: none">
+								<span id="cflk_###SECTION###_title_input">
 									<input type="text" id="cflk_###SECTION###_title" name="cflk[###SECTION###][title]" value="" style="max-width: 195px;" />
 									<input type="button" class="button" id="link_clear_title_###SECTION###" value="'.__('Clear', 'cf-links').'" onClick="clearTitle(\'###SECTION###\')" />
+									<br />
+									'.__('Click Here','cf-links').'
 								</span>
 							</td>
 							<td width="60px" style="text-align: center;">
@@ -1463,7 +1472,7 @@ function cflk_get_links($key = null, $args = array()) {
 			if ($server_current == str_replace(array('http://','http://www.'),'',$data['href'])) {
 				$li_class .= 'cflk-current ';
 			}
-			$return .= '<li id="'.$data['id'].'" class="'.$li_class.'"><a href="'.$data['href'].'" title="'.sanitize_title($data['text']).'">'.$data['text'].'</a></li>';
+			$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'" title="'.sanitize_title($data['text']).'">'.$data['text'].'</a></li>';
 			$i++;
 		}
 	}
@@ -1539,10 +1548,9 @@ function cflk_get_link_info($link_list, $list_key) {
 		else {
 			$text = htmlspecialchars($link['title']);
 		}
-		$sanitized_text = str_replace(array('/','.',':',' '),'_',$text);
-		$id = $list_key.'-'.$sanitized_text;
+		$class = $list_key.'_'.md5($href);
 		if ($href != '') {
-			array_push($data, array('href' => $href, 'text' => $text, 'id' => $id));
+			array_push($data, array('href' => $href, 'text' => $text, 'class' => $class));
 		}
 	}
 	return $data;

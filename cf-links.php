@@ -886,7 +886,7 @@ function cflk_edit() {
 									<input type="text" id="cflk_###SECTION###_title" name="cflk[###SECTION###][title]" value="" style="max-width: 195px;" />
 									<input type="button" class="button" id="link_clear_title_###SECTION###" value="'.__('Clear', 'cf-links').'" onClick="clearTitle(\'###SECTION###\')" />
 									<br />
-									'.__('Click Here','cf-links').'
+									'.__('ex: Click Here','cf-links').'
 								</span>
 							</td>
 							<td width="60px" style="text-align: center;">
@@ -1451,9 +1451,13 @@ function cflk_get_links($key = null, $args = array()) {
 	extract($args, EXTR_SKIP);
 	$server_current = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
 	
-	$list = maybe_unserialize(get_option($key));
+	$list = get_option($key);
+	if (empty($list)) {
+		echo 'Could not find link list: '.htmlspecialchars($key);
+		return;
+	}
+	$list = maybe_unserialize($list);	
 	$list = apply_filters('cflk_get_links_data', $list);
-
 	$list = cflk_get_link_info($list, $key);
 
 	if (!is_array($list)) { return ''; }
@@ -1487,73 +1491,75 @@ function cflk_links($key, $args = array()) {
 
 function cflk_get_link_info($link_list, $list_key) {
 	$data = array();
-	foreach ($link_list['data'] as $key => $link) {
-		$href = '';
-		$text = '';
-		$type_text = '';
-		$other = '';
-		$sanitized_href = '';
+	if(is_array($link_list)) {
+		foreach ($link_list['data'] as $key => $link) {
+			$href = '';
+			$text = '';
+			$type_text = '';
+			$other = '';
+			$sanitized_href = '';
 	
-		switch ($link['type']) {
-			case 'url':
-				$href = htmlspecialchars($link['link']);
-				$type_text = htmlspecialchars($link['link']);
-				break;
-			case 'rss':
-				$href = htmlspecialchars($link['link']);
-				$type_text = htmlspecialchars($link['link']);
-				break;
-			case 'post':
-			case 'page':
-				$postinfo = get_post(htmlspecialchars($link['link']));
-				if (is_a($postinfo, 'stdClass')) {
-					$type_text = $postinfo->post_title;
-					$href = get_permalink(htmlspecialchars($link['link']));
-				}
-				break;
-			case 'category':
-				$cat_info = get_category(htmlspecialchars($link['link']),OBJECT,'display');
-				if (is_a($cat_info,'stdClass')) {
-					$href = get_category_link($cat_info->term_id);
-					$type_text = attribute_escape($cat_info->cat_name);
-					if ($link['cat_posts']) {
-						$type_text .= ' ('.$link_cat_info->count.')';
+			switch ($link['type']) {
+				case 'url':
+					$href = htmlspecialchars($link['link']);
+					$type_text = htmlspecialchars($link['link']);
+					break;
+				case 'rss':
+					$href = htmlspecialchars($link['link']);
+					$type_text = htmlspecialchars($link['link']);
+					break;
+				case 'post':
+				case 'page':
+					$postinfo = get_post(htmlspecialchars($link['link']));
+					if (is_a($postinfo, 'stdClass')) {
+						$type_text = $postinfo->post_title;
+						$href = get_permalink(htmlspecialchars($link['link']));
 					}
-				}
-				break;
-			case 'wordpress':
-				$get_link = cflk_get_wp_type($link['link']);
-				if (is_array($get_link)) {
-					$href = $get_link['link'];
-					$type_text = $get_link['text'];
-					if ($link['link'] == 'main_rss') {
+					break;
+				case 'category':
+					$cat_info = get_category(htmlspecialchars($link['link']),OBJECT,'display');
+					if (is_a($cat_info,'stdClass')) {
+						$href = get_category_link($cat_info->term_id);
+						$type_text = attribute_escape($cat_info->cat_name);
+						if ($link['cat_posts']) {
+							$type_text .= ' ('.$link_cat_info->count.')';
+						}
+					}
+					break;
+				case 'wordpress':
+					$get_link = cflk_get_wp_type($link['link']);
+					if (is_array($get_link)) {
+						$href = $get_link['link'];
+						$type_text = $get_link['text'];
+						if ($link['link'] == 'main_rss') {
+							$other = 'rss';
+						}
+					}
+					break;
+				case 'author_rss':
+					$userdata = get_userdata($link['link']);
+					if (is_a($userdata, 'stdClass')) {
+						$type_text = $userdata->display_name;
 						$other = 'rss';
+						$href = get_author_rss_link(false,$link['link']);
 					}
-				}
-				break;
-			case 'author_rss':
-				$userdata = get_userdata($link['link']);
-				if (is_a($userdata, 'stdClass')) {
-					$type_text = $userdata->display_name;
-					$other = 'rss';
-					$href = get_author_rss_link(false,$link['link']);
-				}
-				break;
-			default:
-				break;
+					break;
+				default:
+					break;
+			}
+			if (empty($link['title'])) {
+				$text = $type_text;
+			}
+			else {
+				$text = htmlspecialchars($link['title']);
+			}
+			$class = $list_key.'_'.md5($href);
+			if ($href != '') {
+				array_push($data, array('href' => $href, 'text' => $text, 'class' => $class));
+			}
 		}
-		if (empty($link['title'])) {
-			$text = $type_text;
-		}
-		else {
-			$text = htmlspecialchars($link['title']);
-		}
-		$class = $list_key.'_'.md5($href);
-		if ($href != '') {
-			array_push($data, array('href' => $href, 'text' => $text, 'class' => $class));
-		}
+		return $data;
 	}
-	return $data;
 }
 
 function cflk_get_wp_type($type) {

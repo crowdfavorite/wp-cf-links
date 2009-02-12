@@ -1451,13 +1451,13 @@ function cflk_get_links($key = null, $args = array()) {
 	extract($args, EXTR_SKIP);
 	$server_current = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
 	
-	$list = get_option($key);
-	if (empty($list)) {
+	$links = get_option($key);
+	if (empty($links)) {
 		echo 'Could not find link list: '.htmlspecialchars($key);
 		return;
 	}
-	$list = maybe_unserialize($list);	
-	$list = apply_filters('cflk_get_links_data', $list);
+	$links = maybe_unserialize($links);	
+	$list = apply_filters('cflk_get_links_data', $links);
 	$list = cflk_get_link_info($list, $key);
 
 	if (!is_array($list)) { return ''; }

@@ -9,38 +9,36 @@ Author URI: http://crowdfavorite.com
 */
 
 /*
-// below is a usage example on applying a filter to the cf_links_widget_data
-
-/**
- * Trim the links list in the widget if its a certain page
- * 
- * @param $html - the html built by the links_widget_data function
- * @param $links - the array of links data built by links_widget_data function
- * @param $args - the supporting arguments used to build the list 
- * 		$args contains: 'link_key' - the links list keyname 
- *						'key' - ?
- * 						'length' - ?
- *						'type' -> 'widget'  
- * / //<!-- there's a space here to keep the commenting correct, remove the space if you copy this
-function my_links_filter($html,$links,$args) {
-	if ($args['link_key'] == 'cfl-main-nav-for-sidebar') {
-		// see if our link to be filtered is present
-		$filtered = false;
-		foreach ($links['data'] as $key => $link) {
-			if ($link['type'] == 'page' && $link['link'] == 10) { 
-				unset($links['data'][$key]); 
-				$filtered = true;
+// below is a usage example on applying a filter to the cflk_get_links_data
+// simple example that changes the log in/out link text
+// $links = array(
+// 	'nicename' => 'full name of links list',
+// 	'data' => array(
+// 		array(
+// 			'type' => 'link_type',
+// 			'link' => 'link_value',
+// 			'title' => 'link text'
+// 		),
+// 		...
+// 	)
+// );
+function hn_login_cflinks_filter($links) {
+	$user = wp_get_current_user();
+	foreach($links['data'] as $key => $link) {
+		if($link['type'] == 'wordpress' && $link['link'] == 'loginout') {
+			if($user->ID == 0) {
+				// user not logged in, make sure they go to the auth login page instead of wordpress'
+				$links['data'][$key]['title'] = 'Log In Here';
+			}
+			else {
+				// user logged in, make sure the logout redirect doesn't go to wp-login or wp-admin
+				$links['data'][$key]['title'] = 'Log Out Here';
 			}
 		}
-		// if we acted on the array then rebuild the list
-		if ($filtered) {
-			$html = links_build_ul($links,$args);
-		}
 	}
-	return $html;
+	return $links;
 }
-add_filter('cflk_widget_data','my_links_filter',10,3); // applies filter only to widget output
-add_filter('cflk_template_data','my_links_filter',10,3); // applies filter only to template tag output
+add_filter('cflk_get_links_data','hn_login_cflinks_filter');
 
 */
 

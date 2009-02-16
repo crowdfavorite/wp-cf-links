@@ -1464,7 +1464,15 @@ function cflk_get_links($key = null, $args = array()) {
 	$i = 0;
 	foreach ($list as $key => $data) {
 		$li_class = '';
+
 		if (is_array($data)) {
+			if ($links['data'][$data['id']]['type'] == 'category') {
+				$category = the_category_id(false);
+				$link_cat = $links['data'][$data['id']]['link'];
+				if ($link_cat == $category) {
+					$li_class .= 'cflk-current-category ';
+				}
+			}
 			if ($i == 0) {
 				$li_class .= 'cflk-first ';
 			}
@@ -1553,7 +1561,7 @@ function cflk_get_link_info($link_list, $list_key) {
 			}
 			$class = $list_key.'_'.md5($href);
 			if ($href != '') {
-				array_push($data, array('href' => $href, 'text' => $text, 'class' => $class));
+				array_push($data, array('id' => $key, 'href' => $href, 'text' => $text, 'class' => $class));
 			}
 		}
 		return $data;

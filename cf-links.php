@@ -1550,6 +1550,10 @@ function cflk_get_link_info($link_list, $list_key) {
 						$href = get_author_rss_link(false,$link['link']);
 					}
 					break;
+				case 'blog':
+					$href = htmlspecialchars($link['link']);
+					$type_text = htmlspecialchars($link['link']);
+					break;
 				default:
 					break;
 			}

@@ -58,7 +58,7 @@ function cflk_link_types() {
 	
 	$pages = get_pages();
 	$categories = get_categories('get=all');
-	$authors = get_users_of_blog($wpdb->blog_id);
+	$authors = get_users_of_blog($blog_id);
 
 	$page_data = array();
 	$category_data = array();
@@ -1552,7 +1552,7 @@ function cflk_get_link_info($link_list, $list_key) {
 					break;
 				case 'blog':
 					$href = htmlspecialchars($link['link']);
-					$type_text = htmlspecialchars($link['link']);
+					$type_text = htmlspecialchars($link['text']);
 					break;
 				default:
 					break;

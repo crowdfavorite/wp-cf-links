@@ -1482,7 +1482,7 @@ function cflk_get_links($key = null, $args = array()) {
 			if ($server_current == str_replace(array('http://','http://www.'),'',$data['href'])) {
 				$li_class .= 'cflk-current ';
 			}
-			$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'" title="'.sanitize_title($data['text']).'">'.$data['text'].'</a></li>';
+			$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.$data['text'].'</a></li>';
 			$i++;
 		}
 	}

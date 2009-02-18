@@ -113,7 +113,7 @@ function cflk_link_types() {
 			if ($blog_id != $blog['blog_id']) {
 				$details = get_blog_details($blog['blog_id']);
 				$blog_data[$details->blog_id] = array(
-						'link' => $details->siteurl, 
+						'link' => $blog['blog_id'], 
 						'description' => $details->blogname
 				);
 			}
@@ -584,7 +584,7 @@ function cflk_options_form() {
 					if (count($form_data) > 0) {
 						foreach ($form_data as $key => $info) {
 							print ('
-								<tr>
+								<tr id="link_main_'.$key.'">
 									<td style="vertical-align: middle;">
 										<a href="'.get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$key.'" style="font-weight: bold; font-size: 20px;">'.$info['nicename'].'</a>
 										<br />
@@ -1551,8 +1551,11 @@ function cflk_get_link_info($link_list, $list_key) {
 					}
 					break;
 				case 'blog':
-					$href = htmlspecialchars($link['link']);
-					$type_text = htmlspecialchars($link['text']);
+					$bloginfo = cflk_get_blog_type($link['link']);
+					if (is_array($bloginfo)) {
+						$href = $bloginfo['link'];
+						$type_text = $bloginfo['text'];
+					}
 					break;
 				default:
 					break;
@@ -1570,6 +1573,22 @@ function cflk_get_link_info($link_list, $list_key) {
 		}
 		return $data;
 	}
+}
+
+function cflk_get_blog_type($id) {
+	if (!empty($id) && $id != 0) {
+		$link = '';
+		$text = '';
+	
+		$details = get_blog_details($id);
+		$link = $details->siteurl;
+		$text = $details->blogname;
+		
+		if ($link != '' && $text != '') {
+			return array('text' => $text, 'link' => $link);
+		}
+	}
+	return false;
 }
 
 function cflk_get_wp_type($type) {

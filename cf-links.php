@@ -1600,12 +1600,14 @@ function cflk_get_wp_type($type) {
 			$text = 'Home';
 			break;
 		case 'loginout':
+			// wordpress 2.7 adds convenience functions around the login/logout urls
+			global $wp_version;
 			if (!is_user_logged_in()) {
-				$link = wp_login_url();
+				$link = (version_compare($wp_version,'2.7','<') ? site_url('wp-login.php','login') : wp_login_url());
 				$text = 'Log in';
 			}
 			else {
-				$link = wp_logout_url();
+				$link = (version_compare($wp_version,'2.7','<') ? site_url('wp-login.php?action=logout','login') : wp_logout_url());
 				$text = 'Log Out';
 			}
 			break;

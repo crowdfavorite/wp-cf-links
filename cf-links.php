@@ -1444,7 +1444,7 @@ add_shortcode('cfl_links', 'cflk_handle_shortcode');
  * @param string $key - id of the list being targeted
  * @return array
  */
-function cflk_get_list_by_id($key) {
+function cflk_get_links_data($key) {
 	$links = get_option($key);
 	if (empty($links)) {
 		echo 'Could not find link list: '.htmlspecialchars($key);
@@ -1465,7 +1465,7 @@ function cflk_get_links($key = null, $args = array()) {
 	extract($args, EXTR_SKIP);
 	$server_current = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
 	
-	$list = cflk_get_list_by_id($key);
+	$list = cflk_get_links_data($key);
 	$list = cflk_get_link_info($list, $key);
 
 	if (!is_array($list)) { return ''; }

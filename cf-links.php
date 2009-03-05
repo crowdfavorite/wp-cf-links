@@ -1497,7 +1497,7 @@ function cflk_get_links($key = null, $args = array()) {
 		}
 	}
 	$return = $before.$return.$after;
-	$return = apply_filters('cflk_get_links', $return, $links, $args);
+	$return = apply_filters('cflk_get_links', $return, $list, $args);
 	return $return;
 }
 

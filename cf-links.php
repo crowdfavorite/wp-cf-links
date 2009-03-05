@@ -1450,7 +1450,9 @@ function cflk_get_links_data($key) {
 		echo 'Could not find link list: '.htmlspecialchars($key);
 		return;
 	}
-	$links = maybe_unserialize($links);	
+	$links = maybe_unserialize($links);
+	$links['key'] = $key;
+	$links = cflk_get_link_info($links);
 	return apply_filters('cflk_get_links_data', $links);
 }
 
@@ -1466,15 +1468,13 @@ function cflk_get_links($key = null, $args = array()) {
 	$server_current = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
 	
 	$list = cflk_get_links_data($key);
-	$list = cflk_get_link_info($list, $key);
-
 	if (!is_array($list)) { return ''; }
 
 	$return = '';
 	$i = 0;
-	foreach ($list as $key => $data) {
+	foreach ($list['data'] as $key => $data) {
 		$li_class = '';
-
+	
 		if (is_array($data)) {
 			if ($links['data'][$data['id']]['type'] == 'category') {
 				$category = the_category_id(false);
@@ -1505,8 +1505,9 @@ function cflk_links($key, $args = array()) {
 	echo cflk_get_links($key, $args);
 }
 
-function cflk_get_link_info($link_list, $list_key) {
+function cflk_get_link_info($link_list,$merge=true) {
 	$data = array();
+	
 	if(is_array($link_list)) {
 		foreach ($link_list['data'] as $key => $link) {
 			$href = '';
@@ -1514,7 +1515,7 @@ function cflk_get_link_info($link_list, $list_key) {
 			$type_text = '';
 			$other = '';
 			$sanitized_href = '';
-	
+
 			switch ($link['type']) {
 				case 'url':
 					$href = htmlspecialchars($link['link']);
@@ -1533,7 +1534,7 @@ function cflk_get_link_info($link_list, $list_key) {
 					}
 					break;
 				case 'category':
-					$cat_info = get_category(htmlspecialchars($link['link']),OBJECT,'display');
+					$cat_info = get_category(intval($link['link']),OBJECT,'display');
 					if (is_a($cat_info,'stdClass')) {
 						$href = get_category_link($cat_info->term_id);
 						$type_text = attribute_escape($cat_info->cat_name);
@@ -1570,18 +1571,32 @@ function cflk_get_link_info($link_list, $list_key) {
 				default:
 					break;
 			}
+			
 			if (empty($link['title'])) {
 				$text = $type_text;
 			}
 			else {
 				$text = htmlspecialchars($link['title']);
 			}
-			$class = $list_key.'_'.md5($href);
+			$class = $link_list['key'].'_'.md5($href);
+			
 			if ($href != '') {
-				array_push($data, array('id' => $key, 'href' => $href, 'text' => $text, 'class' => $class));
+				// removed array push to preserve data key associations for later merging
+				$data[$key] = array('id' => $key, 'href' => $href, 'text' => $text, 'class' => $class);
 			}
 		}
-		return $data;
+		
+		if($merge) {
+			// return the entire link list merged with the new data
+			foreach($link_list['data'] as $key => $list_item) {
+				$link_list['data'][$key] = array_merge($list_item,$data[$key]);
+			}
+			return $link_list;
+		}
+		else {
+			// return just the new data
+			return $data;
+		}
 	}
 }
 

@@ -65,6 +65,7 @@ function cflk_link_types() {
 	$author_data = array();
 	$wordpress_data = array();
 	$blog_data = array();
+	$site_data = array();
 	
 	foreach ($pages as $page) {
 		$page_data[$page->post_name] = array(
@@ -110,13 +111,20 @@ function cflk_link_types() {
 	if (function_exists('get_blog_list')) {
 		$blogs = get_blog_list();
 		foreach ($blogs as $blog) {
-			if ($blog_id != $blog['blog_id']) {
-				$details = get_blog_details($blog['blog_id']);
-				$blog_data[$details->blog_id] = array(
-						'link' => $blog['blog_id'], 
-						'description' => $details->blogname
-				);
-			}
+			$details = get_blog_details($blog['blog_id']);
+			$blog_data[$details->blog_id] = array(
+					'link' => $blog['blog_id'], 
+					'description' => $details->blogname
+			);
+		}
+
+		$sites = $wpdb->get_results( $wpdb->prepare("SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id != %d AND public = '1' AND archived = '0' AND mature = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid), ARRAY_A );
+		foreach ($sites as $site) {
+			$details = get_blog_details($site['blog_id']);
+			$site_data[$details->blog_id] = array(
+				'link' => $site['blog_id'],
+				'description' => $details->blogname,
+			);
 		}
 	}
 	
@@ -160,13 +168,20 @@ function cflk_link_types() {
 	);
 	if(function_exists('get_blog_list')) {
 		krsort($blog_data);
+		krsort($site_data);
 		$blog_type = array(
 			'blog' => array(
 				'type' => 'blog', 
 				'nicename' => __('Blog','cf-links'),
 				'input' => 'select', 
 				'data' => $blog_data
-			)
+			),
+			'site' => array(
+				'type' => 'site',
+				'nicename' => __('Site','cf-links'),
+				'input' => 'select',
+				'data' => $site_data
+			),
 		);
 		$cflk_types = array_merge($cflk_types, $blog_type);
 	}
@@ -481,6 +496,12 @@ function cflk_admin_js() {
 					clearTitle(key);
 				}
 				jQuery("#blog_"+key).attr("style", "").siblings().attr("style", "display: none;");
+				break;
+			case 'site':
+				if(text == '') {
+					clearTitle(key);
+				}
+				jQuery("#site_"+key).attr("style", "").siblings().attr("style", "display:none;");
 				break;
 		}
 	}
@@ -960,53 +981,59 @@ function cflk_nav($page = '', $list = '') {
 function cflk_edit_select($type) {
 	$select = array();
 	
-	$select[url_show] = 'style="display: none;"';
-	$select[url_select] = '';
-	$select[rss_show] = 'style="display: none;"';
-	$select[rss_select] = '';
-	$select[page_show] = 'style="display: none;"';
-	$select[page_select] = '';
-	$select[category_show] = 'style="display: none;"';
-	$select[category_select] = '';
-	$select[wordpress_show] = 'style="display: none;"';
-	$select[wordpress_select] = '';
-	$select[author_rss_show] = 'style="display: none;"';
-	$select[author_rss_select] = '';
-	$select[blog_show] = 'style="display: none;"';
-	$select[blog_select] = '';
+	$select['url_show'] = 'style="display: none;"';
+	$select['url_select'] = '';
+	$select['rss_show'] = 'style="display: none;"';
+	$select['rss_select'] = '';
+	$select['page_show'] = 'style="display: none;"';
+	$select['page_select'] = '';
+	$select['category_show'] = 'style="display: none;"';
+	$select['category_select'] = '';
+	$select['wordpress_show'] = 'style="display: none;"';
+	$select['wordpress_select'] = '';
+	$select['author_rss_show'] = 'style="display: none;"';
+	$select['author_rss_select'] = '';
+	$select['blog_show'] = 'style="display: none;"';
+	$select['blog_select'] = '';
+	$select['site_show'] = 'style="display: none;"';
+	$select['site_select'] = '';
 	
 	switch ($type) {
 		case 'url':
-			$select[url_show] = 'style=""';
-			$select[url_select] = 'selected=selected';
+			$select['url_show'] = 'style=""';
+			$select['url_select'] = 'selected=selected';
 			break;
 		case 'rss':
-			$select[rss_show] = 'style=""';
-			$select[rss_select] = 'selected=selected';
+			$select['rss_show'] = 'style=""';
+			$select['rss_select'] = 'selected=selected';
 			break;
 		case 'page':
-			$select[page_show] = 'style=""';
-			$select[page_select] = 'selected=selected';
+			$select['page_show'] = 'style=""';
+			$select['page_select'] = 'selected=selected';
 			break;
 		case 'category':
-			$select[category_show] = 'style=""';
-			$select[category_select] = 'selected=selected';
+			$select['category_show'] = 'style=""';
+			$select['category_select'] = 'selected=selected';
 			break;	
 		case 'wordpress':
-			$select[wordpress_show] = 'style=""';
-			$select[wordpress_select] = 'selected=selected';
+			$select['wordpress_show'] = 'style=""';
+			$select['wordpress_select'] = 'selected=selected';
 			break;	
 		case 'author_rss':
-			$select[author_rss_show] = 'style=""';
-			$select[author_rss_select] = 'selected=selected';
+			$select['author_rss_show'] = 'style=""';
+			$select['author_rss_select'] = 'selected=selected';
 			break;	
 		case 'blog':
-			$select[blog_show] = 'style=""';
-			$select[blog_select] = 'selected=selected';
+			$select['blog_show'] = 'style=""';
+			$select['blog_select'] = 'selected=selected';
 			break;	
+		case 'site':
+			$select['site_show'] = 'style=""';
+			$select['site_select'] = 'selected=selected';
+			break;
 		default:
-			$select[url_show] = 'style=""';
-			$select[url_select] = 'selected=selected';
+			$select['url_show'] = 'style=""';
+			$select['url_select'] = 'selected=selected';
 			break;
 	}
 	return $select;
@@ -1562,6 +1589,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 					}
 					break;
 				case 'blog':
+				case 'site':
 					$bloginfo = cflk_get_blog_type($link['link']);
 					if (is_array($bloginfo)) {
 						$href = $bloginfo['link'];

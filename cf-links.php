@@ -1536,6 +1536,9 @@ function cflk_get_links($key = null, $args = array()) {
 					$li_class .= 'cflk-current-category ';
 				}
 			}
+			if ($links['data'][$data['id']]['type'] == 'author_rss') {
+				$li_class .= 'cflk-feed ';
+			}
 			if ($i == 0) {
 				$li_class .= 'cflk-first ';
 			}

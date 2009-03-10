@@ -2,30 +2,24 @@
 
 ### Creating a Links list
 
-1.  Click the "Add Links List" link
-
-![advanced links 1](Advanced-Links-1.jpg)
-
+1.  Click the "Add Links List" link  
+	![advanced links 1](Advanced-Links-1.jpg)
 2.  Add the links list name to the field provided
-3.  Click the "Create New Link List" button to create the list
-
-![advanced links 2](Advanced-Links-2.jpg)
+3.  Click the "Create New Link List" button to create the list  
+	![advanced links 2](Advanced-Links-2.jpg)
 
 ### Adding/Removing Links
 
 #### Adding Links
 
 1.  To add a link to the list, click on the name of the list or click the "Edit" button on the Links Options main page
-
-![advanced links 3](Advanced-Links-3.jpg)
-
+	![advanced links 3](Advanced-Links-3.jpg)
 2.  Click on the "Add Link" button to add a new link
 3.  Select the Link "Type" from the drop down
 4.  Add or select the link in the "Link" area
 5.  Edit the Link Title or leave it blank
 6.  Click the "Update Settings" button at the bottom of the screen
-
-![advanced links 4](Advanced-Links-4.jpg)
+	![advanced links 4](Advanced-Links-4.jpg)
 
 ##### Link Types
 
@@ -60,34 +54,27 @@
 
 #### Removing Links
 
-1.  To remove a link from the list, click on the name of the list or click the "Edit" button on the Links Options main page
-
-![advanced links 3](Advanced-Links-3.jpg)
-
+1.  To remove a link from the list, click on the name of the list or click the "Edit" button on the Links Options main page  
+	![advanced links 3](Advanced-Links-3.jpg)
 2.  Click the "Remove" button next to the link to be removed
 3.  A confirmation box will be displayed to confirm link deletion
-4.  Click the "Update Settings" button at the bottom of the screen
-
-![advanced links 5](Advanced-Links-5.jpg)
+4.  Click the "Update Settings" button at the bottom of the screen  
+	![advanced links 5](Advanced-Links-5.jpg)
 
 ### Editing the Links List name
 
-1.  Click the "Edit" link next to the links list name
-
-![advanced links 6](Advanced-Links-6.jpg)
-
+1.  Click the "Edit" link next to the links list name  
+	![advanced links 6](Advanced-Links-6.jpg)
 2.  Edit the list name in the box
 3.  Click "Save" to save the changes
-4.  Click "Cancel" to ignore the changes
-
-![advanced links 7](Advanced-Links-7.jpg)
+4.  Click "Cancel" to ignore the changes  
+	![advanced links 7](Advanced-Links-7.jpg)
 
 ### Deleting a Links List
 
 1.  On the main links list page, click the "Delete" button
-2.  A dialog box will request confirmation
-
-![advanced links 3](Advanced-Links-3.jpg)
+2.  A dialog box will request confirmation  
+	![advanced links 3](Advanced-Links-3.jpg)
 
 ### Display Options
 
@@ -106,12 +93,9 @@
 
 1.  Click on a post or page to edit, or create a new page
 2.  Put the cursor in the post area where the links list should be added
-3.  Click on the cog link for links list
-
-![advanced links 8](Advanced-Links-8.jpg)
-
+3.  Click on the cog link for links list  
+	![advanced links 8](Advanced-Links-8.jpg)
 4.  Click on the links list from the list of links lists
 5.  Click on the "X" at the top right of the box to close the dialog box
-6.  The Shortcode will automatically be added to the post where the cursor was before the list was selected
-
-![advanced links 9](Advanced-Links-9.jpg)
+6.  The Shortcode will automatically be added to the post where the cursor was before the list was selected  
+	![advanced links 9](Advanced-Links-9.jpg)

@@ -153,6 +153,12 @@ function cflk_link_types() {
 			'input' => 'select', 
 			'data' => $category_data
 		),
+		'author' => array(
+			'type' => 'author',
+			'nicename' => __('Author', 'cf-links'),
+			'input' => 'select', 
+			'data' => $author_data
+		),
 		'author_rss' => array(
 			'type' => 'author_rss',
 			'nicename' => __('Author RSS', 'cf-links'),
@@ -484,6 +490,12 @@ function cflk_admin_js() {
 					clearTitle(key);
 				}
 				jQuery("#wordpress_"+key).attr("style", "").siblings().attr("style", "display: none;");
+				break;
+			case 'author':
+				if(text == '') {
+					clearTitle(key);
+				}
+				jQuery("#author_"+key).attr("style", "").siblings().attr("style", "display: none;");
 				break;
 			case 'author_rss':
 				if(text == '') {
@@ -991,6 +1003,8 @@ function cflk_edit_select($type) {
 	$select['category_select'] = '';
 	$select['wordpress_show'] = 'style="display: none;"';
 	$select['wordpress_select'] = '';
+	$select['author_show'] = 'style="display: none;"';
+	$select['author_select'] = '';
 	$select['author_rss_show'] = 'style="display: none;"';
 	$select['author_rss_select'] = '';
 	$select['blog_show'] = 'style="display: none;"';
@@ -1018,6 +1032,10 @@ function cflk_edit_select($type) {
 		case 'wordpress':
 			$select['wordpress_show'] = 'style=""';
 			$select['wordpress_select'] = 'selected=selected';
+			break;	
+		case 'author':
+			$select['author_show'] = 'style=""';
+			$select['author_select'] = 'selected=selected';
 			break;	
 		case 'author_rss':
 			$select['author_rss_show'] = 'style=""';
@@ -1072,8 +1090,11 @@ function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $va
 					case 'category':
 						$type_show = 'Category';
 						break;
-					case 'author_rss':
+					case 'author':
 						$type_show = 'Author';
+						break;
+					case 'author_rss':
+						$type_show = 'Author RSS';
 						break;
 					
 				}
@@ -1246,6 +1267,11 @@ function cflk_insert_new($nicename = '', $description = '', $data = array()) {
 		}
 		if ($item['type'] == 'category') {
 			if(!in_array($item['link'],$categories)) {
+				$item['link'] = 'HOLDER';
+			}
+		}
+		if ($item['type'] == 'author') {
+			if(!in_array($item['link'],$authors)) {
 				$item['link'] = 'HOLDER';
 			}
 		}
@@ -1496,7 +1522,7 @@ function cflk_get_links($key = null, $args = array()) {
 	
 	$list = cflk_get_links_data($key);
 	if (!is_array($list)) { return ''; }
-
+	
 	$return = '';
 	$i = 0;
 	foreach ($list['data'] as $key => $data) {
@@ -1578,6 +1604,13 @@ function cflk_get_link_info($link_list,$merge=true) {
 						if ($link['link'] == 'main_rss') {
 							$other = 'rss';
 						}
+					}
+					break;
+				case 'author':
+					$userdata = get_userdata($link['link']);
+					if (is_a($userdata, 'stdClass')) {
+						$type_text = $userdata->display_name;
+						$href = get_author_link(false,$link['link']);
 					}
 					break;
 				case 'author_rss':

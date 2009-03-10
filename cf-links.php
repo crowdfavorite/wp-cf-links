@@ -1536,13 +1536,10 @@ function cflk_get_links($key = null, $args = array()) {
 					$li_class .= 'cflk-current-category ';
 				}
 			}
-			if ($links['data'][$data['id']]['type'] == 'author_rss') {
-				$li_class .= 'cflk-feed ';
-			}
 			if ($i == 0) {
 				$li_class .= 'cflk-first ';
 			}
-			if ($i == (count($list) - 1)) {
+			if ($i == (count($list['data']) - 1)) {
 				$li_class .= 'cflk-last ';
 			}
 			if ($server_current == str_replace(array('http://','http://www.'),'',$data['href'])) {
@@ -1580,6 +1577,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 				case 'rss':
 					$href = htmlspecialchars($link['link']);
 					$type_text = htmlspecialchars($link['link']);
+					$other = 'rss';
 					break;
 				case 'post':
 				case 'page':
@@ -1643,13 +1641,16 @@ function cflk_get_link_info($link_list,$merge=true) {
 				$text = htmlspecialchars($link['title']);
 			}
 			$class = $link_list['key'].'_'.md5($href);
+			if ($other == 'rss') {
+				$class .= ' cflk-feed';
+			}
 			
 			if ($href != '') {
 				// removed array push to preserve data key associations for later merging
 				$data[$key] = array('id' => $key, 'href' => $href, 'text' => $text, 'class' => $class);
 			}
+
 		}
-		
 		if($merge) {
 			// return the entire link list merged with the new data
 			foreach($link_list['data'] as $key => $list_item) {

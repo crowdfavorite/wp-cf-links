@@ -85,7 +85,7 @@ function cflk_link_types() {
 	
 	$pages = get_pages();
 	$categories = get_categories('get=all');
-	$authors = get_users_of_blog($blog_id);
+	$authors = cf_sort_by_key(get_users_of_blog($blog_id),'display_name');
 
 	$page_data = array();
 	$category_data = array();

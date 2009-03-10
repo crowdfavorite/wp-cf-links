@@ -44,12 +44,39 @@ add_filter('cflk_get_links_data','hn_login_cflinks_filter');
 
 // ini_set('display_errors', '1'); ini_set('error_reporting', E_ALL);
 
+// README HANDLING
+	add_action('admin_init','cflk_add_readme');
+
+	/**
+	 * Enqueue the readme function
+	 */
+	function cflk_add_readme() {
+		if(function_exists('cfreadme_enqueue')) {
+			cfreadme_enqueue('cf-links','cflk_readme');
+		}
+	}
+	
+	/**
+	 * return the contents of the links readme file
+	 * replace the image urls with full paths to this plugin install
+	 *
+	 * @return string
+	 */
+	function cflk_readme() {
+		$file = realpath(dirname(__FILE__)).'/readme/readme.txt';
+		if(is_file($file) && is_readable($file)) {
+			$markdown = file_get_contents($file);
+			$markdown = preg_replace('|!\[(.*?)\]\((.*?)\)|','![$1]('.WP_PLUGIN_URL.'/cf-links/readme/$2)',$markdown);
+			return $markdown;
+		}
+		return null;
+	}
+
 /**
  * 
  * WP Admin Handling Functions
  * 
  */
-
 load_plugin_textdomain('cf-links');
 $cflk_types = array();
 
@@ -1235,8 +1262,14 @@ function cflk_delete($cflk_key) {
 	delete_option($cflk_key);
 }
 
-function cflk_insert_new($nicename = '', $description = '', $data = array()) {
+function cflk_insert_new($nicename = '', $description = '', $data = array(), $insert_key = false) {
 	if ($nicename == '') { return false; }
+	
+	// check to see if a specific key was requested and if that specific key already exists
+	if($insert_key !== false) {
+		$check_list = get_option($key);
+		if(is_array($check_list)) { return false; }
+	}
 	
 	$pages = $categories = $authors = $blogs = array();
 	$page_object = get_pages();
@@ -1290,8 +1323,15 @@ function cflk_insert_new($nicename = '', $description = '', $data = array()) {
 		$data[$key]['link'] = $item['link'];
 	}
 	$settings = array('nicename' => $check_name[1], 'description' => $description, 'data' => $data);
-	add_option($check_name[0], $settings);
-	return $check_name[0];
+
+	// if key hasn't already been defined, pull the value from the name check routine
+	if(!$insert_key) { 
+		$insert_key = $check_name[0];
+	}
+	
+	// insert and return
+	add_option($insert_key, $settings);
+	return $insert_key;
 }
 
 function cflk_name_check($name) {

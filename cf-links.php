@@ -146,12 +146,14 @@ function cflk_link_types() {
 		}
 
 		$sites = $wpdb->get_results( $wpdb->prepare("SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id != %d AND public = '1' AND archived = '0' AND mature = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid), ARRAY_A );
-		foreach ($sites as $site) {
-			$details = get_blog_details($site['blog_id']);
-			$site_data[$details->blog_id] = array(
-				'link' => $site['blog_id'],
-				'description' => $details->blogname,
-			);
+		if (is_array($sites)) {
+			foreach ($sites as $site) {
+				$details = get_blog_details($site['blog_id']);
+				$site_data[$details->blog_id] = array(
+					'link' => $site['blog_id'],
+					'description' => $details->blogname,
+				);
+			}
 		}
 	}
 	
@@ -1694,7 +1696,9 @@ function cflk_get_link_info($link_list,$merge=true) {
 		if($merge) {
 			// return the entire link list merged with the new data
 			foreach($link_list['data'] as $key => $list_item) {
-				$link_list['data'][$key] = array_merge($list_item,$data[$key]);
+				if (is_array($data[$key])) {
+					$link_list['data'][$key] = array_merge($list_item,$data[$key]);
+				}
 			}
 			return $link_list;
 		}

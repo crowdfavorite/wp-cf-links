@@ -1651,7 +1651,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 					$userdata = get_userdata($link['link']);
 					if (is_a($userdata, 'stdClass')) {
 						$type_text = $userdata->display_name;
-						$href = get_author_posts_url(false,$link['link']);
+						$href = get_author_posts_url($link['link']);
 					}
 					break;
 				case 'author_rss':
@@ -1659,7 +1659,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 					if (is_a($userdata, 'stdClass')) {
 						$type_text = $userdata->display_name;
 						$other = 'rss';
-						$href = get_author_feed_link(false,$link['link']);
+						$href = get_author_feed_link($link['link']);
 					}
 					break;
 				case 'blog':

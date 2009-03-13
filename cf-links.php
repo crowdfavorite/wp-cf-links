@@ -1567,28 +1567,40 @@ function cflk_get_links($key = null, $args = array()) {
 	
 	$return = '';
 	$i = 0;
+	$listcount = 0;
+	
+	// Process the list to see if the href is empty, if it is remove it from the list
+	// so we don't have extra <li>'s that are not needed
+	foreach ($list['data'] as $key => $data) {
+		if (empty($data['href'])) {
+			unset($list['data'][$key]);
+		}
+	}
+	
 	foreach ($list['data'] as $key => $data) {
 		$li_class = '';
 	
 		if (is_array($data)) {
-			if ($links['data'][$data['id']]['type'] == 'category') {
-				$category = the_category_id(false);
-				$link_cat = $links['data'][$data['id']]['link'];
-				if ($link_cat == $category) {
-					$li_class .= 'cflk-current-category ';
+			if (!empty($data['href'])) {
+				if ($links['data'][$data['id']]['type'] == 'category') {
+					$category = the_category_id(false);
+					$link_cat = $links['data'][$data['id']]['link'];
+					if ($link_cat == $category) {
+						$li_class .= 'cflk-current-category ';
+					}
 				}
+				if ($i == 0) {
+					$li_class .= 'cflk-first ';
+				}
+				if ($i == (count($list['data']) - 1)) {
+					$li_class .= 'cflk-last ';
+				}
+				if ($server_current == str_replace(array('http://','http://www.'),'',$data['href'])) {
+					$li_class .= 'cflk-current ';
+				}
+				$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.$data['text'].'</a></li>';
+				$i++;
 			}
-			if ($i == 0) {
-				$li_class .= 'cflk-first ';
-			}
-			if ($i == (count($list['data']) - 1)) {
-				$li_class .= 'cflk-last ';
-			}
-			if ($server_current == str_replace(array('http://','http://www.'),'',$data['href'])) {
-				$li_class .= 'cflk-current ';
-			}
-			$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.$data['text'].'</a></li>';
-			$i++;
 		}
 	}
 	$return = $before.$return.$after;

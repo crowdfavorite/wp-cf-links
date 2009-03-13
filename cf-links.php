@@ -1164,7 +1164,7 @@ function cflk_dialog() {
 	</script>
 	<p>
 		<ul>
-		<?
+		<?php
 		$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
 		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));

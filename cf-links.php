@@ -853,9 +853,6 @@ function cflk_edit() {
 	if (isset($_GET['link']) && $_GET['link'] != '') {
 		$cflk_key = $_GET['link'];
 		$cflk = maybe_unserialize(get_option($cflk_key));
-		print('<pre>');
-		print_r($cflk);
-		print('</pre>');
 		is_array($cflk) ? $cflk_count = count($cflk) : $cflk_count = 0;
 		
 		if (!isset($cflk['reference'])) {

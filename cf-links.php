@@ -137,23 +137,27 @@ function cflk_link_types() {
 		),
 	);
 	if (function_exists('get_blog_list')) {
-		$blogs = get_blog_list();
-		foreach ($blogs as $blog) {
-			$details = get_blog_details($blog['blog_id']);
-			$blog_data[$details->blog_id] = array(
-					'link' => $blog['blog_id'], 
-					'description' => $details->blogname
-			);
-		}
-
-		$sites = $wpdb->get_results( $wpdb->prepare("SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id != %d AND public = '1' AND archived = '0' AND mature = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid), ARRAY_A );
+		$sites = $wpdb->get_results($wpdb->prepare("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC"), ARRAY_A);
+		
 		if (is_array($sites)) {
 			foreach ($sites as $site) {
-				$details = get_blog_details($site['blog_id']);
-				$site_data[$details->blog_id] = array(
-					'link' => $site['blog_id'],
-					'description' => $details->blogname,
-				);
+				$site_id = $site['id'];
+				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '$site_id' AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);
+				
+				foreach ($blogs as $blog) {
+					$details = get_blog_details($blog['blog_id']);
+					$description = '';
+					if ($details->blog_id != $site['id']) {
+						$description = '&mdash; '.$details->blogname; 
+					}
+					else {
+						$description = $details->blogname;
+					}
+					$blog_data[$details->blog_id] = array(
+						'link' => $details->blog_id,
+						'description' => $description,
+					);
+				}
 			}
 		}
 	}
@@ -203,20 +207,12 @@ function cflk_link_types() {
 		),
 	);
 	if(function_exists('get_blog_list')) {
-		krsort($blog_data);
-		krsort($site_data);
 		$blog_type = array(
 			'blog' => array(
 				'type' => 'blog', 
 				'nicename' => __('Blog','cf-links'),
 				'input' => 'select', 
 				'data' => $blog_data
-			),
-			'site' => array(
-				'type' => 'site',
-				'nicename' => __('Site','cf-links'),
-				'input' => 'select',
-				'data' => $site_data
 			),
 		);
 		$cflk_types = array_merge($cflk_types, $blog_type);
@@ -1217,8 +1213,6 @@ function cflk_edit_select($type) {
 	$select['author_rss_select'] = '';
 	$select['blog_show'] = 'style="display: none;"';
 	$select['blog_select'] = '';
-	$select['site_show'] = 'style="display: none;"';
-	$select['site_select'] = '';
 	
 	switch ($type) {
 		case 'url':
@@ -1253,10 +1247,6 @@ function cflk_edit_select($type) {
 			$select['blog_show'] = 'style=""';
 			$select['blog_select'] = 'selected=selected';
 			break;	
-		case 'site':
-			$select['site_show'] = 'style=""';
-			$select['site_select'] = 'selected=selected';
-			break;
 		default:
 			$select['url_show'] = 'style=""';
 			$select['url_select'] = 'selected=selected';
@@ -1780,7 +1770,6 @@ function cflk_reference_children_delete($cflk_key) {
 		}
 	}
 	restore_current_blog();
-	die();
 }
 add_action('cflk_delete_list','cflk_reference_children_delete');
 

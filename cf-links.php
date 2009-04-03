@@ -890,7 +890,7 @@ function cflk_edit() {
 									if($cflk['description'] != '') {
 										print('
 										<p>
-											'.htmlspecialchars($cflk['description']).'
+											'.strip_tags($cflk['description']).'
 										</p>
 										');
 									}
@@ -944,7 +944,7 @@ function cflk_edit() {
 								if (!$cflk['reference']) {
 									print('
 									<div id="description_edit" style="display:none;">
-										<textarea name="cflk_description" rows="5" style="width:100%;">'.htmlspecialchars($cflk['description']).'</textarea>
+										<textarea name="cflk_description" rows="5" style="width:100%;">'.strip_tags($cflk['description']).'</textarea>
 									</div>
 									');
 								}
@@ -1023,7 +1023,7 @@ function cflk_edit() {
 											</td>
 											<td width="250px" style="vertical-align:middle;">');
 												if (!$cflk['reference']) {
-													if (htmlspecialchars($setting['title']) == '') {
+													if (strip_tags($setting['title']) == '') {
 														$edit_show = '';
 														$input_show = ' style="display:none;"';
 													}
@@ -1036,13 +1036,13 @@ function cflk_edit() {
 														<input type="button" class="button" id="link_edit_title_'.$key.'" value="'.__('Edit Text', 'cf-links').'" onClick="editTitle(\''.$key.'\')" />
 													</span>
 													<span id="cflk_'.$key.'_title_input"'.$input_show.'>
-														<input type="text" id="cflk_'.$key.'_title" name="cflk['.$key.'][title]" value="'.htmlspecialchars($setting['title']).'" style="max-width: 195px;" />
+														<input type="text" id="cflk_'.$key.'_title" name="cflk['.$key.'][title]" value="'.strip_tags($setting['title']).'" style="max-width: 195px;" />
 														<input type="button" class="button" id="link_clear_title_'.$key.'" value="'.__('Clear', 'cf-links').'" onClick="clearTitle(\''.$key.'\')" />
 													</span>
 													');
 												}
 												else {
-													print(htmlspecialchars($setting['title']));
+													print(strip_tags($setting['title']));
 												}
 											print ('
 											</td>
@@ -1272,7 +1272,7 @@ function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $va
 	if (!$reference) {
 		switch ($input) {
 			case 'text':
-				$return .= '<input type="text" name="cflk['.$key.']['.$type.']" id="cflk_'.$key.'_'.$type.'" size="50" value="'.htmlspecialchars($value).'" /><br />'.$data;
+				$return .= '<input type="text" name="cflk['.$key.']['.$type.']" id="cflk_'.$key.'_'.$type.'" size="50" value="'.strip_tags($value).'" /><br />'.$data;
 				break;
 			case 'select':
 				$return .= '<select name="cflk['.$key.']['.$type.']" id="cflk_'.$key.'_'.$type.'" style="max-width: 410px; width: 410px;">';
@@ -1714,17 +1714,15 @@ function cflk_reference_children_update($settings) {
 	if (is_array($settings['reference_children']) && !empty($settings['reference_children'])) {
 		global $blog_id;
 		$current_blog = $blog_id;
-
-		$match = explode('-', $reference, 2);
-		
 		foreach ($settings['reference_children'] as $child) {
 			$child_info = explode('-', $child, 2);
 			$child_blog_id = $child_info[0];
 			$child_key = $child_info[1];
+			
 			switch_to_blog($child_blog_id);
-	
 			$links = maybe_unserialize(get_option($child_key));
-		
+			restore_current_blog();
+
 			if (is_array($links)) {
 				$nicename = $links['nicename'];
 				$description = $links['description'];
@@ -1760,7 +1758,8 @@ function cflk_reference_children_update($settings) {
 					'reference_parent_list' => $reference_parent_list,
 					'data' => $data
 				);
-			
+				
+				switch_to_blog($child_blog_id);
 				update_option($child_key,$update);
 				restore_current_blog();
 			}
@@ -1873,7 +1872,7 @@ function cflk_widget_control( $widget_args = 1 ) {
 	<p>
 		<label for="cfl-links-title-<?php echo $number; ?>"><?php _e('Title: ', 'cf-links'); ?></label>
 		<br />
-		<input id="cfl-links-title-<?php echo $number; ?>" name="cfl-links[<?php echo $number; ?>][title]" class="widefat" type="text" value="<?php print (htmlspecialchars($title)); ?>" />
+		<input id="cfl-links-title-<?php echo $number; ?>" name="cfl-links[<?php echo $number; ?>][title]" class="widefat" type="text" value="<?php print (strip_tags($title)); ?>" />
 	</p>
 	<p>
 		<label for="cfl-links-select-<?php echo $number; ?>"><?php _e('Links List: ', 'cf-links'); ?></label>
@@ -1936,9 +1935,9 @@ function cflk_handle_shortcode($attrs, $content=null) {
 	return false;
 }
 // Newest Shortcode
-add_shortcode('cflk_links','cflk_handle_shortcode');
+add_shortcode('cflk_links','cflk_handle_shortcode',11);
 // Kept in for legacy purposes
-add_shortcode('cfl_links', 'cflk_handle_shortcode');
+add_shortcode('cfl_links', 'cflk_handle_shortcode',11);
 
 /**
  * Return all relevant data about a list
@@ -2005,7 +2004,7 @@ function cflk_get_links($key = null, $args = array()) {
 				if ($server_current == str_replace(array('http://','http://www.'),'',$data['href'])) {
 					$li_class .= 'cflk-current ';
 				}
-				$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.$data['text'].'</a></li>';
+				$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.strip_tags($data['text']).'</a></li>';
 				$i++;
 			}
 		}
@@ -2033,11 +2032,11 @@ function cflk_get_link_info($link_list,$merge=true) {
 			switch ($link['type']) {
 				case 'url':
 					$href = htmlspecialchars($link['link']);
-					$type_text = htmlspecialchars($link['link']);
+					$type_text = strip_tags($link['link']);
 					break;
 				case 'rss':
 					$href = htmlspecialchars($link['link']);
-					$type_text = htmlspecialchars($link['link']);
+					$type_text = strip_tags($link['link']);
 					$other = 'rss';
 					break;
 				case 'post':
@@ -2099,7 +2098,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 				$text = $type_text;
 			}
 			else {
-				$text = htmlspecialchars($link['title']);
+				$text = strip_tags($link['title']);
 			}
 			$class = $link_list['key'].'_'.md5($href);
 			if ($other == 'rss') {

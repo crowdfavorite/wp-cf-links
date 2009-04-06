@@ -139,7 +139,7 @@ function cflk_link_types() {
 	if (function_exists('get_blog_list')) {
 		$sites = $wpdb->get_results($wpdb->prepare("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC"), ARRAY_A);
 		
-		if (is_array($sites)) {
+		if (is_array($sites) && count($sites)) {
 			foreach ($sites as $site) {
 				$site_id = $site['id'];
 				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '$site_id' AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);

@@ -1266,7 +1266,7 @@ function cflk_edit_select($type) {
 	return $select;
 }
 
-function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $value, $reference) {
+function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $value, $reference = '') {
 	$return = '';
 	
 	$return .= '<span id="'.$type.'_'.$key.'" '.$show.'>';

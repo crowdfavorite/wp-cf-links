@@ -261,6 +261,13 @@ function cflk_check_page() {
 
 function cflk_request_handler() {
 	if (current_user_can('manage_options')) {
+		$blogurl = '';
+		if (is_ssl()) {
+			$blogurl = str_replace('http://','https://',get_bloginfo('wpurl'));
+		}
+		else {
+			$blogurl = get_bloginfo('wpurl');
+		}		
 		if (isset($_POST['cf_action']) && $_POST['cf_action'] != '') {
 			switch ($_POST['cf_action']) {
 				case 'cflk_update_settings':
@@ -269,7 +276,7 @@ function cflk_request_handler() {
 						if (isset($_POST['cflk_key']) && $_POST['cflk_key'] != '' && isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
 							cflk_process($link_data, $_POST['cflk_key'], $_POST['cflk_nicename'], $_POST['cflk_description'], $_POST['cflk_reference_children']);
 						}
-						wp_redirect(get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$_POST['cflk_key'].'&cflk_message=updated');
+						wp_redirect($blogurl.'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$_POST['cflk_key'].'&cflk_message=updated');
 					}
 					break;
 				case 'cflk_delete':
@@ -304,7 +311,7 @@ function cflk_request_handler() {
 					if ($nicename != '' && is_array($data)) {
 						$cflk_key = cflk_insert_new($nicename, $description, $data);
 					}
-					wp_redirect(get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$cflk_key);
+					wp_redirect($blogurl.'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$cflk_key);
 					break;
 				case 'cflk_edit_nicename':
 					if (isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '' && isset($_POST['cflk_key']) && $_POST['cflk_key'] != '') {
@@ -316,10 +323,10 @@ function cflk_request_handler() {
 						$cflk_key = cflk_insert_reference($_POST['cflk_reference_list']);
 					}
 					if ($cflk_key) {
-						wp_redirect(get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$cflk_key);
+						wp_redirect($blogurl.'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$cflk_key);
 					}
 					else {
-						wp_redirect(get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php&cflk_page=create');
+						wp_redirect($blogurl.'/wp-admin/options-general.php?page=cf-links.php&cflk_page=create');
 					}
 					break;
 				default:
@@ -641,7 +648,7 @@ function cflk_options_form() {
 	print ('
 		<div class="wrap">
 			'.cflk_nav('main').'
-			<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-form">
+			<form action="" method="post" id="cflk-form">
 				<table class="widefat">
 					<thead>
 						<tr>
@@ -696,33 +703,10 @@ function cflk_options_form() {
 function cflk_new() {
 	global $wpdb;
 	
-	if (function_exists('get_blog_list')) {
-		$blogs = get_blog_list();
-		foreach ($blogs as $blog) {
-			$details = get_blog_details($blog['blog_id']);
-			$blog_data[$details->blog_id] = array(
-					'id' => $blog['blog_id'], 
-					'name' => $details->blogname
-			);
-		}
-
-		$sites = $wpdb->get_results( $wpdb->prepare("SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id != %d AND public = '1' AND archived = '0' AND mature = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid), ARRAY_A );
-		if (is_array($sites)) {
-			foreach ($sites as $site) {
-				$details = get_blog_details($site['blog_id']);
-				$site_data[$details->blog_id] = array(
-					'id' => $site['blog_id'],
-					'name' => $details->blogname,
-				);
-			}
-		}
-		$reference_data = array_merge($blog_data,$site_data);
-	}
-	
 	print ('
 		<div class="wrap">
 			'.cflk_nav('create').'
-			<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-create">
+			<form action="" method="post" id="cflk-create">
 				<table class="widefat">
 					<thead>
 						<tr>
@@ -742,10 +726,87 @@ function cflk_new() {
 					<input type="hidden" name="cflk_create" id="cflk_create" value="new_list" />
 					<input type="submit" name="submit" id="cflk-submit" value="'.__('Create List', 'cf-links').'" />
 				</p>
+			</form>
+		</div>
+	');
+}
+
+function cflk_import() {
+	global $wpdb,$blog_id;
+	
+	if (function_exists('get_blog_list')) {
+		$reference_data = array();
+		$sites = $wpdb->get_results($wpdb->prepare("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC"), ARRAY_A);
+		
+		if (is_array($sites) && count($sites)) {
+			foreach ($sites as $site) {
+				$site_id = $site['id'];
+				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '$site_id' AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);
+				
+				if (is_array($blogs)) {
+					foreach ($blogs as $blog) {
+						if ($blog['blog_id'] == $blog_id) { continue; }
+						$details = get_blog_details($blog['blog_id']);
+						$reference_data[$details->blog_id] = array(
+							'id' => $details->blog_id,
+							'name' => $details->blogname,
+						);
+					}
+				}
+			}
+		}
+	}
+		
+	$links_lists = cflk_get_list_links();
+	print('
+		<div class="wrap">
+			'.cflk_nav('import').'
+			<table class="widefat" style="margin-bottom:10px;">
+				<thead>
+					<tr>
+						<th scope="col">'.__('Export Link Data','cf-links').'</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							<select id="list-export" onChange="changeExportList()">
+								<option value="0">Select List:</option>
+							');
+							foreach ($links_lists as $key => $value) {
+								print('<option value="'.$key.'">'.$value['nicename'].'</option>');
+							}
+							print('
+							</select>
+							<input alt="" title="Export '.$cflk['nicename'].'" class="thickbox button" type="button" value="'.__('Export', 'cf-links').'" id="cflk-export-btn" />						
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<form action="" method="post" id="cflk-create">
+				<table class="widefat">
+					<thead>
+						<tr>
+							<th scope="col">'.__('Enter Data From Export', 'cf-links').'</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<textarea name="cflk_import" rows="15" style="width:100%;"></textarea>
+							</td>
+						</tr>
+					</tbody>
+				</table>				
+				<p class="submit" style="border-top: none;">
+					<input type="hidden" name="cf_action" value="cflk_insert_new" />
+					<input type="hidden" name="cflk_create" id="cflk_create" value="import_list" />
+					<input type="submit" name="submit" class="button-primary button" id="cflk-submit" value="'.__('Import List', 'cf-links').'" />
+				</p>
 			</form>');
 		if (function_exists('get_blog_list')) {
 			print('
-			<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-reference">
+			<form action="" method="post" id="cflk-reference">
 				<table class="widefat">
 					<thead>
 						<tr>
@@ -784,63 +845,11 @@ function cflk_new() {
 				<p class="submit" style="border-top: none;">
 					<input type="hidden" name="cf_action" value="cflk_insert_reference" />
 					<input type="hidden" name="cflk_reference" id="cflk_reference" value="reference_list" />
-					<input type="submit" name="submit" id="cflk-submit" value="'.__('Create Reference List', 'cf-links').'" />
+					<input type="submit" name="submit" id="cflk-submit" class="button-primary button" value="'.__('Create Reference List', 'cf-links').'" />
 				</p>
 			</form>');
-		}	
-			print('
-		</div>
-	');
-}
-
-function cflk_import() {
-	$links_lists = cflk_get_list_links();
+		}			
 	print('
-		<div class="wrap">
-			'.cflk_nav('import').'
-			<table class="widefat" style="margin-bottom:10px;">
-				<thead>
-					<tr>
-						<th scope="col">'.__('Export Link Data','cf-links').'</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>
-							<select id="list-export" onChange="changeExportList()">
-								<option value="0">Select List:</option>
-							');
-							foreach ($links_lists as $key => $value) {
-								print('<option value="'.$key.'">'.$value['nicename'].'</option>');
-							}
-							print('
-							</select>
-							<input alt="" title="Export '.$cflk['nicename'].'" class="thickbox button" type="button" value="'.__('Export', 'cf-links').'" id="cflk-export-btn" />						
-						</td>
-					</tr>
-				</tbody>
-			</table>
-			<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-create">
-				<table class="widefat">
-					<thead>
-						<tr>
-							<th scope="col">'.__('Enter Data From Export', 'cf-links').'</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>
-								<textarea name="cflk_import" rows="15" style="width:100%;"></textarea>
-							</td>
-						</tr>
-					</tbody>
-				</table>				
-				<p class="submit" style="border-top: none;">
-					<input type="hidden" name="cf_action" value="cflk_insert_new" />
-					<input type="hidden" name="cflk_create" id="cflk_create" value="import_list" />
-					<input type="submit" name="submit" class="button-primary button" id="cflk-submit" value="'.__('Import List', 'cf-links').'" />
-				</p>
-			</form>
 		</div>
 	');
 }
@@ -872,7 +881,7 @@ function cflk_edit() {
 				<p>'.__('A problem has been detected while using the import.  Please see highlighted items below to fix.', 'cf-links').'</p>
 			</div>			
 			<div class="wrap">
-				<form action="'.get_bloginfo('wpurl').'/wp-admin/options-general.php" method="post" id="cflk-form">
+				<form action="" method="post" id="cflk-form">
 					'.cflk_nav('edit', htmlspecialchars($cflk['nicename']), $cflk['reference']).'
 					<table class="widefat" style="margin-bottom: 10px;">
 						<thead>

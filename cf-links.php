@@ -358,12 +358,19 @@ add_action('wp_ajax_cflk_update_settings', 'cflk_request_handler');
 
 function cflk_ajax() {
 	wp_print_scripts(array('sack'));
+	$blogurl = '';
+	if (is_ssl()) {
+		$blogurl = str_replace('http://','https://',get_bloginfo('wpurl'));
+	}
+	else {
+		$blogurl = get_bloginfo('wpurl');
+	}		
 	?>
 	<script type="text/javascript">
 		//<![CDATA[
 		// @TODO keep the unique functions for unique functionality, but take repeated code and move it to a separate function that each of these functions then pass config variables to
 		function cflkAJAXDeleteLink(cflk_key,key) {
-			var cflk_sack = new sack("<?php bloginfo('url'); ?>/wp-admin/admin-ajax.php");
+			var cflk_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
 			cflk_sack.execute = 1;
 			cflk_sack.method = 'POST';
 			cflk_sack.setVar('cf_action', 'cflk_delete_key');
@@ -375,7 +382,7 @@ function cflk_ajax() {
 			return true;
 		}
 		function cflkAJAXDeleteMain(cflk_key) {
-			var cflk_main_sack = new sack("<?php bloginfo('url'); ?>/wp-admin/admin-ajax.php");
+			var cflk_main_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
 			cflk_main_sack.execute = 1;
 			cflk_main_sack.method = 'POST';
 			cflk_main_sack.setVar('cf_action', 'cflk_delete');
@@ -386,7 +393,7 @@ function cflk_ajax() {
 			return true;
 		}
 		function cflkAJAXSaveNicename(cflk_key, cflk_nicename) {
-			var cflk_nicename_sack = new sack("<?php bloginfo('url'); ?>/wp-admin/admin-ajax.php");
+			var cflk_nicename_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
 			cflk_nicename_sack.execute = 1
 			cflk_nicename_sack.method = 'POST';
 			cflk_nicename_sack.setVar('cf_action', 'cflk_edit_nicename');

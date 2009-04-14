@@ -1971,7 +1971,7 @@ function cflk_get_links($key = null, $args = array()) {
 		'after' => '</ul>',
 		'location' => 'template'
 	);
-	$args = array_merge($defaults, $args);
+	$args = apply_filters('cflk_list_args',array_merge($defaults, $args),$key);
 	extract($args, EXTR_SKIP);
 	$server_current = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
 	
@@ -2008,7 +2008,7 @@ function cflk_get_links($key = null, $args = array()) {
 				if ($i == (count($list['data']) - 1)) {
 					$li_class .= 'cflk-last ';
 				}
-				if ($server_current == str_replace(array('http://','http://www.'),'',$data['href'])) {
+				if ($server_current == str_replace(array('http://','http://www.'),'',trailingslashit($data['href']))) {
 					$li_class .= 'cflk-current ';
 				}
 				$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.strip_tags($data['text']).'</a></li>';

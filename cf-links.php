@@ -430,20 +430,74 @@ function cflk_admin_css() {
 	.tr_holder {
 		background-color: #FFF07E;
 	}
+	
+/* Link levels */
+	#cflk-form th,
+	#cflk-form td {
+
+	}
+	th.link-order,
+	td.link-order {
+		width: 40px;
+	}
+	th.link-type,
+	td.link-type {
+		width: 100px;
+		text-align: center;
+	}
+	th.link-level,
+	td.link-level {
+		width: 25px;
+		text-align: center;
+	}
+	td.link-level div {
+		margin: 0;
+		padding: 0;
+	}
+	th.link-value,
+	td.link-value {
+		
+	}
+	th.link-text,
+	td.link-text {
+		width: 200px;
+	}
+	th.link-delete,
+	td.link-delete {
+		width: 70px;
+		text-align: center;
+	}
+	#cflk-list button.level-decrement,
+	#cflk-list button.level-increment {
+		float: left;
+	}
+	#cflk-list { background-color: #f1f1f1; }
+	#cflk-list button.level-increment { clear: left; }
+	#cflk-list li.level-0 { margin-left: 0; }
+	#cflk-list li.level-1 { margin-left: 1em; }
+	#cflk-list li.level-2 { margin-left: 2em; }
+	#cflk-list li.level-3 { margin-left: 3em; }
+	#cflk-list li.level-4 { margin-left: 4em; }
+	#cflk-list li.level-5 { margin-left: 5em; }
+	#cflk-list li.level-6 { margin-left: 6em; }
+	#cflk-list li.level-7 { margin-left: 7em; }
+	#cflk-list li.level-8 { margin-left: 8em; }
+	#cflk-list li.level-9 { margin-left: 9em; }
 	<?php
-	die();
+	exit();
 }
 
 function cflk_admin_js() {
 	header('Content-type: text/javascript');
 ?>
-	// When the document is ready set up our sortable with its inherant function(s)
+// When the document is ready set up our sortable with its inherant function(s)
 	jQuery(document).ready(function() {
 		jQuery("#cflk-list").sortable({
 			handle : ".handle",
 			update : function () {
 				jQuery("input#cflk-log").val(jQuery("#cflk-list").sortable("serialize"));
-			}
+			},
+			stop: cflk_levels_refactor
 		});
 		jQuery('input[name="link_edit"]').click(function() {
 			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
@@ -580,14 +634,71 @@ function cflk_admin_js() {
 		var html = jQuery('#newitem_SECTION').html().replace(/###SECTION###/g, section);
 		jQuery('#cflk-list').append(html);
 		jQuery('#listitem_'+section).attr('style','');
+		cflk_set_level_buttons('listitem_'+section); // activates level indent buttons
 	}
 	function changeExportList() {
 		var list = jQuery('#list-export').val();
 		var btn = jQuery('#cflk-export-btn');
 		btn.attr('alt', 'index.php?cflk_page=export&height=400&width=600&link='+list);	
 	}
+	
+// Link Level Functionality
+	jQuery(function(){
+		// hide the link level modifier for the first listitem
+		jQuery('#listitem_0 td.link-level div').css({'visibility':'hidden'});
+		cflk_set_level_buttons();
+	});
+	function cflk_set_level_buttons(parent_id) {
+		// add actions to the rest of the list-level modifiers
+		if(parent_id == undefined) {
+			parent_id = 'cflk-list';
+		}
+		jQuery('#' + parent_id + ' button.level-decrement, #' + parent_id + ' button.level-increment').click(function() {
+			clicked = jQuery(this);
+			target = clicked.parents('div').children('input');
+			item_id = clicked.parents('li').attr('id').replace('listitem_','');
+			
+			if (clicked.hasClass('level-increment') && cflk_can_increment_level(target)) {
+				cflk_update_link_level(target,+1);
+			}
+			else if (clicked.hasClass('level-decrement') && cflk_can_decrement_level(target)) {
+				cflk_update_link_level(target,-1);
+				cflk_levels_refactor();
+			}
+			return false;
+		});
+	}
+	function cflk_update_link_level(obj,amount) {
+		obj.val(parseInt(obj.val())+amount);
+		obj.parents('li').attr('class','level-'+obj.val());
+	}
+	function cflk_can_increment_level(target) {
+		// make sure we are no more than 1 more than the previous sibling						
+		prev_value = parseInt(target.parents('li').prev().find('td.link-level input.link-level-input').val());
+		if(parseInt(target.val())+1 > prev_value+1) { return false; }
+		return true;
+	}
+	function cflk_can_decrement_level(target) {
+		if(target.val() == 0) { return false; }
+		return true;
+	}
+	function cflk_levels_refactor() {
+		jQuery('#cflk-list li').each(function(){
+			current = jQuery(this);
+			if(current.attr('id').replace('listitem_','') == 0) { 
+				prev = current;
+				return; 
+			}
+			// specificity makes it long. That's what she said!
+			if(parseInt(current.find('td.link-level input.link-level-input').val()) > parseInt(prev.find('td.link-level input.link-level-input').val())+1) {
+				diff = parseInt(current.find('td.link-level input.link-level-input').val()) - (parseInt(prev.find('td.link-level input.link-level-input').val())+1);
+				cflk_update_link_level(current.find('td.link-level input.link-level-input'),parseInt('-'+diff));
+			}
+			prev = current;
+		});
+	}
 <?php
-	die();
+	exit();
 }
 
 function cflk_admin_head() {
@@ -983,11 +1094,12 @@ function cflk_edit() {
 					<table class="widefat">
 						<thead>
 							<tr>
-								<th scope="col" width="40px" style="text-align: center;">'.__('Order', 'cf-links').'</th>
-								<th scope="col" width="90px">'.__('Type', 'cf-links').'</th>
-								<th scope="col">'.__('Link', 'cf-links').'</th>
-								<th scope="col" width="250px">'.__('Link Text (Optional)', 'cf-links').'</th>
-								<th scope="col" style="text-align: center;" width="60px">'.__('Delete', 'cf-links').'</th>
+								<th scope="col" class="link-level">'.__('Level','cf-links').'</th>
+								<th scope="col" class="link-order" style="text-align: center;">'.__('Order', 'cf-links').'</th>
+								<th scope="col" class="link-type">'.__('Type', 'cf-links').'</th>
+								<th scope="col" class="link-value">'.__('Link', 'cf-links').'</th>
+								<th scope="col" class="link-text">'.__('Link Text (Optional)', 'cf-links').'</th>
+								<th scope="col" class="link-delete">'.__('Delete', 'cf-links').'</th>
 							</tr>
 						</thead>
 					</table>
@@ -999,10 +1111,17 @@ function cflk_edit() {
 								if($setting['link'] == 'HOLDER') {
 									$tr_class = ' class="tr_holder"';
 								}
-								print ('<li id="listitem_'.$key.'">
+								print ('<li id="listitem_'.$key.'" class="level-'.$setting['level'].'">
 									<table class="widefat">
 										<tr'.$tr_class.'>
-											<td width="40px" style="text-align: center; vertical-align:middle;">
+											<td class="link-level">
+												<div>
+													<input type="hidden" class="link-level-input" name="cflk['.$key.'][level]" value="'.intval($setting['level']).'" />
+													<button class="level-decrement decrement-'.$key.'">&laquo;</button>
+													<button class="level-increment" decrement-'.$key.'">&raquo;</button>
+												</div>
+											</td>
+											<td class="link-order" style="text-align: center; vertical-align:middle;">
 												');
 												if (!$cflk['reference']) {
 													print('
@@ -1011,7 +1130,7 @@ function cflk_edit() {
 												}
 												print('
 											</td>
-											<td width="90px" style="vertical-align:middle;">
+											<td class="link-type" style="vertical-align:middle;">
 											');
 											$type_options = '';
 											$type_selected = '';
@@ -1029,13 +1148,13 @@ function cflk_edit() {
 											}
 											print('
 											</td>
-											<td style="vertical-align:middle;">');
+											<td class="link-value" style="vertical-align:middle;">');
 												foreach ($cflk_types as $type) {
 													echo cflk_get_type_input($type['type'], $type['input'], $type['data'], $select_settings[$type['type'].'_show'], $key, $setting['cat_posts'], $setting['link'], $cflk['reference']);
 												}
 												print ('
 											</td>
-											<td width="250px" style="vertical-align:middle;">');
+											<td class="link-text" style="vertical-align:middle;">');
 												if (!$cflk['reference']) {
 													if (strip_tags($setting['title']) == '') {
 														$edit_show = '';
@@ -1060,7 +1179,7 @@ function cflk_edit() {
 												}
 											print ('
 											</td>
-											<td width="60px" style="text-align: center; vertical-align:middle;">
+											<td class="link-delete" style="text-align: center; vertical-align:middle;">
 												');
 												if (!$cflk['reference']) {
 													print('
@@ -1099,11 +1218,18 @@ function cflk_edit() {
 					print('
 				</form>');
 			print ('<div id="newitem_SECTION">
-				<li id="listitem_###SECTION###" style="display:none;">
+				<li id="listitem_###SECTION###" class="level-0" style="display:none;">
 					<table class="widefat">
 						<tr>
-							<td width="40px" style="text-align: center;"><img src="'.get_bloginfo('wpurl').'/wp-content/plugins/cf-links/images/arrow_up_down.png" class="handle" alt="move" /></td>
-							<td width="90px">
+							<td class="link-level">
+								<div>
+									<input type="hidden" class="link-level-input" name="cflk[###SECTION###][level]" value="0" />
+									<button class="level-decrement">&laquo;</button>
+									<button class="level-increment">&raquo;</button>
+								</div>
+							</td>
+							<td class="link-order" style="text-align: center;"><img src="'.get_bloginfo('wpurl').'/wp-content/plugins/cf-links/images/arrow_up_down.png" class="handle" alt="move" /></td>
+							<td class="link-type">
 								<select name="cflk[###SECTION###][type]" id="cflk_###SECTION###_type" onChange="showLinkType(###SECTION###)">');
 									foreach ($cflk_types as $type) {
 										$select_settings[$type['type'].'_select'] = '';
@@ -1114,7 +1240,7 @@ function cflk_edit() {
 									}
 								print ('</select>
 							</td>
-							<td>');
+							<td class="link-value">');
 								$key = '###SECTION###';
 								foreach ($cflk_types as $type) {
 									$select_settings[$type['type'].'_show'] = 'style="display: none;"';
@@ -1125,7 +1251,7 @@ function cflk_edit() {
 								}
 								print ('
 							</td>
-							<td width="250px">
+							<td class="link-text">
 								<span id="cflk_###SECTION###_title_edit" style="display: none">
 									<input type="button" class="button" id="link_edit_title_###SECTION###" value="'.__('Edit Text', 'cf-links').'" onClick="editTitle(\'###SECTION###\')" />
 								</span>
@@ -1136,7 +1262,7 @@ function cflk_edit() {
 									'.__('ex: Click Here','cf-links').'
 								</span>
 							</td>
-							<td width="60px" style="text-align: center;">
+							<td class="link-delete" style="text-align: center;">
 								<input type="button" class="button" id="link_delete_###SECTION###" value="'.__('Delete', 'cf-links').'" onClick="deleteLink(\''.$cflk_key.'\',\'###SECTION###\')" />
 							</td>
 						</tr>
@@ -1412,6 +1538,7 @@ function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '',
 					'type' => $type,
 					'link' => stripslashes($info[$type]),
 					'cat_posts' => ($type == 'category' && isset($info['category_posts']) && $info['category_posts'] != '' ? true : false),
+					'level' => intval($info['level'])
 				);
 				array_push($new_data, $add);
 			}
@@ -1564,13 +1691,15 @@ function cflk_edit_nicename($cflk_key = '', $cflk_nicename = '') {
 function cflk_get_list_links($blog = 0) {
 	global $wpdb, $blog_id;
 	
-	if ($blog != 0) {
-		$blog_id = $blog;
+	// if we're on MU and another blog's details have been requested, change the options table assignment
+	if (!is_null($blog_id) && $blog != 0) {
+		$options = 'wp_'.$blog.'_options';
+	}
+	else {
+		$options = $wpdb->options;
 	}
 	
-	$blog_options = 'wp_'.$blog_id.'_options';
-	
-	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $blog_options WHERE option_name LIKE 'cfl-%'");
+	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM {$options} WHERE option_name LIKE 'cfl-%'");
 	$return = array();
 
 	if (is_array($cflk_list)) {
@@ -1964,6 +2093,14 @@ function cflk_get_links_data($key) {
 	return apply_filters('cflk_get_links_data', $links);
 }
 
+/**
+ * Build a links list based on the passed in key and args.
+ * This function is called as a template tag and inside widgets.
+ *
+ * @param string $key 
+ * @param array $args 
+ * @return html
+ */
 function cflk_get_links($key = null, $args = array()) {
 	if (!$key) { return ''; }
 	$defaults = array(
@@ -1972,13 +2109,15 @@ function cflk_get_links($key = null, $args = array()) {
 		'location' => 'template'
 	);
 	$args = apply_filters('cflk_list_args',array_merge($defaults, $args),$key);
-	extract($args, EXTR_SKIP);
-	$server_current = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
-	
+	$args['server_current'] = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
+
+	// make sure we have a level designator in the list
+	$args['before'] = cflk_ul_ensure_level_class($args['before']);
+
 	$list = cflk_get_links_data($key);
 	if (!is_array($list)) { return ''; }
 	
-	$return = '';
+	$ret = '';
 	$i = 0;
 	$listcount = 0;
 	
@@ -1989,36 +2128,100 @@ function cflk_get_links($key = null, $args = array()) {
 			unset($list['data'][$key]);
 		}
 	}
+		
+	$ret = cflk_build_list_items($list['data'],$args);
+	$ret = apply_filters('cflk_get_links', $ret, $list, $args);
+	return $ret;
+}
+
+/**
+ * Make sure we have a level-x classname on the $args['before'] for proper listed nest labeling
+ * Pulls the <ul> tag from the $before var with substr because it is more reliable than pulling
+ * the UL via regex with all the permutations and different wrappers and other items that can be
+ * included in the $before variable - SP
+ *
+ * if no classname is present, we add the entire class attribute, else we add to the existing attribute
+ *
+ * @param string $before
+ * @return string
+ */
+function cflk_ul_ensure_level_class($before) {
+	// fish out the <ul> and its attributes
+	$ul_start = strpos($before,'<ul');
+	$ul_end = (strpos($before,'>',$ul_start)+1)-$ul_start;
+	$ul = substr($before,$ul_start,$ul_end);
 	
-	foreach ($list['data'] as $key => $data) {
-		$li_class = '';
+	// munge
+	if(!preg_match("|class=|", $ul)) {
+		// add a class attribute
+		$ul_n = preg_replace("|(<ul.*?)(>)|","$1 class=\"level-0\"$2",$ul);
+	}
+	elseif(!preg_match("|class=\".*?(level-[0-9])\"|",$ul)) {
+		// modify the existing class attribute
+		$ul_n = preg_replace("|(<ul.*?class=\".*?)(\".*?>)|","$1 level-0$2",$ul);
+	}
 	
-		if (is_array($data)) {
-			if (!empty($data['href'])) {
-				if ($links['data'][$data['id']]['type'] == 'category') {
-					$category = the_category_id(false);
-					$link_cat = $links['data'][$data['id']]['link'];
-					if ($link_cat == $category) {
-						$li_class .= 'cflk-current-category ';
-					}
+	return str_replace($ul,$ul_n,$before);
+}
+
+/**
+ * recursive function for putting together list items and handling nesting.
+ * Does some cleanup on the previous iteration of the code, but is not a full rewrite.
+ * Handles a flat list so we don't have to reformat the data array - time permitting
+ * this will be modified to work off a nested data array to ease the recursion limits
+ * on finding the first/last item in nested lists. 
+ *
+ * Because the data array is flat, we need the global for array positioning after recursing.
+ *
+ * @param array $items 
+ * @param array $args 
+ * @param int $start 
+ * @return html
+ */
+function cflk_build_list_items(&$items,$args,$start=0) {
+	global $cflk_i;
+	extract($args, EXTR_SKIP);
+	$ret = '';
+	
+	// increment the level
+	$args['before'] = preg_replace("|(level-[0-9])|","level-".$items[$start]['level'],$args['before']);
+	
+	for($cflk_i = $start; $cflk_i < count($items), $data = $items[$cflk_i]; $cflk_i++) {
+		if (is_array($data) && !empty($data['href'])) {
+			$li_class = '';
+			if ($data['type'] == 'category') {
+				if ($data['link'] == the_category_id(false)) {
+					$li_class .= 'cflk-current-category ';
 				}
-				if ($i == 0) {
-					$li_class .= 'cflk-first ';
-				}
-				if ($i == (count($list['data']) - 1)) {
-					$li_class .= 'cflk-last ';
-				}
-				if ($server_current == str_replace(array('http://','http://www.'),'',trailingslashit($data['href']))) {
-					$li_class .= 'cflk-current ';
-				}
-				$return .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.strip_tags($data['text']).'</a></li>';
-				$i++;
+			}
+			
+			// see if we're first or last
+			if(!isset($items[$cflk_i-1])) {
+				$li_class .= 'cflk-first ';
+			}
+			elseif(!isset($items[$cflk_i+1])) {
+				$li_class .= 'cflk-last ';
+			}
+			
+			// see if we're the current page
+			if ($server_current == str_replace(array('http://','http://www.'),'',trailingslashit($data['href']))) {
+				$li_class .= 'cflk-current ';
+			}
+			
+			// build
+			$ret .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.strip_tags($data['text']).'</a>';
+			if($items[$cflk_i+1]['level'] > $data['level']) {
+				$ret .= cflk_build_list_items($items,$args,++$cflk_i);
+			}
+			$ret .= '</li>';
+
+			// if we're at the end of this level then break the loop
+			if(!isset($items[$cfkl_i+1]) || $items[$cflk_i+1]['level'] < $data['level']) {
+				break;
 			}
 		}
 	}
-	$return = $before.$return.$after;
-	$return = apply_filters('cflk_get_links', $return, $list, $args);
-	return $return;
+	return $before.$ret.$after;
 }
 
 function cflk_links($key, $args = array()) {
@@ -2030,6 +2233,9 @@ function cflk_get_link_info($link_list,$merge=true) {
 	
 	if(is_array($link_list)) {
 		foreach ($link_list['data'] as $key => $link) {
+			// legacy compatability: add level if not present - SP
+			if(!isset($link['level'])) { $link['level'] == 0; }
+			
 			$href = '';
 			$text = '';
 			$type_text = '';

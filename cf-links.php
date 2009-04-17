@@ -470,6 +470,13 @@ function cflk_admin_css() {
 	#cflk-list button.level-decrement,
 	#cflk-list button.level-increment {
 		float: left;
+		border: 1px solid gray;
+		background: #f1f1f1 url(/wp-admin/images/gray-grad.png) 0 0 repeat-x;
+		cursor: pointer;
+		-moz-border-radius: 4px;
+		-khtml-border-radius: 4px;
+		-webkit-border-radius: 4px;
+		border-radius: 4px;
 	}
 	#cflk-list { background-color: #f1f1f1; }
 	#cflk-list button.level-increment { clear: left; }

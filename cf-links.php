@@ -430,7 +430,10 @@ function cflk_admin_css() {
 	.tr_holder {
 		background-color: #FFF07E;
 	}
-	
+	/* a little nicity for browsers that understand it */
+	#cflk-list li table.widefat tr:hover td {
+		background-color: #eee;
+	}
 /* Link levels */
 	#cflk-form th,
 	#cflk-form td {

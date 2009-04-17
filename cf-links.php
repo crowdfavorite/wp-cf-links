@@ -902,7 +902,7 @@ function cflk_import() {
 								print('<option value="'.$key.'">'.$value['nicename'].'</option>');
 							}
 							print('
-							</select>
+							</select>	
 							<input alt="" title="Export '.$cflk['nicename'].'" class="thickbox button" type="button" value="'.__('Export', 'cf-links').'" id="cflk-export-btn" />						
 						</td>
 					</tr>
@@ -2188,11 +2188,9 @@ function cflk_ul_ensure_level_class($before) {
 function cflk_build_list_items(&$items,$args,$start=0) {
 	global $cflk_i;
 	extract($args, EXTR_SKIP);
-	$ret = '';
-	
+
 	// increment the level
-	$args['before'] = preg_replace("|(level-[0-9])|","level-".$items[$start]['level'],$args['before']);
-	
+	$ret = preg_replace("|(level-[0-9])|","level-".$items[$start]['level'],$args['before']);
 	for($cflk_i = $start; $cflk_i < count($items), $data = $items[$cflk_i]; $cflk_i++) {
 		if (is_array($data) && !empty($data['href'])) {
 			$li_class = '';
@@ -2228,7 +2226,7 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 			}
 		}
 	}
-	return $before.$ret.$after;
+	return $ret.$after;
 }
 
 function cflk_links($key, $args = array()) {

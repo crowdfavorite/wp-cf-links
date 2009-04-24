@@ -219,6 +219,7 @@ function cflk_link_types() {
 		);
 		$cflk_types = array_merge($cflk_types, $blog_type);
 	}
+	$cflk_types = apply_filters('cflk-types',$cflk_types);
 }
 add_action('init', 'cflk_link_types');
 
@@ -510,7 +511,7 @@ function cflk_admin_js() {
 			stop: cflk_levels_refactor
 		});
 		jQuery('input[name="link_edit"]').click(function() {
-			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
+			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&amp;cflk_page=edit&amp;link=" + jQuery(this).attr('rel');
 			return false;
 		});
 		jQuery('tr.tr_holder').each(function() {
@@ -580,59 +581,8 @@ function cflk_admin_js() {
 		jQuery('#description_cancel_btn').attr('style', 'display:none;');
 	}
 	function showLinkType(key) {
-		var text = jQuery('#cflk_'+key+'_title').val();
-		switch (jQuery("#cflk_"+key+"_type").val()) {
-			case 'url':
-				jQuery("#url_"+key).attr("style", "").siblings().attr("style", "display: none;");
-				editTitle(key);
-				break;
-			case 'rss':
-				jQuery("#rss_"+key).attr("style", "").siblings().attr("style", "display: none;");
-				editTitle(key);
-				break;
-			case 'page':
-				if(text == '') {
-					clearTitle(key);
-				}
-				jQuery("#page_"+key).attr("style", "").siblings().attr("style", "display: none;");
-				break;
-			case 'category':
-				if(text == '') {
-					clearTitle(key);
-				}
-				jQuery("#category_"+key).attr("style", "").siblings().attr("style", "display: none;");
-				break;
-			case 'wordpress':
-				if(text == '') {
-					clearTitle(key);
-				}
-				jQuery("#wordpress_"+key).attr("style", "").siblings().attr("style", "display: none;");
-				break;
-			case 'author':
-				if(text == '') {
-					clearTitle(key);
-				}
-				jQuery("#author_"+key).attr("style", "").siblings().attr("style", "display: none;");
-				break;
-			case 'author_rss':
-				if(text == '') {
-					clearTitle(key);
-				}
-				jQuery("#author_rss_"+key).attr("style", "").siblings().attr("style", "display: none;");
-				break;
-			case 'blog':
-				if(text == '') {
-					clearTitle(key);
-				}
-				jQuery("#blog_"+key).attr("style", "").siblings().attr("style", "display: none;");
-				break;
-			case 'site':
-				if(text == '') {
-					clearTitle(key);
-				}
-				jQuery("#site_"+key).attr("style", "").siblings().attr("style", "display:none;");
-				break;
-		}
+		var type = jQuery('#cflk_'+key+'_type option:selected').val();
+		jQuery('#'+type+'_'+key).attr('style','').siblings().attr('style','display: none;');
 	}
 	function showLinkCode(key) {
 		jQuery('#'+key).slideToggle();
@@ -1116,7 +1066,7 @@ function cflk_edit() {
 					<ul id="cflk-list">');
 						if ($cflk_count > 0) {
 							foreach ($cflk['data'] as $key => $setting) {
-								$select_settings = cflk_edit_select($setting['type']);
+								//$select_settings = cflk_edit_select($setting['type']);
 								$tr_class = '';
 								if($setting['link'] == 'HOLDER') {
 									$tr_class = ' class="tr_holder"';
@@ -1145,10 +1095,12 @@ function cflk_edit() {
 											$type_options = '';
 											$type_selected = '';
 											foreach ($cflk_types as $type) {
-												$type_options .= '<option value="'.$type['type'].'" '.$select_settings[$type['type'].'_select'].'>'.$type['nicename'].'</option>';
-												if ($select_settings[$type['type'].'_select'] == 'selected=selected') {
+												$selected = '';
+												if($type['type'] == $setting['type']) {
+													$selected = ' selected="selected"';
 													$type_selected = $type['nicename'];
 												}
+												$type_options .= '<option value="'.$type['type'].'" '.$selected.'>'.$type['nicename'].'</option>';
 											}
 											if (!$cflk['reference']) {
 												print('<select name="cflk['.$key.'][type]" id="cflk_'.$key.'_type" onChange="showLinkType('.$key.')">'.$type_options.'</select>');
@@ -1160,7 +1112,7 @@ function cflk_edit() {
 											</td>
 											<td class="link-value" style="vertical-align:middle;">');
 												foreach ($cflk_types as $type) {
-													echo cflk_get_type_input($type['type'], $type['input'], $type['data'], $select_settings[$type['type'].'_show'], $key, $setting['cat_posts'], $setting['link'], $cflk['reference']);
+													echo cflk_get_type_input($type, $type_selected, $key, $setting['cat_posts'], $setting['link'], $cflk['reference']);
 												}
 												print ('
 											</td>
@@ -1257,7 +1209,8 @@ function cflk_edit() {
 									if ($type['type'] == 'url') {
 										$select_settings[$type['type'].'_show'] = 'style=""';
 									}
-									echo cflk_get_type_input($type['type'], $type['input'], $type['data'], $select_settings[$type['type'].'_show'], $key, '', '');
+									//echo cflk_get_type_input($type['type'], $type['input'], $type['data'], $select_settings[$type['type'].'_show'], $key, '', '');
+									echo cflk_get_type_input($type, $select_settings[$type['type'].'_show'], $key, '', '');
 								}
 								print ('
 							</td>
@@ -1406,13 +1359,15 @@ function cflk_edit_select($type) {
 			$select['url_select'] = 'selected=selected';
 			break;
 	}
-	return $select;
+	return apply_filters('cflk-edit-select',$select,$type);
 }
 
-function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $value, $reference = '') {
+//function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $value, $reference = '') {
+function cflk_get_type_input($type, $show, $key, $show_count, $value, $reference = '') {
 	$return = '';
+	extract($type);
 	
-	$return .= '<span id="'.$type.'_'.$key.'" '.$show.'>';
+	$return .= '<span id="'.$type.'_'.$key.'" '.($show == $nicename ? '' : 'style="display: none;"').'>';
 	if (!$reference) {
 		switch ($input) {
 			case 'text':
@@ -2250,7 +2205,9 @@ function cflk_get_link_info($link_list,$merge=true) {
 			$other = '';
 			$sanitized_href = '';
 
-			switch ($link['type']) {
+			// 'type' is everything up to the first -
+			$type = (false ===  strpos($link['type'],'-') ? $link['type'] : substr($link['type'],0,strpos($link['type'],'-')));
+			switch ($type) {
 				case 'url':
 					$href = htmlspecialchars($link['link']);
 					$type_text = strip_tags($link['link']);

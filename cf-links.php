@@ -511,7 +511,7 @@ function cflk_admin_js() {
 			stop: cflk_levels_refactor
 		});
 		jQuery('input[name="link_edit"]').click(function() {
-			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&amp;cflk_page=edit&amp;link=" + jQuery(this).attr('rel');
+			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
 			return false;
 		});
 		jQuery('tr.tr_holder').each(function() {
@@ -1553,7 +1553,20 @@ function cflk_delete($cflk_key) {
 		}
 	}
 	do_action('cflk_delete_list',$cflk_key);
-	delete_option($cflk_key);
+	$res = delete_option($cflk_key);
+	
+	// send response
+	header('Content-type: text/javascript');
+	ob_end_clean();
+	if($res) {
+		//echo '{"success":true}'; // would like to use this, but SACK doesn't seem to like json
+		echo '1';
+	}
+	else {
+		//echo '{"success":false}';
+		echo '0';
+	}
+	exit;
 }
 
 function cflk_insert_new($nicename = '', $description = '', $data = array(), $insert_key = false) {
@@ -1883,7 +1896,10 @@ function cflk_reference_children_delete($cflk_key) {
 	}
 	restore_current_blog();
 }
-add_action('cflk_delete_list','cflk_reference_children_delete');
+global $wpmu_version;
+if(!is_null($wpmu_version)) {
+	add_action('cflk_delete_list','cflk_reference_children_delete');
+}
 
 /**
  * 
@@ -2177,7 +2193,7 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 			}
 			
 			// build
-			$ret .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'">'.strip_tags($data['text']).'</a>';
+			$ret .= '<li class="'.$data['class'].' '.$li_class.'"><a href="'.$data['href'].'" class="a-level-'.$data['level'].'">'.strip_tags($data['text']).'</a>';
 			if($items[$cflk_i+1]['level'] > $data['level']) {
 				$ret .= cflk_build_list_items($items,$args,++$cflk_i);
 			}

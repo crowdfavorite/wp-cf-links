@@ -2069,8 +2069,10 @@ function cflk_get_links_data($key) {
 function cflk_get_links($key = null, $args = array()) {
 	if (!$key) { return ''; }
 	$defaults = array(
-		'before' => '<ul class="cflk-list '.$key.'">',
+		'before' => '<ul #id#class="cflk-list '.$key.'">',
 		'after' => '</ul>',
+		'child_before' => '<ul class="cflk-list-nested">',
+		'child_after' => '</ul>',
 		'location' => 'template'
 	);
 	$args = apply_filters('cflk_list_args',array_merge($defaults, $args),$key);
@@ -2078,7 +2080,8 @@ function cflk_get_links($key = null, $args = array()) {
 
 	// make sure we have a level designator in the list
 	$args['before'] = cflk_ul_ensure_level_class($args['before']);
-
+	$args['child_before'] = cflk_ul_ensure_level_class($args['child_before']);
+	
 	$list = cflk_get_links_data($key);
 	if (!is_array($list)) { return ''; }
 	
@@ -2148,7 +2151,9 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 	extract($args, EXTR_SKIP);
 
 	// increment the level
-	$ret = preg_replace("|(level-[0-9])|","level-".$items[$start]['level'],$args['before']);
+	$before = ($start == 0 ? $args['before'] : $args['child_before']);
+	$ret = preg_replace("|(level-[0-9])|","level-".$items[$start]['level'],$before);
+	
 	for($cflk_i = $start; $cflk_i < count($items), $data = $items[$cflk_i]; $cflk_i++) {
 		if (is_array($data) && !empty($data['href'])) {
 			$li_class = '';

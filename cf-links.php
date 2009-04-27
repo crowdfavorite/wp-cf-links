@@ -482,6 +482,9 @@ function cflk_admin_css() {
 		-webkit-border-radius: 4px;
 		border-radius: 4px;
 	}
+	#cflk-list button.disabled {
+		cursor: default;
+	}
 	#cflk-list { background-color: #f1f1f1; }
 	#cflk-list button.level-increment { clear: left; }
 	#cflk-list li.level-0 { margin-left: 0; }
@@ -593,7 +596,7 @@ function cflk_admin_js() {
 		
 		var html = jQuery('#newitem_SECTION').html().replace(/###SECTION###/g, section);
 		jQuery('#cflk-list').append(html);
-		jQuery('#listitem_'+section).attr('style','');
+		jQuery('#listitem_'+section).attr('style','').find(':first-child').attr('style','');
 		cflk_set_level_buttons('listitem_'+section); // activates level indent buttons
 	}
 	function changeExportList() {
@@ -603,11 +606,15 @@ function cflk_admin_js() {
 	}
 	
 // Link Level Functionality
+
+	// initialize the list for multiple levels
 	jQuery(function(){
-		// hide the link level modifier for the first listitem
-		jQuery('#listitem_0 td.link-level div').css({'visibility':'hidden'});
+		// prep
 		cflk_set_level_buttons();
+		cflk_levels_refactor();
 	});
+
+	// initialize the level buttons
 	function cflk_set_level_buttons(parent_id) {
 		// add actions to the rest of the list-level modifiers
 		if(parent_id == undefined) {
@@ -617,43 +624,83 @@ function cflk_admin_js() {
 			clicked = jQuery(this);
 			target = clicked.parents('div').children('input');
 			item_id = clicked.parents('li').attr('id').replace('listitem_','');
-			
+		
 			if (clicked.hasClass('level-increment') && cflk_can_increment_level(target)) {
 				cflk_update_link_level(target,+1);
 			}
 			else if (clicked.hasClass('level-decrement') && cflk_can_decrement_level(target)) {
 				cflk_update_link_level(target,-1);
-				cflk_levels_refactor();
 			}
+			cflk_levels_refactor();
 			return false;
 		});
 	}
+	
+	// toggle the buttons visible state for wether it can be used or not
+	function cflk_toggle_button_usability(current,blank_button) {
+		jQuery(current).find('td.link-level button').each(function(i){
+			_this = jQuery(this);
+			if(blank_button) {
+				_this.css('opacity',0).addClass('disabled');
+			}
+			else if(_this.hasClass('level-decrement') && !cflk_can_decrement_level(_this.parents('div').children('input'))) {
+				_this.css('opacity',0.25).addClass('disabled');
+			}
+			else if(_this.hasClass('level-increment') && !cflk_can_increment_level(_this.parents('div').children('input'))) {
+				_this.css('opacity',0.25).addClass('disabled');
+			}	
+			else {
+				_this.css('opacity',1).removeClass('disabled');
+			}	
+		});
+	}
+
+	// move the link
 	function cflk_update_link_level(obj,amount) {
 		obj.val(parseInt(obj.val())+amount);
 		obj.parents('li').attr('class','level-'+obj.val());
 	}
+
+	// figure out if the item is allowed to go indent
 	function cflk_can_increment_level(target) {
 		// make sure we are no more than 1 more than the previous sibling						
 		prev_value = parseInt(target.parents('li').prev().find('td.link-level input.link-level-input').val());
 		if(parseInt(target.val())+1 > prev_value+1) { return false; }
 		return true;
 	}
+
+	// figure out if the item is allowed to outdent
 	function cflk_can_decrement_level(target) {
 		if(target.val() == 0) { return false; }
 		return true;
 	}
+
+	// refactor the list levels so that nobody is more than 1 level deeper than its parent
 	function cflk_levels_refactor() {
-		jQuery('#cflk-list li').each(function(){
+		jQuery('#cflk-list li').each(function(i){
 			current = jQuery(this);
-			if(current.attr('id').replace('listitem_','') == 0) { 
+			var current_val = parseInt(current.find('td.link-level input.link-level-input').val());
+			// handle first row
+			if(i == 0) {
+				if(current_val > 0) {
+					cflk_update_link_level(current.find('td.link-level input.link-level-input'),parseInt('-'+current_val));
+					current.find('td.link-level input.link-level-input').val(0);
+				}
+				cflk_toggle_button_usability(current,true);
 				prev = current;
 				return; 
 			}
-			// specificity makes it long. That's what she said!
-			if(parseInt(current.find('td.link-level input.link-level-input').val()) > parseInt(prev.find('td.link-level input.link-level-input').val())+1) {
-				diff = parseInt(current.find('td.link-level input.link-level-input').val()) - (parseInt(prev.find('td.link-level input.link-level-input').val())+1);
+			
+			// handle not first rows
+			var prev_val = parseInt(prev.find('td.link-level input.link-level-input').val());
+			if(current_val > prev_val+1) {
+				console.log('correcting: '+i);
+				diff = current_val - (prev_val+1);
 				cflk_update_link_level(current.find('td.link-level input.link-level-input'),parseInt('-'+diff));
 			}
+			
+			cflk_toggle_button_usability(current);
+						
 			prev = current;
 		});
 	}
@@ -1076,7 +1123,7 @@ function cflk_edit() {
 										<tr'.$tr_class.'>
 											<td class="link-level">
 												<div>
-													<input type="hidden" class="link-level-input" name="cflk['.$key.'][level]" value="'.intval($setting['level']).'" />
+													<input type="hidden" class="link-level-input" name="cflk['.$key.'][level]" value="'.$setting['level'].'" />
 													<button class="level-decrement decrement-'.$key.'">&laquo;</button>
 													<button class="level-increment" decrement-'.$key.'">&raquo;</button>
 												</div>
@@ -2085,7 +2132,7 @@ function cflk_get_links_data($key) {
 function cflk_get_links($key = null, $args = array()) {
 	if (!$key) { return ''; }
 	$defaults = array(
-		'before' => '<ul #id#class="cflk-list '.$key.'">',
+		'before' => '<ul class="cflk-list '.$key.'">',
 		'after' => '</ul>',
 		'child_before' => '<ul class="cflk-list-nested">',
 		'child_after' => '</ul>',

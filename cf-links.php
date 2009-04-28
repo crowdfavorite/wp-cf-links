@@ -511,6 +511,8 @@ function cflk_admin_js() {
 			update : function () {
 				jQuery("input#cflk-log").val(jQuery("#cflk-list").sortable("serialize"));
 			},
+			containment: 'parent',
+			opacity: 0.5,
 			stop: cflk_levels_refactor
 		});
 		jQuery('input[name="link_edit"]').click(function() {

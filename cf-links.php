@@ -596,8 +596,11 @@ function cflk_admin_js() {
 		
 		var html = jQuery('#newitem_SECTION').html().replace(/###SECTION###/g, section);
 		jQuery('#cflk-list').append(html);
-		jQuery('#listitem_'+section).attr('style','').find(':first-child').attr('style','');
-		cflk_set_level_buttons('listitem_'+section); // activates level indent buttons
+		jQuery('#listitem_'+section).attr('style','').find('td.link-value span:first-child').attr('style','');
+
+		// activates level indent buttons
+		cflk_set_level_buttons('listitem_'+section); 
+		cflk_levels_refactor();
 	}
 	function changeExportList() {
 		var list = jQuery('#list-export').val();
@@ -683,7 +686,7 @@ function cflk_admin_js() {
 			// handle first row
 			if(i == 0) {
 				if(current_val > 0) {
-					cflk_update_link_level(current.find('td.link-level input.link-level-input'),parseInt('-'+current_val));
+					cflk_update_link_level(current.find('td.link-level input.link-level-input'),'-' + parseInt(current_val)+1);
 					current.find('td.link-level input.link-level-input').val(0);
 				}
 				cflk_toggle_button_usability(current,true);
@@ -694,7 +697,6 @@ function cflk_admin_js() {
 			// handle not first rows
 			var prev_val = parseInt(prev.find('td.link-level input.link-level-input').val());
 			if(current_val > prev_val+1) {
-				console.log('correcting: '+i);
 				diff = current_val - (prev_val+1);
 				cflk_update_link_level(current.find('td.link-level input.link-level-input'),parseInt('-'+diff));
 			}
@@ -1178,8 +1180,8 @@ function cflk_edit() {
 														<input type="button" class="button" id="link_edit_title_'.$key.'" value="'.__('Edit Text', 'cf-links').'" onClick="editTitle(\''.$key.'\')" />
 													</span>
 													<span id="cflk_'.$key.'_title_input"'.$input_show.'>
-														<input type="text" id="cflk_'.$key.'_title" name="cflk['.$key.'][title]" value="'.strip_tags($setting['title']).'" style="max-width: 195px;" />
-														<input type="button" class="button" id="link_clear_title_'.$key.'" value="'.__('Clear', 'cf-links').'" onClick="clearTitle(\''.$key.'\')" />
+														<input type="text" id="cflk_'.$key.'_title" name="cflk['.$key.'][title]" value="'.strip_tags($setting['title']).'" style="max-width: 150px;" />
+														<input type="button" class="button" id="link_clear_title_'.$key.'" value="'.__('&times;', 'cf-links').'" onClick="clearTitle(\''.$key.'\')" />
 													</span>
 													');
 												}
@@ -1266,8 +1268,8 @@ function cflk_edit() {
 									<input type="button" class="button" id="link_edit_title_###SECTION###" value="'.__('Edit Text', 'cf-links').'" onClick="editTitle(\'###SECTION###\')" />
 								</span>
 								<span id="cflk_###SECTION###_title_input">
-									<input type="text" id="cflk_###SECTION###_title" name="cflk[###SECTION###][title]" value="" style="max-width: 195px;" />
-									<input type="button" class="button" id="link_clear_title_###SECTION###" value="'.__('Clear', 'cf-links').'" onClick="clearTitle(\'###SECTION###\')" />
+									<input type="text" id="cflk_###SECTION###_title" name="cflk[###SECTION###][title]" value="" style="max-width: 150px;" />
+									<input type="button" class="button" id="link_clear_title_###SECTION###" value="'.__('&times;', 'cf-links').'" onClick="clearTitle(\'###SECTION###\')" />
 									<br />
 									'.__('ex: Click Here','cf-links').'
 								</span>

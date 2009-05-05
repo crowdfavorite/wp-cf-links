@@ -303,7 +303,7 @@ function cflk_request_handler() {
 					}
 					if (isset($_POST['cflk_create']) && $_POST['cflk_create'] == 'import_list') {
 						if (isset($_POST['cflk_import']) && $_POST['cflk_import'] != '') {
-							$import = maybe_unserialize(stripslashes($_POST['cflk_import']));
+							$import = maybe_unserialize(stripslashes(unserialize(urldecode($_POST['cflk_import']))));
 							$nicename = $import['nicename'];
 							$description = $import['description'];
 							$data = $import['data'];
@@ -1561,11 +1561,13 @@ function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '',
 		}
 	}
 	$settings = array(
+		'key' => $cflk_key,
 		'nicename' => stripslashes($cflk_nicename), 
 		'description' => stripslashes($cflk_description), 
 		'reference_children' => $cflk_reference_children,
 		'data' => $new_data
 	);
+	$settings = apply_filters('cflk_save_list_settings',$settings);
 	do_action('cflk_save_list', $settings);
 	update_option($cflk_key, $settings);
 }
@@ -1933,6 +1935,45 @@ function cflk_reference_children_update($settings) {
 	}
 }
 add_action('cflk_save_list','cflk_reference_children_update');
+
+function cflk_find_children($settings) {
+	global $wpdb,$blog_id;
+	if (!function_exists ('get_blog_list')) { return false; }
+
+	$blog_list = array();
+	$sites = $wpdb->get_results($wpdb->prepare("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC"), ARRAY_A);
+	
+	if (is_array($sites) && count($sites)) {
+		foreach ($sites as $site) {
+			$site_id = $site['id'];
+			$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '$site_id' AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);
+			
+			if (is_array($blogs)) {
+				foreach ($blogs as $blog) {
+					if ($blog['blog_id'] != $blog_id) {
+						$blog_list[] = $blog['blog_id'];
+					}
+				}
+			}
+		}
+	}
+
+	// Now that we have the sites list, lets go through and make sure that we know about all of the children
+	foreach ($blog_list as $blog) {
+		switch_to_blog($blog);
+		$links = maybe_unserialize(get_option($settings['key']));
+		if (is_array($links) && !empty($links)) {
+			$ref_check = $blog.'-'.$settings['key'];
+			if (!in_array($ref_check,$settings['reference_children'])) {
+				$settings['reference_children'][] = $ref_check;
+			}
+		}
+		restore_current_blog();
+	}
+	
+	return $settings;
+}
+add_filter('cflk_save_list_settings','cflk_find_children',1);
 
 function cflk_reference_children_delete($cflk_key) {
 	global $blog_id;
@@ -2448,9 +2489,10 @@ function cflk_export_list($key) {
 	global $wpdb;
 	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE '$key'");
 	foreach ($cflk_list as $key => $value) {
-		print ('<textarea rows="20" style="width:600px;">');
-		print_r ($value->option_value);
-		print ('</textarea>');
+		$export = urlencode(serialize($value->option_value));
+		?>
+		<textarea rows="20" style="width:600px;"><?php echo $export; ?></textarea>
+		<?php
 	}
 	die();
 }

@@ -1414,9 +1414,9 @@ function cflk_edit_select($type) {
 }
 
 //function cflk_get_type_input($type, $input, $data, $show, $key, $show_count, $value, $reference = '') {
-function cflk_get_type_input($type, $show, $key, $show_count, $value, $reference = '') {
+function cflk_get_type_input($type_array, $show, $key, $show_count, $value, $reference = '') {
 	$return = '';
-	extract($type);
+	extract($type_array);
 	
 	$return .= '<span id="'.$type.'_'.$key.'" '.($show == $nicename ? '' : 'style="display: none;"').'>';
 	if (!$reference) {

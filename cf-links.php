@@ -1939,10 +1939,11 @@ function cflk_find_children($settings) {
 	global $wpdb,$blog_id;
 	if (!function_exists ('get_blog_list')) { return false; }
 	
+	$parent_blog = $blog_id;
+	
 	if (!is_array($settings['reference_children'])) {
 		$settings['reference_children'] = array();
 	}
-
 	$blog_list = array();
 	$sites = $wpdb->get_results($wpdb->prepare("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC"), ARRAY_A);
 	
@@ -1971,7 +1972,7 @@ function cflk_find_children($settings) {
 				continue; 
 			}
 			$ref_check = $blog.'-'.$settings['key'];
-			if ($links['reference_parent_blog'] == $blog_id && $links['reference_parent_list'] == $settings['key'] && !in_array($ref_check,$settings['reference_children'])) {
+			if ($links['reference_parent_blog'] == $parent_blog && $links['reference_parent_list'] == $settings['key'] && !in_array($ref_check,$settings['reference_children'])) {
 				$settings['reference_children'][] = $ref_check;
 			}
 		}

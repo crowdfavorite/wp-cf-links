@@ -1549,14 +1549,13 @@ function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '',
 		} else {
 			$type = $info['type'];
 			if (isset($type) && $type != '') {
-				$add = array(
+				$new_data[] = array(
 					'title' => stripslashes($info['title']),
 					'type' => $type,
 					'link' => stripslashes($info[$type]),
 					'cat_posts' => ($type == 'category' && isset($info['category_posts']) && $info['category_posts'] != '' ? true : false),
 					'level' => intval($info['level'])
 				);
-				array_push($new_data, $add);
 			}
 		}
 	}
@@ -1967,15 +1966,18 @@ function cflk_find_children($settings) {
 		switch_to_blog($blog);
 		$links = maybe_unserialize(get_option($settings['key']));
 		if (is_array($links) && !empty($links)) {
-			if (!$links['reference']) { continue; }
+			if (!$links['reference']) { 
+				restore_current_blog();
+				continue; 
+			}
 			$ref_check = $blog.'-'.$settings['key'];
-			print('Ref Check: '.$ref_check.'<br />');
 			if ($links['reference_parent_blog'] == $blog_id && $links['reference_parent_list'] == $settings['key'] && !in_array($ref_check,$settings['reference_children'])) {
 				$settings['reference_children'][] = $ref_check;
 			}
 		}
 		restore_current_blog();
 	}
+	restore_current_blog();
 	return $settings;
 }
 add_filter('cflk_save_list_settings','cflk_find_children',1);

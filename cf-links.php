@@ -1126,10 +1126,12 @@ function cflk_edit() {
 									<table class="widefat">
 										<tr'.$tr_class.'>
 											<td class="link-level">
-												<div>
+												<div>');
+								$buttons_style = (!$cflk['reference'] ? '' : ' disabled="disabled" style="visibility: hidden;"'); 
+								print('
 													<input type="hidden" class="link-level-input" name="cflk['.$key.'][level]" value="'.$setting['level'].'" />
-													<button class="level-decrement decrement-'.$key.'">&laquo;</button>
-													<button class="level-increment" decrement-'.$key.'">&raquo;</button>
+													<button class="level-decrement decrement-'.$key.'" '.$buttons_style.'>&laquo;</button>
+													<button class="level-increment" decrement-'.$key.'" '.$buttons_style.'>&raquo;</button>
 												</div>
 											</td>
 											<td class="link-order" style="text-align: center; vertical-align:middle;">

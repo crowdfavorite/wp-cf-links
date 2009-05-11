@@ -2212,6 +2212,9 @@ function cflk_get_links($key = null, $args = array()) {
 	foreach ($list['data'] as $key => $data) {
 		if (empty($data['href'])) {
 			unset($list['data'][$key]);
+			// This is here so we don't have array keys that go from 0 to 2 when an item is unset.
+			// This is a problem when we go through and print out the list because it needs all of
+			// the keys in order so it doesn't miss them, or something like that
 			$list['data'] = array_merge($list['data']);
 		}
 	}

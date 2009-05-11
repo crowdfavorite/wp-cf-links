@@ -2212,6 +2212,7 @@ function cflk_get_links($key = null, $args = array()) {
 	foreach ($list['data'] as $key => $data) {
 		if (empty($data['href'])) {
 			unset($list['data'][$key]);
+			$list['data'] = array_merge($list['data']);
 		}
 	}
 		

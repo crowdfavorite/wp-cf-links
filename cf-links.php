@@ -343,6 +343,9 @@ function cflk_request_handler() {
 			case 'cflk_admin_css':
 				cflk_admin_css();
 				break;
+			case 'cflk_front_js':
+				cflk_front_js();
+				break;
 			case 'dialog':
 				cflk_dialog();
 				break;
@@ -466,6 +469,10 @@ function cflk_admin_css() {
 	td.link-text {
 		width: 200px;
 	}
+	th.link-open-new,
+	td.link-open-new {
+		width: 75px;
+	}
 	th.link-delete,
 	td.link-delete {
 		width: 70px;
@@ -498,6 +505,16 @@ function cflk_admin_css() {
 	#cflk-list li.level-8 { margin-left: 8em; }
 	#cflk-list li.level-9 { margin-left: 9em; }
 	<?php
+	exit();
+}
+
+function cflk_front_js() {
+	header('Content-type: text/javascript');
+?>
+	jQuery(document).ready(function() {
+		jQuery('.cflk-opennewwindow a').attr('target','_blank');
+	});
+<?php
 	exit();
 }
 
@@ -738,6 +755,10 @@ if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	    add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );
 	}	
 	add_action('admin_head', 'cflk_admin_head');
+}
+
+function cflk_front_foot() {
+	echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cflk_page=cflk_front_js"></script>';
 }
 
 /**
@@ -1110,6 +1131,7 @@ function cflk_edit() {
 								<th scope="col" class="link-type">'.__('Type', 'cf-links').'</th>
 								<th scope="col" class="link-value">'.__('Link', 'cf-links').'</th>
 								<th scope="col" class="link-text">'.__('Link Text (Optional)', 'cf-links').'</th>
+								<th scope="col" class="link-open-new">'.__('New Window', 'cf-links').'</th>
 								<th scope="col" class="link-delete">'.__('Delete', 'cf-links').'</th>
 							</tr>
 						</thead>
@@ -1193,6 +1215,26 @@ function cflk_edit() {
 													print(strip_tags($setting['title']));
 												}
 											print ('
+											</td>
+											<td class="link-open-new" style="text-align: center; vertical-align:middle;">');
+												if (!$cflk['reference']) {
+													$opennew = '';
+													if ($setting['opennew']) {
+														$opennew = 'checked="checked"';
+													}
+													print('
+													<input type="checkbox" id="link_opennew_'.$key.'" name="cflk['.$key.'][opennew]" '.$opennew.' />
+													');
+												}
+												else {
+													if ($setting['opennew']) {
+														print('Yes');
+													}
+													else {
+														print('No');
+													}
+												}
+											print('
 											</td>
 											<td class="link-delete" style="text-align: center; vertical-align:middle;">
 												');
@@ -1549,14 +1591,19 @@ function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '',
 		if ($info['type'] == '') {
 			unset($cflk_data[$key]);
 		} else {
+			$opennew = false;
 			$type = $info['type'];
+			if (isset($info['opennew'])) {
+				$opennew = true;
+			}
 			if (isset($type) && $type != '') {
 				$new_data[] = array(
 					'title' => stripslashes($info['title']),
 					'type' => $type,
 					'link' => stripslashes($info[$type]),
 					'cat_posts' => ($type == 'category' && isset($info['category_posts']) && $info['category_posts'] != '' ? true : false),
-					'level' => intval($info['level'])
+					'level' => intval($info['level']),
+					'opennew' => $opennew
 				);
 			}
 		}
@@ -1774,6 +1821,8 @@ function cflk_insert_reference($reference = '') {
 			$type = $link_data['type'];
 			$link = $link_data['link'];
 			$title = $link_data['title'];
+			$opennew = $link_data['opennew'];
+
 			if ($link_data['type'] == 'page' || $link_data['type'] == 'author' || $link_data['type'] == 'author_rss' || $link_data['type'] == 'category' || $link_data['type'] == 'wordpress' || $link_data['type'] == 'blog') {
 				$reference_data = cflk_reference_get_link_data($link_data['type'], $link_data['link']);
 				$type = $reference_data['type'];
@@ -1786,6 +1835,7 @@ function cflk_insert_reference($reference = '') {
 				'type' => $type,
 				'link' => $link,
 				'cat_posts' => $link_data['cat_posts'],
+				'opennew' => $opennew
 			);
 		}
 		
@@ -1903,6 +1953,7 @@ function cflk_reference_children_update($settings) {
 					$type = $link_data['type'];
 					$link = $link_data['link'];
 					$title = $link_data['title'];
+					$opennew = $link_data['opennew'];
 	
 					if ($link_data['type'] == 'page' || $link_data['type'] == 'author' || $link_data['type'] == 'author_rss' || $link_data['type'] == 'category' || $link_data['type'] == 'wordpress' || $link_data['type'] == 'blog') {
 						$reference_data = cflk_reference_get_link_data($link_data['type'], $link_data['link']);
@@ -1916,6 +1967,7 @@ function cflk_reference_children_update($settings) {
 						'type' => $type,
 						'link' => $link,
 						'cat_posts' => $link_data['cat_posts'],
+						'opennew' => $opennew
 					);
 				}
 
@@ -2408,6 +2460,10 @@ function cflk_get_link_info($link_list,$merge=true) {
 			$class = $link_list['key'].'_'.md5($href);
 			if ($other == 'rss') {
 				$class .= ' cflk-feed';
+			}
+			if ($link['opennew']) {
+				$class .= ' cflk-opennewwindow';
+				add_action('wp_footer', 'cflk_front_foot');				
 			}
 			
 			if ($href != '') {

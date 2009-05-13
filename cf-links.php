@@ -509,13 +509,13 @@ function cflk_admin_css() {
 }
 
 function cflk_front_js() {
-	header('Content-type: text/javascript');
 ?>
+<script type="text/javascript">
 	jQuery(document).ready(function() {
 		jQuery('.cflk-opennewwindow a').attr('target','_blank');
 	});
+</script>
 <?php
-	exit();
 }
 
 function cflk_admin_js() {
@@ -755,10 +755,6 @@ if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	    add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );
 	}	
 	add_action('admin_head', 'cflk_admin_head');
-}
-
-function cflk_front_foot() {
-	echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cflk_page=cflk_front_js"></script>';
 }
 
 /**
@@ -2463,7 +2459,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 			}
 			if ($link['opennew']) {
 				$class .= ' cflk-opennewwindow';
-				add_action('wp_footer', 'cflk_front_foot');				
+				add_action('wp_footer', 'cflk_front_js');				
 			}
 			
 			if ($href != '') {

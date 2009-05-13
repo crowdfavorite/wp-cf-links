@@ -1320,6 +1320,9 @@ function cflk_edit() {
 									'.__('ex: Click Here','cf-links').'
 								</span>
 							</td>
+							<td class="link-open-new" style="text-align: center; vertical-align:middle;">
+									<input type="checkbox" id="link_opennew_###SECTION###" name="cflk[###SECTION###][opennew]" />
+							</td>
 							<td class="link-delete" style="text-align: center;">
 								<input type="button" class="button" id="link_delete_###SECTION###" value="'.__('Delete', 'cf-links').'" onClick="deleteLink(\''.$cflk_key.'\',\'###SECTION###\')" />
 							</td>

@@ -512,7 +512,11 @@ function cflk_front_js() {
 ?>
 <script type="text/javascript">
 	jQuery(document).ready(function() {
-		jQuery('.cflk-opennewwindow a').attr('target','_blank');
+		//jQuery('.cflk-opennewwindow a').attr('target','_blank');
+		jQuery('.cflk-opennewwindow a').click(function(){
+			window.open(this.href);
+			return false;
+		});
 	});
 </script>
 <?php

@@ -1994,7 +1994,7 @@ add_action('cflk_save_list','cflk_reference_children_update');
 
 function cflk_find_children($settings) {
 	global $wpdb,$blog_id;
-	if (!function_exists ('get_blog_list')) { return false; }
+	if (!function_exists ('get_blog_list')) { return $settings; }
 	
 	$parent_blog = $blog_id;
 	

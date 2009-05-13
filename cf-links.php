@@ -2261,6 +2261,18 @@ function cflk_get_links($key = null, $args = array()) {
 	$ret = '';
 	$i = 0;
 	$listcount = 0;
+	
+	// Process the list to see if the href is empty, if it is remove it from the list
+	// so we don't have extra <li>'s that are not needed
+	foreach ($list['data'] as $key => $data) {
+		if (empty($data['href']) && empty($data['title'])) {
+			unset($list['data'][$key]);
+			// This is here so we don't have array keys that go from 0 to 2 when an item is unset.
+			// This is a problem when we go through and print out the list because it needs all of
+			// the keys in order so it doesn't miss them, or something like that
+			$list['data'] = array_merge($list['data']);
+		}
+	}
 		
 	$ret = cflk_build_list_items($list['data'],$args);
 	$ret = apply_filters('cflk_get_links', $ret, $list, $args);

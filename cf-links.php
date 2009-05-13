@@ -471,7 +471,7 @@ function cflk_admin_css() {
 	}
 	th.link-open-new,
 	td.link-open-new {
-		width: 75px;
+		width: 85px;
 	}
 	th.link-delete,
 	td.link-delete {

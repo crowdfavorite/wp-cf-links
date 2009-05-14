@@ -981,7 +981,9 @@ function cflk_import() {
 											$blog_links = cflk_get_list_links($blog['id']);
 											if (is_array($blog_links)) {
 												foreach ($blog_links as $key => $info) {
-													print('<option value="'.$blog['id'].'-'.$key.'">'.$blog['name'].' - '.$info['nicename'].'</option>');
+													if (!$info['reference']) {
+														print('<option value="'.$blog['id'].'-'.$key.'">'.$blog['name'].' - '.$info['nicename'].'</option>');
+													}
 												}
 											}
 										}
@@ -1790,7 +1792,8 @@ function cflk_get_list_links($blog = 0) {
 			$return[$cflk->option_name] = array(
 				'nicename' => $options['nicename'], 
 				'description' => $options['description'],
-				'count' => count($options['data'])
+				'count' => count($options['data']),
+				'reference' => $options['reference']
 			);
 		}
 		return $return;

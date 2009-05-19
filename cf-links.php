@@ -2376,6 +2376,7 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 			}
 		}
 	}
+	$after = ($start == 0 ? $args['after'] : $args['child_after']);
 	return $ret.$after;
 }
 

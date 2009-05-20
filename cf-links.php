@@ -2257,6 +2257,7 @@ function cflk_get_links($key = null, $args = array()) {
 	// make sure we have a level designator in the list
 	$args['before'] = cflk_ul_ensure_level_class($args['before']);
 	$args['child_before'] = cflk_ul_ensure_level_class($args['child_before']);
+	$args['key'] = $key;
 	
 	$list = cflk_get_links_data($key);
 	if (!is_array($list)) { return ''; }
@@ -2356,15 +2357,19 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 				$li_class .= 'cflk-current ';
 			}
 			
-			// build
-			$ret .= '<li class="'.$data['class'].' '.$li_class.'">';
+			// build & filter link
+			$link = '';
 			if (!empty($data['href'])) {
-				$ret .= '<a href="'.$data['href'].'" class="a-level-'.$data['level'].'">';
+				$link .= '<a href="'.$data['href'].'" class="a-level-'.$data['level'].'">';
 			}
-			$ret .= strip_tags($data['text']);
+			$link .= strip_tags($data['text']);
 			if (!empty($data['href'])) {
-				$ret .= '</a>';
+				$link .= '</a>';
 			}
+			$link = apply_filters('cflk-link-item',$link,$data,$key);
+			
+			// put it all together
+			$ret .= '<li class="'.$data['class'].' '.$li_class.'">'.$link;
 			if($items[$cflk_i+1]['level'] > $data['level']) {
 				$ret .= cflk_build_list_items($items,$args,++$cflk_i);
 			}

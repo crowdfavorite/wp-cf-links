@@ -1,4 +1,4 @@
-## <a id="advanced-links-list">Advanced Links</a>
+## <a id="advanced-links-list">CF Links</a>
 
 ### Creating a Links list
 

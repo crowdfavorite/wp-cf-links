@@ -84,7 +84,7 @@ $cflk_inside_widget = false;
 function cflk_link_types() {
 	global $wpdb, $cflk_types, $blog_id;
 	
-	$pages = get_pages();
+	$pages = get_pages(array('hierarchical' => 1));
 	$categories = get_categories('get=all');
 	$authors = cf_sort_by_key(get_users_of_blog($blog_id),'display_name');
 
@@ -96,9 +96,10 @@ function cflk_link_types() {
 	$site_data = array();
 	
 	foreach ($pages as $page) {
-		$page_data[$page->post_name] = array(
+		$page_data[$page->ID] = array(
 			'link' => $page->ID, 
-			'description' => $page->post_title
+			'description' => $page->post_title,
+			'ancestors' => get_post_ancestors($page)
 		);
 	}
 	foreach ($categories as $category) {
@@ -532,7 +533,7 @@ function cflk_admin_js() {
 			update : function () {
 				jQuery("input#cflk-log").val(jQuery("#cflk-list").sortable("serialize"));
 			},
-			containment: 'parent',
+			containment: 'window',
 			opacity: 0.5,
 			stop: cflk_levels_refactor
 		});
@@ -549,6 +550,7 @@ function cflk_admin_js() {
 			if (cflkAJAXDeleteLink(cflk_key,linkID)) {
 				jQuery('#listitem_'+linkID).remove();
 				jQuery("#message_delete").attr("style","");
+				cflk_levels_refactor();
 			}
 			return false;
 		}
@@ -1474,7 +1476,7 @@ function cflk_get_type_input($type_array, $show, $key, $show_count, $value, $ref
 				$return .= '<input type="text" name="cflk['.$key.']['.$type.']" id="cflk_'.$key.'_'.$type.'" size="50" value="'.strip_tags($value).'" /><br />'.$data;
 				break;
 			case 'select':
-				$return .= '<select name="cflk['.$key.']['.$type.']" id="cflk_'.$key.'_'.$type.'" style="max-width: 410px; width: 410px;">';
+				$return .= '<select name="cflk['.$key.']['.$type.']" id="cflk_'.$key.'_'.$type.'" style="max-width: 410px; width: 90%;">';
 				foreach ($data as $info) {
 					$selected = '';
 					$count_text = '';
@@ -1483,6 +1485,9 @@ function cflk_get_type_input($type_array, $show, $key, $show_count, $value, $ref
 					}
 					if ($show_count == 'yes' && isset($info['count'])) {
 						$count_text = ' ('.$info['count'].')';
+					}
+					if($type == 'page' && isset($info['ancestors']) && count($info['ancestors'])) {
+						$info['description'] = str_repeat('&nbsp;',count($info['ancestors'])*3).$info['description'];
 					}
 					$return .= '<option value="'.$info['link'].'"'.$selected.'>'.$info['description'].$count_text.'</option>';
 				}

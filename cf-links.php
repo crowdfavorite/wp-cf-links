@@ -1063,7 +1063,7 @@ function cflk_edit() {
 										print('
 										<p>
 											<span style="color:#999999;">
-												'.__('(No description has been set for this links list.'.$description_edit.')','cf-links'));
+												'.__('No description has been set for this links list.'.$description_edit,'cf-links'));
 												if ($cflk['reference']) {
 													$ref_blog = get_blog_details($cflk['reference_parent_blog']);
 													print('<br /><br /><strong>'.__('This is a reference to '.$ref_blog->blogname.'\'s links list.','cf-links').'</strong><br />');

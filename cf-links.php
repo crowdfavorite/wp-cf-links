@@ -1908,7 +1908,7 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 			}
 			
 			// see if we're the current page
-			if ($server_current == str_replace(array('http://','http://www.'),'',trailingslashit($data['href']))) {
+			if ($server_current == str_replace(array('http://', 'http://www.'), '', $data['href'])) {
 				$li_class .= 'cflk-current ';
 			}
 			

@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced options for adding links
-Version: 1.1
+Version: 1.2
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -86,7 +86,7 @@ function cflk_link_types() {
 	
 	$pages = get_pages(array('hierarchical' => 1));
 	$categories = get_categories('get=all');
-	$authors = cf_sort_by_key(get_users_of_blog($blog_id),'display_name');
+	$authors = cflk_get_authors();
 
 	$page_data = array();
 	$category_data = array();
@@ -110,9 +110,9 @@ function cflk_link_types() {
 		);
 	}
 	foreach ($authors as $author) {
-		$author_data[$author->user_login] = array(
-				'link' => $author->user_id, 
-				'description' => $author->display_name
+		$author_data[$author['login']] = array(
+				'link' => $author['user_id'], 
+				'description' => $author['display_name']
 		);
 	}	
 	$wordpress_data = array(
@@ -223,6 +223,40 @@ function cflk_link_types() {
 	$cflk_types = apply_filters('cflk-types',$cflk_types);
 }
 add_action('init', 'cflk_link_types');
+
+/**
+ * grab list of authors
+ * pulls anyone with capabilities higher than subscriber
+ *
+ * @return array - list of authors
+ */
+function cflk_get_authors() {
+	global $wpdb;
+
+	$sql = "
+		SELECT DISTINCT u.ID,
+			u.user_nicename,
+			u.display_name,
+			u.user_login
+		from {$wpdb->users} AS u, 
+			{$wpdb->usermeta} AS um
+		WHERE u.user_login <> 'admin'
+		AND u.ID = um.user_id
+		AND um.meta_key LIKE '{$wpdb->prefix}capabilities'
+		AND um.meta_value NOT LIKE '%subscriber%'
+		ORDER BY u.user_nicename
+		";
+	$results = array();
+	$users = $wpdb->get_results(apply_filters('cflk_get_authors_sql',$sql));
+	foreach($users as $u) {
+		$results[$u->ID] = array(
+			'id' => $u->ID,
+			'display_name' => $u->display_name,
+			'login' => $u->user_login
+		);
+	}
+	return apply_filters('cflk_get_authors',$results);
+}
 
 function cflk_menu_items() {
 	if (current_user_can('manage_options')) {
@@ -739,7 +773,6 @@ function cflk_admin_head() {
 	echo '<link rel="stylesheet" type="text/css" href="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cflk_page=cflk_admin_css" />';
 	echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cflk_page=cflk_admin_js"></script>';
 	echo '<link rel="stylesheet" href="'.trailingslashit(get_bloginfo('wpurl')).'/wp-includes/js/thickbox/thickbox.css" type="text/css" media="screen" />';
-	
 }
 if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	wp_enqueue_script('jquery');

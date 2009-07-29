@@ -2414,7 +2414,7 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 			$ret .= '</li>';
 
 			// if we're at the end of this level then break the loop
-			if(!isset($items[$cfkl_i+1]) || $items[$cflk_i+1]['level'] < $data['level']) {
+			if(!isset($items[$cflk_i+1]) || $items[$cflk_i+1]['level'] < $data['level']) {
 				break;
 			}
 		}

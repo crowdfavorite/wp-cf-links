@@ -2177,44 +2177,6 @@ function cflk_export_list($key) {
 }
 
 /**
- * Takes $links['data'] and formats it as a hierarchal array. 
- * Useful for when the links data is being used for outside purposes.
- *
- * @example $hierarchal = cflk_format_heirarchal_list($links['data']);
- * @param array $links 
- * @param int $level 
- * @param int $start 
- * @return array
- */
-function cflk_format_hierarchal_list($links, $level = 0, $start = 0) {
-	global $current;
-	
-	$ret = array();
-	for($i = $start; $i < count($links); $i++) {
-		$current = $i;
-		if($links[$i]['level'] == $level) {
-			$ret[] = $links[$i];
-		}
-		elseif($links[$i]['level'] > $level) {
-			$children = cflk_format_hierarchal_list($links,$links[$i]['level'],$i);
-			$ret[($i-1)]['children'] = $children['ret'];
-			$i = $children['i'];
-		}
-		elseif($links[$i]['level'] < $level) {
-			$i--;
-			break;
-		}
-	}
-
-	if($i == count($links)) {
-		return $ret;
-	}
-	else {
-		return array('ret' => $ret, 'i' => $i);
-	}
-}
-
-/**
  * 
  * CF Links Deprecated Functions
  * 

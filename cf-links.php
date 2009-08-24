@@ -1831,7 +1831,8 @@ function cflk_get_list_links($blog = 0) {
 				'nicename' => $options['nicename'], 
 				'description' => $options['description'],
 				'count' => count($options['data']),
-				'reference' => $options['reference']
+				'reference' => $options['reference'],
+				'data' => $options['data']
 			);
 		}
 		return $return;
@@ -2623,6 +2624,44 @@ function cflk_export_list($key) {
 	}
 	die();
 }
+
+/**
+ * cflk_deactivate_blog - This function runs when a blog is deactivated.  It will go through all of the lists on the entire site and
+ * remove the deactivated blog from any links list.
+ *
+ * @param string $id - Blog ID to be removed
+ * @return void
+ */
+function cflk_deactivate_blog($id) {
+	global $cflk_types;
+	
+	switch_to_blog($id);
+	$url = get_bloginfo('url');
+	$name = get_bloginfo('name');
+	restore_current_blog();
+	
+	foreach ($cflk_types['blog']['data'] as $blog) {
+		$blog_id = $blog['link'];
+		$links_lists = cflk_get_list_links($blog_id);
+		
+		foreach ($links_lists as $key => $list) {
+			foreach ($list['data'] as $item_key => $item) {
+				if ($item['type'] == 'blog' && $item['link'] == $id) {
+					unset($list['data'][$item_key]);
+				}
+				if ($item['type'] == 'url' && $item['link'] == $url && $item['title'] == $name) {
+					unset($list['data'][$item_key]);
+				}
+			}
+			
+			switch_to_blog($blog_id);
+			update_option($key, $list);
+			restore_current_blog($blog_id);
+		}
+	}
+}
+add_action('deactivate_blog', 'cflk_deactivate_blog');
+add_action('archive_blog', 'cflk_deactivate_blog');
 
 /**
  * 

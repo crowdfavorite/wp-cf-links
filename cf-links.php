@@ -753,6 +753,41 @@ function cflk_admin_js() {
 			prev = current;
 		});
 	}
+	
+	// provide modal edit abilities
+	function cflk_edit_select_modal(id,value,listname) {
+		var container = jQuery('#' + listname + '_' + id + ' .select-modal-display');
+		var hidden = jQuery('#cflk-' + listname + '-' + id + '-value');
+		var currentvalue = hidden.val();
+		var value_id = hidden.attr('id');
+		var value_name = hidden.attr('name');
+				
+		container.hide();
+		hidden.remove();
+		
+		var select_container = jQuery('#' + listname + '-modal').clone();
+		select_container.find('select').attr('name',value_name).attr('id',value_id);
+		select_container.find('option').each(function(){
+			this.selected = this.value == currentvalue;
+		});
+		
+		select_container.css({'display':'inline'}).insertAfter(container)
+			.children('span#' + listname + '_list').css({'display':'inline'})
+			.siblings('input.modal-done').click(function(){
+				_this = jQuery(this);
+				var new_value = jQuery('#cflk-' + listname + '-' + id + '-value').val();
+				var new_hidden = jQuery('<input type="hidden">')
+					.attr('name',value_name)
+					.attr('id',value_id)
+					.val(new_value);
+				container.append(new_hidden);
+				
+				jQuery('#' + listname + '_' + id + ' .select-modal-display').find('span').html(_this.siblings('span').children('select').find('option:selected').text());				
+				select_container.remove();
+				select_container = null; // possibly feeble attempt at keeping memory use low
+				container.show();
+			});
+	}
 <?php
 	exit();
 }
@@ -1190,6 +1225,23 @@ function cflk_edit() {
 					</table>
 				</li>
 			</div>');
+			
+			// select-modal placeholder
+			//dp($cflk_types);
+			foreach ($cflk_types as $type) {
+				if($type['input'] == 'select-modal') {
+					$select_settings[$type['type'].'_show'] = 'style="display: none;"';
+					// fool cflk_get_type_input in to giving us a select list
+					$type['input'] = 'select';
+					echo '
+						<div id="'.$type['type'].'-modal" class="'.$type['type'].'-modal" style="display: none;">
+							'.cflk_get_type_input($type, $select_settings[$type['type'].'_show'], 'list', '', '').'
+							<input type="button" name="'.$type['type'].'-set" value="Done" class="modal-done button"/> 
+						</div>
+						';
+				}
+			}
+			
 			print ('</div>
 		');
 	} else {
@@ -1362,6 +1414,19 @@ function cflk_get_type_input($type_array, $show, $key, $show_count, $value) {
 				}
 				$return .= '<br /><span id="holder_'.$type.'_'.$key.'" style="font-weight:bold;">'.__('Imported item ID does not exist in the system.<br />Please create a new '.$type_show.', then select it from the list above.','cf-links').'</span>';
 			}
+			break;
+		case 'select-modal':
+			foreach($data as $item) {
+				if($item['link'] == $value) {
+					$display = $item['description'];
+					break;
+				}
+			}
+			$return .= '
+				<input type="hidden" name="cflk['.$key.']['.$type.']" id="cflk-'.$type.'-'.$key.'-value" value="'.strip_tags($value).'"/>
+				<div class="select-modal-display"><span>'.$display.'</span> <input type="button" class="button" id="edit-'.$key.'-'.$type.'" name="edit-'.$key.'-'.$type.'" value="Edit" onclick="cflk_edit_select_modal(\''.$key.'\',\''.$value.'\',\''.$type.'\'); return false;"/></div>
+				';
+			
 			break;
 	}
 	$return .= '</span>';

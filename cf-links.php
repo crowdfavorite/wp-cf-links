@@ -1990,8 +1990,20 @@ function cflk_reference_children_update($settings) {
 			if (is_array($links)) {
 				$nicename = $links['nicename'];
 				$description = $links['description'];
-				$reference_parent_blog = $links['reference_parent_blog'];
-				$reference_parent_list = $links['reference_parent_list'];
+				
+				if (!empty($links['reference_parent_blog'])) {
+					$reference_parent_blog = $links['reference_parent_blog'];
+				}
+				else {
+					$reference_parent_blog = $current_blog;
+				}
+				if (!empty($links['reference_parent_list'])) {
+					$reference_parent_list = $links['reference_parent_list'];
+				}
+				else {
+					$reference_parent_list = $child_key;
+				}
+
 				$data = array();
 
 				foreach ($settings['data'] as $link_data) {
@@ -2004,7 +2016,9 @@ function cflk_reference_children_update($settings) {
 						$reference_data = cflk_reference_get_link_data($link_data['type'], $link_data['link']);
 						$type = $reference_data['type'];
 						$link = $reference_data['link'];
-						$title = $reference_data['title'];
+						if (empty($title)) {
+							$title = $reference_data['title'];
+						}
 					}
 	
 					$data[] = array(
@@ -2045,7 +2059,7 @@ function cflk_find_children($settings) {
 	}
 	$blog_list = array();
 	$sites = $wpdb->get_results($wpdb->prepare("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC"), ARRAY_A);
-	
+
 	if (is_array($sites) && count($sites)) {
 		foreach ($sites as $site) {
 			$site_id = $site['id'];

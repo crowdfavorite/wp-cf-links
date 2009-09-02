@@ -2085,6 +2085,10 @@ function cflk_find_children($settings) {
 				continue; 
 			}
 			$ref_check = $blog.'-'.$settings['key'];
+			// Keep this in place, we might need this if the children lose their way and we need to force them back into line
+			// if ($links['reference'] == '1' && !in_array($ref_check, $settings['reference_children'])) {
+			// 	$settings['reference_children'][] = $ref_check;
+			// }
 			if ($links['reference_parent_blog'] == $parent_blog && $links['reference_parent_list'] == $settings['key'] && !in_array($ref_check,$settings['reference_children'])) {
 				$settings['reference_children'][] = $ref_check;
 			}

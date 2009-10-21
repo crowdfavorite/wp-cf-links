@@ -1,0 +1,16 @@
+# CF Links Changelog
+
+## 1.2.1
+- Added 'Modal' type (NEEDS MORE DOCUMENTATION)
+- Fixed bug with 'Current' page.  WordPress always has trailing slashes at the end of its urls, so for the 'current' matching, we had to add a 'trailingslashit' function.
+
+## 1.1b3
+
+## 1.1b2
+
+## 1.1b1
+
+## 1.1
+
+## 1.0
+- Initial Release

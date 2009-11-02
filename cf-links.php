@@ -436,7 +436,6 @@ function cflk_ajax() {
 	</script>
 	<?php
 }
-add_action('admin_print_scripts', 'cflk_ajax');
 
 function cflk_admin_css() {
 	header('Content-type: text/css');
@@ -796,7 +795,6 @@ function cflk_admin_head() {
 	echo '<link rel="stylesheet" type="text/css" href="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cflk_page=cflk_admin_css" />';
 	echo '<script type="text/javascript" src="'.trailingslashit(get_bloginfo('wpurl')).'index.php?cflk_page=cflk_admin_js"></script>';
 	echo '<link rel="stylesheet" href="'.trailingslashit(get_bloginfo('wpurl')).'/wp-includes/js/thickbox/thickbox.css" type="text/css" media="screen" />';
-	
 }
 if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	wp_enqueue_script('jquery');
@@ -818,6 +816,7 @@ if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	    add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );
 	}	
 	add_action('admin_head', 'cflk_admin_head');
+	add_action('admin_print_scripts', 'cflk_ajax');
 }
 
 /**

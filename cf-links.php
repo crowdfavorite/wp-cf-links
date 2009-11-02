@@ -1181,7 +1181,7 @@ function cflk_edit() {
 							</td>
 							<td class="link-order" style="text-align: center;"><img src="'.get_bloginfo('wpurl').'/wp-content/plugins/cf-links/images/arrow_up_down.png" class="handle" alt="move" /></td>
 							<td class="link-type">
-								<select name="cflk[###SECTION###][type]" id="cflk_###SECTION###_type" onChange="showLinkType(###SECTION###)">');
+								<select name="cflk[###SECTION###][type]" id="cflk_###SECTION###_type" onChange="showLinkType(\'###SECTION###\')">');
 									foreach ($cflk_types as $type) {
 										$select_settings[$type['type'].'_select'] = '';
 										if ($type['type'] == 'url') {

@@ -2,6 +2,7 @@
     tinymce.create('tinymce.plugins.cflinks', {
         init: function(ed, url) {
 			pluginUrl = url.replace('js', '');
+			imageUrl = pluginUrl+'images/brick_add.png';
             this.editor = ed;
             ed.addCommand('cfLinks',
             function() {
@@ -20,7 +21,7 @@
             ed.addButton('cfLinksBtn', {
                 title: 'Select Link List Below',
                 cmd: 'cfLinks',
-				image : pluginUrl + 'images/brick_add.png',
+				image : imageUrl
             });
             ed.onNodeChange.add(function(ed, cm, n, co) {
                 cm.setDisabled('cfLinks', co && n.nodeName != 'A');

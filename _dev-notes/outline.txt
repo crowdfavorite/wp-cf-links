@@ -1,0 +1,88 @@
+# CF Links v2 Dev outline
+
+## Retained functions & filters (if in name only)
+	
+	// Core
+	cflk_get_links() // main template tag (returns)
+	cflk_links() // main template tag (echoes)
+	cflk_get_list_links() // retain as accessor function
+	cflk_get_links_data() // retain as accessor function
+	
+	// Admin
+	cflk_menu_items(){}
+	cflk_add_readme(){}
+	cflk_readme(){}
+
+	
+## Functions
+
+	cflk_tinymce_dialog(){} // replaces cflk_dialog()
+	cflk_tinymce_register_button(){} // replaces cflk_register_button()
+	cflk_tinymce_add_pluing(){} // replaces cflk_add_tinymce_button
+	cflk_tinymce_add(){} // replaces cflk_addtinymce
+
+## Classes
+
+	cflk_links {
+		__construct(){
+			// enqueue_scripts
+			// enqueue_styles
+			// add_actions
+			// register widget
+		}
+		display($list_id){}
+		get_list($list_id){}
+		
+		build_list(){}
+		ensure_ul_level_class(){}
+		
+		handle_shortcode(){}
+		
+		import_included_links(){}
+		find_included_links(){}
+		
+		register_link_type(){}
+		
+		js(){}
+		css(){}
+	}
+	
+	cflk_admin extends cflk_links {
+		__construct(){
+			// enqueue_scripts
+			// enqueue_styles
+			// add_actions
+		}
+		request_handler(){}
+		
+		// pages
+		display($type){}
+		_main(){}
+		_edit(){}
+		_import(){}
+		
+		// functionality
+		create_list(){}
+		save_list(){}
+		export_list(){}
+		import_list(){}
+		get_authors(){}
+		
+		check_unique_name(){}
+		
+		// Ajax Accessors
+		ajax_edit_name(){}
+		ajax_import(){}
+		ajax_export(){}
+		ajax_autocomplete($text,$type){}
+		
+		js(){}
+		css(){}
+	}
+	
+	cflk_widget extends WP_Widget {
+		cflk_widget(){}
+		widget(){}
+		update(){}
+		form(){}
+	}

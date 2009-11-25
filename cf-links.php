@@ -222,7 +222,7 @@ function cflk_link_types() {
 	}
 	$cflk_types = apply_filters('cflk-types',$cflk_types);
 }
-add_action('init', 'cflk_link_types');
+add_action('admin_init', 'cflk_link_types');
 
 /**
  * grab list of authors

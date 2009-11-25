@@ -1,0 +1,87 @@
+#cflk-list { list-style: none; padding: 0; margin: 0; }
+#cflk-list li { margin: 0; padding: 0; }
+#cflk-list .handle { cursor: move; }
+#cflk-log { padding: 5px; border: 1px solid #ccc; }
+.cflk-info { list-style: none; }
+.cflk_edit_link {
+	font-size: 10px;
+	font-weight: normal;
+}
+.cflk-codebox {
+	padding: 10px;
+	background-color: #E4F2FD;
+	border: 1px solid #C6D9E9;
+}
+.tr_holder {
+	background-color: #FFF07E;
+}
+/* a little nicity for browsers that understand it */
+#cflk-list li table.widefat tr:hover td {
+	background-color: #eee;
+}
+/* Link levels */
+#cflk-form th,
+#cflk-form td {
+
+}
+th.link-order,
+td.link-order {
+	width: 40px;
+}
+th.link-type,
+td.link-type {
+	width: 100px;
+	text-align: center;
+}
+th.link-level,
+td.link-level {
+	width: 25px;
+	text-align: center;
+}
+td.link-level div {
+	margin: 0;
+	padding: 0;
+}
+th.link-value,
+td.link-value {
+	
+}
+th.link-text,
+td.link-text {
+	width: 200px;
+}
+th.link-open-new,
+td.link-open-new {
+	width: 85px;
+}
+th.link-delete,
+td.link-delete {
+	width: 70px;
+	text-align: center;
+}
+#cflk-list button.level-decrement,
+#cflk-list button.level-increment {
+	float: left;
+	border: 1px solid gray;
+	background: #f1f1f1 url(/wp-admin/images/gray-grad.png) 0 0 repeat-x;
+	cursor: pointer;
+	-moz-border-radius: 4px;
+	-khtml-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border-radius: 4px;
+}
+#cflk-list button.disabled {
+	cursor: default;
+}
+#cflk-list { background-color: #f1f1f1; }
+#cflk-list button.level-increment { clear: left; }
+#cflk-list li.level-0 { margin-left: 0; }
+#cflk-list li.level-1 { margin-left: 1em; }
+#cflk-list li.level-2 { margin-left: 2em; }
+#cflk-list li.level-3 { margin-left: 3em; }
+#cflk-list li.level-4 { margin-left: 4em; }
+#cflk-list li.level-5 { margin-left: 5em; }
+#cflk-list li.level-6 { margin-left: 6em; }
+#cflk-list li.level-7 { margin-left: 7em; }
+#cflk-list li.level-8 { margin-left: 8em; }
+#cflk-list li.level-9 { margin-left: 9em; }

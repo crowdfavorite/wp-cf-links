@@ -11,13 +11,15 @@
 	- import list (new page)
 - actions on individual lists
 	- export list (ajax)
+	- delete list (ajax)
 	- edit (new page)
+	- show template-tag and/or shortcode
 
 ## Import
 
 - show import textarea
 - actions
-	- import (ajax)
+	- import
 		- redirect to list edit on success
 		- show errors on failure
 
@@ -145,7 +147,7 @@ each also contains 'title' & 'new window' options
 	 * Show the admin page
 	 * All page delegation done within the object
 	 */
-	cflk_admin() {
+	function cflk_admin() {
 		global $cflk_links;
 		$cflk_links->admin();
 	}
@@ -177,13 +179,13 @@ each also contains 'title' & 'new window' options
 		
 	// Display
 		function display($data) {
-			$html = '<li class="'.$this->id.' '$data['class'].'"><a href="'.$data['href'].'"'.$javascript.'>'.$data['text'].'</a></li>';
+			$html = '<li class="'.$this->id.' '.$data['class'].'"><a href="'.$data['href'].'"'.$javascript.'>'.$data['text'].'</a></li>';
 			return apply_filters('cflk-link-'.$this->id.'-item', $html, $data);
 		}
 		
 	// Admin	
-		function admin($mode) {
-			if($mode == 'edit') {
+		function admin($mode, $data) {
+			if ($mode == 'edit') {
 				$html = $this->_admin_form();
 			}
 			else {
@@ -262,7 +264,7 @@ each also contains 'title' & 'new window' options
 			
 			$list = maybe_unserialize(get_option($list_id));
 			
-			if(!is_array($list)) {
+			if (!is_array($list)) {
 				return false;
 			}
 			
@@ -326,17 +328,17 @@ each also contains 'title' & 'new window' options
 		 * @return string html
 		 */
 		function build_list_recursive($items, $args, $level = 0) {
-			$wrappers = $this->get_wrappers($list['key'], $args, $level)			
+			$wrappers = $this->get_wrappers($list['key'], $args, $level);
 			
 			$ret = $this->apply_class($wrappers['parent_before'], '<ul class="cflk-level-'.$level);
 			foreach ($items as $key => $item) {
-				$li_class = array('cflk-item-level-'.$level)
+				$li_class = array('cflk-item-level-'.$level);
 				
 				// see if we're first or last
-				if(!isset($items[$key-1])) {
+				if (!isset($items[$key-1])) {
 					$class[] = ' cflk-first';
 				}
-				elseif(!isset($items[$key+1])) {
+				elseif (!isset($items[$key+1])) {
 					$class[] = 'cflk-last';
 				}				
 				
@@ -413,7 +415,7 @@ each also contains 'title' & 'new window' options
 						break;
 					}
 				}
-				if(!isset($links[$i]['class'])) {
+				if (!isset($links[$i]['class'])) {
 					$links[$i]['class'] = '';
 				}
 			}
@@ -477,7 +479,7 @@ each also contains 'title' & 'new window' options
 		 * @package default
 		 */
 		function register_link_type($id, $classname) {
-			if (class_exists($classname) && $this->link_types[$id] = new $classname())
+			if (class_exists($classname) && $this->link_types[$id] = new $classname()) {
 				return true;
 			}
 			return false;
@@ -514,13 +516,22 @@ each also contains 'title' & 'new window' options
 		}
 		
 		function admin_request_handler() {
+			// Resources
 			if (!empty($_GET['cflk_action'])) {
-				switch ($_GET['cflk_acton']) {
+				switch ($_GET['cflk_action']) {
 					case 'admin_js':
 						$this->admin_js();
 						break;
 					case 'admin_css':
 						$this->admin_css();
+						break;
+				}
+			}
+			
+			// Actions
+			if (!empty($_POST['cflk_action'])) {
+				switch($_POST['cflk_action']) {
+					case 'edit':
 						break;
 				}
 			}
@@ -539,6 +550,7 @@ each also contains 'title' & 'new window' options
 		
 		function _default() {
 			// show list of available lists
+			
 		}
 		
 		function _edit() {
@@ -589,19 +601,19 @@ each also contains 'title' & 'new window' options
 			$result->send();
 		}
 		
-		function ajax_import($args) {
+		function ajax_export_list($args) {
 			
 		}
 		
-		function ajax_export($args) {
+		function ajax_delete_list($args) {
 			
 		}
 		
-		function ajax_edit($args) {
+		function ajax_autocomplete($args) {
 			
 		}
 		
-		function ajax_autocomplete($text,$type) {
+		function ajax_check_unique_name($args) {
 			
 		}
 		

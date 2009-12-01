@@ -1,88 +1,576 @@
+<?php
 # CF Links v2 Dev outline
+
+/* SAMPLE LIST DATA
+Array
+(
+    [key] => cfl-main-navigation
+    [nicename] => Main Navigation
+    [description] => 
+    [data] => Array
+        (
+            [0] => Array
+                (
+                    [title] => Investor Reports
+                    [type] => category
+                    [link] => 206
+                    [cat_posts] => 
+                    [level] => 0
+                    [opennew] => 
+                )
+
+            [1] => Array
+                (
+                    [title] => Article Index
+                    [type] => page
+                    [link] => 9127
+                    [cat_posts] => 
+                    [level] => 0
+                    [opennew] => 
+                )
+        )
+)
+*/
+
+## Constants
+
+	define('CFLK_PLUGIN_DIR',trailingslashit(WP_PLUGINS_DIR).basename(__FILE__));
 
 ## Retained functions & filters (if in name only)
 	
-	// Core
-	cflk_get_links() // main template tag (returns)
-	cflk_links() // main template tag (echoes)
-	cflk_get_list_links() // retain as accessor function
-	cflk_get_links_data() // retain as accessor function
+	/**
+	 * Template Tag
+	 *
+	 * $args is an array of parameters that can effect the list output
+	 * - 'context': supply a helper context name for sensitive filtering. ie: header, footer, sidebar, etc...
+	 * - 'before': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
+	 * - 'after': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
+	 * - 'child_before': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
+	 * - 'child_after': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
+	 *
+	 * @param string $list_id 
+	 * @param array $args 
+	 * @return void
+	 */
+	function cflk_links($list_id, $args) {
+		echo cflk_get_links($list_id);
+	} 
+		
+	/**
+	 * Template tag - returns
+	 *
+	 * @see cflk_links for full documentation
+	 *
+	 * @param string $list_id 
+	 * @param array $args 
+	 * @return string html
+	 */
+	function cflk_get_links($list_id, $args) {
+		global $cflk_links;
+		return $cflk_links->display($list_id, $args);
+	} 
+		
+	// retain as accessor function
+	function cflk_get_list_links($list) {} 
 	
-	// Admin
-	cflk_menu_items(){}
-	cflk_add_readme(){}
-	cflk_readme(){}
-
+	// retain as accessor function
+	function cflk_get_links_data($list) {} 
+	
+	function cflk_menu_items() {
+		if (current_user_can('manage_options')) {
+			add_options_page(
+				__('CF Links', 'cf-links')
+				, __('CF Links', 'cf-links')
+				, 10
+				, basename(__FILE__)
+				, 'cflk_admin'
+			);
+		}
+	}
+	
+	
+	function cflk_add_readme() {}
+	function cflk_readme() {}
+	function cflk_handle_shortcode() {}
 	
 ## Functions
 
-	cflk_tinymce_dialog(){} // replaces cflk_dialog()
-	cflk_tinymce_register_button(){} // replaces cflk_register_button()
-	cflk_tinymce_add_pluing(){} // replaces cflk_add_tinymce_button
-	cflk_tinymce_add(){} // replaces cflk_addtinymce
+	/**
+	 * Init the links object
+	 * Start an admin object when in the admin
+	 *
+	 * @return void
+	 */
+	function cflk_init() {
+		global $cflk_links;
+		if (is_admin()) {
+			$class = 'cflk_admin';
+		}
+		else {
+			$class = 'cflk_links';
+		}
+		$cflk_links = new $class();
+	}
+	add_action('init','cflk_init');
+	
+	/**
+	 * Show the admin page
+	 * All page delegation done within the object
+	 */
+	cflk_admin() {
+		global $cflk_links;
+		$cflk_links->admin();
+	}
+	
+	function cflk_tinymce_dialog() {} // replaces cflk_dialog()
+	function cflk_tinymce_register_button() {} // replaces cflk_register_button()
+	function cflk_tinymce_add_pluing() {} // replaces cflk_add_tinymce_button
+	function cflk_tinymce_add() {} // replaces cflk_addtinymce
+
+	// JSON SUPPORT: import cf-json from SVN/wp-plugins/lib
 
 ## Classes
 
-	cflk_links {
-		__construct(){
+	/**
+	 * Basic link is:
+	 * - editable href
+	 * - editable link text
+	 *
+	 * @package default
+	 */
+	class cflk_link {
+		public $id;
+		public $name;
+		
+		function __construct($id, $name) {
+			$this->$id = $id;
+			$this->$name = $name;
+		}
+		
+	// Display
+		function display($data) {
+			$html = '<li class="'.$this->id.' '$data['class'].'"><a href="'.$data['href'].'"'.$javascript.'>'.$data['text'].'</a></li>';
+			return apply_filters('cflk-link-'.$this->id.'-item', $html, $data);
+		}
+		
+	// Admin	
+		function admin($mode) {
+			if($mode == 'edit') {
+				$html = $this->_admin_form();
+			}
+			else {
+				$html = $this->_admin_display();
+			}
+			return $html;
+		}
+		
+		function _admin_form() {
+			// return edit form
+		}
+		
+		function _admin_display() {
+			// return admin display
+		}
+		
+		function update($new_data, $old_data) {
+			// process
+			return $data_to_save;
+		}
+		
+		function admin_js() {
+			// return js to be contatenated
+			return '';
+		}
+		
+		function admin_css() {
+			// return css to be contatenated
+			return '';
+		}
+	}
+
+	class cflk_links {
+		protected $link_types;
+		protected $lists;
+		
+		function __construct() {
 			// enqueue_scripts
 			// enqueue_styles
 			// add_actions
-			// register widget
 		}
-		display($list_id){}
-		get_list($list_id){}
 		
-		build_list(){}
-		ensure_ul_level_class(){}
+		/**
+		 * Display a specific list
+		 *
+		 * @param string $list_id 
+		 * @param array $args
+		 * @return string html
+		 */
+		function display($list_id, $args) {
+			if ($list != $this->get_list_data($this->list_id)) {
+				return false;
+			}
+			
+			if (!isset($args['context'])) {
+				$args['context'] == 'default';
+			}
+			
+			$html = $this->build_list($list, $args);
+			return apply_filters('cflk_get_links', $html, $list);
+		}
+
+		/**
+		 * Pull list from data base and store its raw form
+		 *
+		 * @param string $list_id 
+		 * @return bool
+		 */
+		function get_list_data($list_id) {
+			if (array_key_exists($this->lists[$list_id])) {
+				return $this->lists[$list_id];
+			}
+			
+			$list = maybe_unserialize(get_option($list_id));
+			
+			if(!is_array($list)) {
+				return false;
+			}
+			
+			$this->lists[$list_id] = $list;
+			return apply_filters('cflk_get_links_data', $list);
+		}
+				
+		/**
+		 * Build the actual list
+		 * Preformats data as hierarchal data before building
+		 *
+		 * @param array $list 
+		 * @param array $args 
+		 * @param int $level 
+		 * @return string html
+		 */
+		function build_list($list, $args, $level=0) {
+			$heirarchal = $this->format_hierarchal_list($list['data']);
+			$html = '';
+			foreach($hierarchal as $item) {
+				$html .= $this->build_list_recursive($hierarchal,$args);
+			}
+			return $html;
+		}
 		
-		handle_shortcode(){}
+		/**
+		 * Return a default set of wrappers with filter applied
+		 *
+		 * @param string $list_key 
+		 * @param string $args 
+		 * @param string $level 
+		 * @return void
+		 */
+		function get_wrappers($list_key, $args, $level) {
+			$defaults = array(
+				'parent_before' => '<ul class="">',
+				'parent_after' => '</ul>',
+				'child_before' => '<li class="">',
+				'child_after' => '</li>'
+			);
+			
+			// legacy data handling: honor before & after for parent wrappers
+			if ($level == 0 && isset($args['before']) && isset($args['after'])) {
+				$defaults['parent_before'] = $args['before'];
+				$defaults['parent_after'] = $args['after'];
+			}
+			if ($level > 0 && isset($args['child_before']) && isset($args['child_after'])) {
+				$defaults['parent_before'] = $args['child_before'];
+				$defaults['parent_after'] = $args['child_after'];
+			}
+			
+			return apply_filters('cflk_wrappers', $defaults, $list_key, $args, $level);
+		}
 		
-		import_included_links(){}
-		find_included_links(){}
+		/**
+		 * Recursively build list items
+		 *
+		 * @todo needing recursive action takes the item wrapper away from the item
+		 *
+		 * @param array $items 
+		 * @return string html
+		 */
+		function build_list_recursive($items, $args, $level = 0) {
+			$wrappers = $this->get_wrappers($list['key'], $args, $level)			
+			
+			$ret = $this->apply_class($wrappers['parent_before'], '<ul class="cflk-level-'.$level);
+			foreach ($items as $key => $item) {
+				$li_class = array('cflk-item-level-'.$level)
+				
+				// see if we're first or last
+				if(!isset($items[$key-1])) {
+					$class[] = ' cflk-first';
+				}
+				elseif(!isset($items[$key+1])) {
+					$class[] = 'cflk-last';
+				}				
+				
+				$item['class'] .= ' a-level-'.$level;
+				
+				if (!empty($item['opennew'])) {
+					$item['class'] .= ' cflk-opennewwindow';
+				}
+				
+				$ret .= $this->apply_class($wrappers['child_before'], implode(' ', $class)).
+						$this->link_types[$item['type']]->display($item);
+				if (isset($item['children'])) {
+					$ret .= $this->build_list_recursive($item['children'], $args, $item['level']++);
+				}
+				$ret .= $wrappers['child_after'];
+			}
+			$ret .= $wrappers['parent_after'];
+			return apply_filters('cfli_list_html', $ret, $items, $args, $level);
+		}
+
+		/**
+		 * Add class attributes to wrapper
+		 * Takes first found element and processes it
+		 * - add to existing class; or
+		 * - add a class attribute with given param
+		 *
+		 * @package default
+		 */
+		function apply_class($element, $class) {
+			// see cflk_ul_ensure_level_class for example of useful regex
+			
+			// sniff first tag, ie: <.*>
+			// sniff if it has a class attribute
+			// - if class: add to it
+			// - if no class: add one
+			
+			return $element;			
+		}
 		
-		register_link_type(){}
+		/**
+		 * Takes $links['data'] and formats it as a hierarchal array. 
+		 * Useful for when the links data is being used for outside purposes.
+		 * It falls down on the parents aspect when dealing with links that are not IDs, 
+		 * but still works nicely
+		 *
+		 * @example $hierarchal = format_heirarchal_list($links['data']);
+		 * @param array $links 
+		 * @param int $level 
+		 * @param int $start 
+		 * @return array
+		 */
+		function format_hierarchal_list(&$links, $level = 0, $start = 0, $ancestors = array()) {
+			$parent = null;
+			if ($start > 0 ) {
+				array_push($ancestors,$links[($start-1)]['link']);
+				$parent = $links[($start-1)]['link'];
+			}
+
+			$ret = array();
+			for ($i = $start; $i < count($links); $i++) {
+				$current = $i;
+				if ($links[$i]['level'] == $level) {
+					$links[$i]['ancestors'] = $ancestors;
+					$links[$i]['parent'] = $parent;
+					$ret[$i] = $links[$i];
+
+					// go deeper or stop
+					if ($links[$i+1]['level'] > $level) {
+						$children = format_hierarchal_list($links, $links[$i+1]['level'], $i+1, $ancestors);
+						$ret[$i]['children'] = $children['ret'];
+						$i = $children['i'];
+					}
+					elseif ($links[$i+1]['level'] < $level) {
+						break;
+					}
+				}
+				if(!isset($links[$i]['class'])) {
+					$links[$i]['class'] = '';
+				}
+			}
+
+			if ($i == count($links) && $start == 0) {
+				return $ret;
+			}
+			else {
+				return array('ret' => $ret, 'i' => $i);
+			}
+		}
+			
+		/**
+		 * Find all files to be imported.
+		 * Logs all link type files to be imported to an array, caches results and returns
+		 *
+		 * Pretty much verbatim (with name changes) from Carrington Build
+		 *
+		 * @return array
+		 */
+		function find_included_link_types() {
+			if ($modules = wp_cache_get('cflk_included_modules', 'cfct_build')) {
+				return $modules;
+			}
+
+			$paths = apply_filters('cflk-module-dirs', array(trailingslashit(CFLK_PLUGIN_DIR).'link-types'));
+			$types = array();
+			foreach ($paths as $path) {
+				if (is_dir($path) && $handle = opendir($path)) {
+					while (false !== ($file = readdir($handle))) {
+						if (is_file($file) && pathinfo($file,PATHINFO_EXTENSION) == 'php') {
+							$types[] = $file;
+						}
+					}
+				}
+			}
+
+			wp_cache_set('cflk_included_modules', $modules, 'cflk_links', 3600);
+			return $modules;			
+		}
 		
-		js(){}
-		css(){}
+		/**
+		 * Include the link-type files
+		 * Each link type is responsible for registering itself inside the included file
+		 *
+		 * @return bool
+		 */
+		function import_included_link_types() {
+			$link_type_files = $this->find_included_link_types();
+			foreach ($link_type_files as $type) {
+				include($type);
+			}
+			return true;			
+		}
+		
+		/**
+		 * Register a link type
+		 * Anyone can register a link type with this function
+		 * In the event of duplicate IDs, the last man in wins.
+		 *
+		 * @package default
+		 */
+		function register_link_type($id, $classname) {
+			if (class_exists($classname) && $this->link_types[$id] = new $classname())
+				return true;
+			}
+			return false;
+		}
+		
+		function js() {}
+		function css() {}
 	}
 	
-	cflk_admin extends cflk_links {
-		__construct(){
+	class cflk_admin extends cflk_links {
+		
+		private $in_ajax = false;
+		
+		function __construct() {
+			parent::__construct();
 			// enqueue_scripts
 			// enqueue_styles
 			// add_actions
+			add_action('wp_ajax_cflk_action', array($this,'ajax_handler'));
 		}
-		request_handler(){}
+		
+		function request_handler() {
+			
+		}
 		
 		// pages
-		display($type){}
-		_main(){}
-		_edit(){}
-		_import(){}
+		function display($type) {}
+		function _main() {}
+		function _edit() {}
+		function _import() {}
 		
 		// functionality
-		create_list(){}
-		save_list(){}
-		export_list(){}
-		import_list(){}
-		get_authors(){}
+		function create_list() {
+			$this->save_list($new_list);
+		}
 		
-		check_unique_name(){}
+		function save_list($listdata) {
+			foreach ($listdata as $item) {
+				$item->update();
+			}
+		}
+		function export_list() {}
+		function import_list() {}
+		function get_authors() {}
+		
+		function check_unique_name() {}
 		
 		// Ajax Accessors
-		ajax_edit_name(){}
-		ajax_import(){}
-		ajax_export(){}
-		ajax_autocomplete($text,$type){}
+		function ajax_handler() {
+			$this->in_ajax = true;
+			
+			if (method_exists($this,'ajax_'.strval($_REQUEST['func']))) {
+				
+			}
+			else {
+				
+			}
+		}
+		function ajax_edit_name() {}
+		function ajax_import() {}
+		function ajax_export() {}
+		function ajax_edit() {}
+		function ajax_autocomplete($text,$type) {}
 		
-		js(){}
-		css(){}
+		function js() {}
+		function css() {}
 	}
 	
-	cflk_widget extends WP_Widget {
-		cflk_widget(){}
-		widget(){}
-		update(){}
-		form(){}
+	/**
+	 * Spitting image of cfct_message
+	 *
+	 * @package default
+	 */
+	class cflk_message {
+		private $_html;
+		private $_message;
+		private $_success;
+
+		public function __construct(array $args = array('success' => false, 'html' => null, 'message' => null)) {
+			$this->add($args);
+		}
+
+	// Setters
+		public function add(array $args = array('success' => false, 'html' => null, 'message' => null)) {
+			$this->_success = (bool) $args['success'];
+			$this->_html = strval($args['html']);
+			$this->_message = strval($args['message']);
+		}
+
+	// Getters
+		public function get_results() {
+			return array(
+				'success' => trim($this->_success),
+				'html' => trim($this->_html),
+				'message' => trim($this->_message)
+			);
+		}
+
+		public function get_json() {
+			return cfct_json_encode($this->get_results());
+		}
+
+		public function __toString() {
+			return $this->get_json();
+		}
+
+	// Delivery
+		/**
+		 * Deliver the JSON and get out of the page load.
+		 *
+		 * @return void
+		 */
+		public function send() {
+			header('Content-type: application/json');
+			echo $this->get_json();
+			exit;
+		}		
 	}
+	
+	class cflk_widget extends WP_Widget {
+		function cflk_widget() {}
+		function widget() {}
+		function update() {}
+		function form() {}
+	}
+	
+?>

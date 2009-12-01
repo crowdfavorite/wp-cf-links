@@ -1,36 +1,64 @@
 <?php
 # CF Links v2 Dev outline
 
-/* SAMPLE LIST DATA
-Array
-(
-    [key] => cfl-main-navigation
-    [nicename] => Main Navigation
-    [description] => 
-    [data] => Array
-        (
-            [0] => Array
-                (
-                    [title] => Investor Reports
-                    [type] => category
-                    [link] => 206
-                    [cat_posts] => 
-                    [level] => 0
-                    [opennew] => 
-                )
+/******************************
+	
+## Default (home)
 
-            [1] => Array
-                (
-                    [title] => Article Index
-                    [type] => page
-                    [link] => 9127
-                    [cat_posts] => 
-                    [level] => 0
-                    [opennew] => 
-                )
-        )
-)
-*/
+- show list of available lists
+- actions:
+	- new list (new page)
+	- import list (new page)
+- actions on individual lists
+	- export list (ajax)
+	- edit (new page)
+
+## Import
+
+- show import textarea
+- actions
+	- import (ajax)
+		- redirect to list edit on success
+		- show errors on failure
+
+## Edit
+
+- show title (click to edit)
+- show desc (click to edit)
+- show list items
+- actions
+	- save
+	- add list item
+	- edit list item
+	- reorder list items
+	- delete list item
+	- set nesting level
+	- export list (ajax)
+- do_action after list display for appending items to page
+
+### Edit Item
+
+each also contains 'title' & 'new window' options
+
+- default link:
+	- href
+- RSS
+	- href
+	- appends rss icon for display
+- category
+	- select or type-ahead-search (based on number of cats)
+- page/post link:
+	- select (page or post)
+	- select or type-ahead-search (based on number of pages/posts)
+- author
+	- select by nicename
+- author RSS
+	- select by nicename
+- wordpress
+	- select type (login/logout, admin, register, profile, site rss)
+
+
+******************************/
 
 ## Constants
 
@@ -164,12 +192,12 @@ Array
 			return $html;
 		}
 		
-		function _admin_form() {
-			// return edit form
-		}
-		
 		function _admin_display() {
 			// return admin display
+		}
+		
+		function _admin_form() {
+			// return edit form
 		}
 		
 		function update($new_data, $old_data) {
@@ -196,6 +224,9 @@ Array
 			// enqueue_scripts
 			// enqueue_styles
 			// add_actions
+			if (!is_admin()) {
+				add_action('wp_footer',array($this,'footer_js'));
+			}
 		}
 		
 		/**
@@ -452,8 +483,21 @@ Array
 			return false;
 		}
 		
-		function js() {}
-		function css() {}
+		function footer_js() {
+			echo '
+<script type="text/javascript">
+	jQuery(function($) {
+		$(".cflk-opennewwindow a").click(function(){
+			window.open(this.href);
+			return false;
+		});
+	});
+</script>
+			';
+		}
+		
+		function js() {} // not needed?
+		function css() {} // not needed?
 	}
 	
 	class cflk_admin extends cflk_links {
@@ -465,18 +509,45 @@ Array
 			// enqueue_scripts
 			// enqueue_styles
 			// add_actions
+			add_action('init', array($this,'admin_request_handler'));
 			add_action('wp_ajax_cflk_action', array($this,'ajax_handler'));
 		}
 		
-		function request_handler() {
-			
+		function admin_request_handler() {
+			if (!empty($_GET['cflk_action'])) {
+				switch ($_GET['cflk_acton']) {
+					case 'admin_js':
+						$this->admin_js();
+						break;
+					case 'admin_css':
+						$this->admin_css();
+						break;
+				}
+			}
 		}
 		
 		// pages
-		function display($type) {}
-		function _main() {}
-		function _edit() {}
-		function _import() {}
+		function admin() {
+			$method = !empty($_GET['cflk_page']) ? '_'.strval($_GET['cflk_page']) : '_main'; // cflk_page is legacy var name for compat
+			if (method_exists($this,$method)) {
+				$this->$method();
+			}
+			else {
+				$this->_default();
+			}
+		}
+		
+		function _default() {
+			// show list of available lists
+		}
+		
+		function _edit() {
+			// edit a single list
+		}
+		
+		function _import() {
+			// import a list
+		}
 		
 		// functionality
 		function create_list() {
@@ -488,6 +559,7 @@ Array
 				$item->update();
 			}
 		}
+		
 		function export_list() {}
 		function import_list() {}
 		function get_authors() {}
@@ -498,21 +570,52 @@ Array
 		function ajax_handler() {
 			$this->in_ajax = true;
 			
-			if (method_exists($this,'ajax_'.strval($_REQUEST['func']))) {
+			$method = 'ajax_'.strval($_POST['func']);
+			
+			if (method_exists($method)) {
+				$args = cf_json_decode($_POST['args']);
 				
+				$result = $this->$method($args);
+				if ($result === false) {
+					// build error message
+				}
+				else {
+					// build success message 
+				}
 			}
 			else {
-				
+				// build error message
 			}
+			$result->send();
 		}
-		function ajax_edit_name() {}
-		function ajax_import() {}
-		function ajax_export() {}
-		function ajax_edit() {}
-		function ajax_autocomplete($text,$type) {}
 		
-		function js() {}
-		function css() {}
+		function ajax_import($args) {
+			
+		}
+		
+		function ajax_export($args) {
+			
+		}
+		
+		function ajax_edit($args) {
+			
+		}
+		
+		function ajax_autocomplete($text,$type) {
+			
+		}
+		
+		function admin_js() {
+			header('content-type: application/javascript');
+			
+			exit;
+		}
+		
+		function admin_css() {
+			header('content-type: text/css');
+			
+			exit;
+		}
 	}
 	
 	/**
@@ -572,5 +675,36 @@ Array
 		function update() {}
 		function form() {}
 	}
+
+/* SAMPLE LIST DATA
+Array
+(
+    [key] => cfl-main-navigation
+    [nicename] => Main Navigation
+    [description] => 
+    [data] => Array
+        (
+            [0] => Array
+                (
+                    [title] => Investor Reports
+                    [type] => category
+                    [link] => 206
+                    [cat_posts] => 
+                    [level] => 0
+                    [opennew] => 
+                )
+
+            [1] => Array
+                (
+                    [title] => Article Index
+                    [type] => page
+                    [link] => 9127
+                    [cat_posts] => 
+                    [level] => 0
+                    [opennew] => 
+                )
+        )
+)
+*/
 	
 ?>

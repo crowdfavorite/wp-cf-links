@@ -9,7 +9,7 @@
 			stop: cflk_levels_refactor
 		});
 		jQuery('input[name="link_edit"]').click(function() {
-			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
+			location.href = "options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
 			return false;
 		});
 		jQuery('tr.tr_holder').each(function() {

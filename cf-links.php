@@ -222,7 +222,7 @@ function cflk_link_types() {
 	}
 	$cflk_types = apply_filters('cflk-types',$cflk_types);
 }
-if ($_['GET']['page'] == 'cf-links.php') {
+if ($_GET['page'] == 'cf-links.php') {
 	add_action('admin_init', 'cflk_link_types');
 }
 

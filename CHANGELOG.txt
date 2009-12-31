@@ -1,6 +1,13 @@
 # CF Links Changelog
 
+## 1.3.0
+
+- Resolved issue with large page load times due to 'init' being utilized to build data store on each page load.  Instead, moved into '`admin_init`' action, and only ran on links page. **Large Speed Boost**
+- Moved admin css and js into separate files, and added filters for each
+- Added version and directory constants
+
 ## 1.2.1
+
 - Added 'Modal' type (NEEDS MORE DOCUMENTATION)
 - Fixed bug with 'Current' page.  WordPress always has trailing slashes at the end of its urls, so for the 'current' matching, we had to add a 'trailingslashit' function.
 
@@ -13,4 +20,5 @@
 ## 1.1
 
 ## 1.0
+
 - Initial Release

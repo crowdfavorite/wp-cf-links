@@ -2,8 +2,8 @@
 /*
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
-Description: Advanced options for adding links
-Version: 1.2.1
+Description: Advanced tool for adding collections of links, including pages, posts, and external URLs.
+Version: 1.3.0
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -79,7 +79,7 @@ add_filter('cflk_get_links_data','hn_login_cflinks_filter');
  */
 
 // Constants
-	define('CFLK_VERSION', '1.2.1');
+	define('CFLK_VERSION', '1.3.0');
 	define('CFLK_DIR',trailingslashit(realpath(dirname(__FILE__))));
 
 

@@ -8,6 +8,7 @@ class cflk_admin extends cflk_links {
 		parent::__construct();
 		// enqueue_scripts
 		wp_enqueue_script('cflk-admin-css',admin_url('/index.php?page=cflk-links&cflk_action=admin_js'),array('jquery'),CFLK_PLUGIN_VERS);
+		wp_enqueue_script('jquery-form');
 		// enqueue_styles
 		wp_enqueue_style('cflk-admin-js',admin_url('/index.php?page=cflk-links&cflk_action=admin_css'),array(),CFLK_PLUGIN_VERS,'all');
 		// add_actions
@@ -200,21 +201,23 @@ class cflk_admin extends cflk_links {
 		$html .= '
 					</ul>
 				</fieldset>
+			</form>
+			<form id="cflk-new-link-form" action="">
 				<div id="cflk-list-items-footer">
 					'.$this->edit_forms(true).'
 					<div>
 						<input type="button" class="button-secondary" name="cflk-new-list-item" id="cflk-new-list-item" value="'.__('Add Link','cf-links').'" />
 					</div>
 				</div>
+			</form>
 			';
 		
 		// Submit
 		$button_text = $new ? 'Save List' : 'Update List';
 		$html .= '
-				<p class="submit">
-					<input type="submit" class="button-primary" name="cflk-submit" value="'.__($button_text,'cf-links').'" />
-				</p>
-			</form>
+			<p class="submit">
+				<input id="cflk-list-submit" type="submit" class="button-primary" name="cflk-submit" value="'.__($button_text,'cf-links').'" />
+			</p>
 			'.$this->admin_wrapper_close();
 		return $html;
 	}
@@ -428,12 +431,14 @@ class cflk_admin extends cflk_links {
 			if ($link_view != false) {
 				$result = new cflk_message(array(
 					'success' => true,
+					'link_type' => $data['link_type'],
 					'html' => $link_view
 				));
 			}
 			else {
 				$result = new cflk_message(array(
 					'success' => false,
+					'link_type' => $data['link_type'],
 					'message' => 'Could not get link type formatting'
 				));
 			}
@@ -441,6 +446,7 @@ class cflk_admin extends cflk_links {
 		else {
 			$result = new cflk_message(array(
 				'success' => false,
+				'link_type' => $data['link_type'],
 				'message' => 'Invalid Link Type in Request'
 			));			
 		}

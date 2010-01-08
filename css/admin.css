@@ -28,9 +28,17 @@
 }
 
 /* EDIT */
+#cflk-list-sortable {
+	margin: 0;
+	padding: 0;
+}
+#cflk-list-sortable li {
+	margin: 0;
+	padding: 5px;
+	border-bottom: 1px solid #DFDFDF;
+}
 #cflk-list-form {
-	width: 70%;
-	min-width: 600px;
+
 }
 #cflk-list-form fieldset {
 	-moz-border-radius:4px;
@@ -48,6 +56,7 @@
 	-khtml-border-radius: 5px 5px 0 0;
 	border-radius: 5px 5px 0 0;
 	margin-bottom: 0;
+	padding: 0;
 }
 #cflk-list-items-footer {
 	border: 1px solid #DFDFDF;

@@ -61,11 +61,14 @@ class cflk_link {
 	 */
 	function _admin($data) {
 		$html = '
-			<div id="'.$this->id_base.$this->id.'-display" class="'.$this->id_base.$this->id.'">
-				<div class="'.$this->id_base.$this->id.'-fields">
+			<div class="'.$this->id_base.$this->id.'">
+				<div class="'.$this->id_base.$this->id.'-data">
 					'.$this->admin_display($data).'
-					<p>Title: <span class="title">'.$data['title'].'</span></p>
-					<p>New Window: <span class="newwin">'.intval($data['newwin']).'</p>
+					<div>Title: <span class="title">'.$data['title'].'</span></div>
+					<div>New Window: <span class="newwin">'.intval($data['newwin']).'</div>
+				</div>
+				<div class="cflk-link-edit">
+					<button class="button cflk-edit-link">Edit</button> | <a class="cflk-delete-link" href="#">delete</a>
 				</div>
 				<input type="hidden" name="cflk-links[]" value="'.(!empty($data) ? cf_json_encode($data) : null).'" />
 			</div>
@@ -82,9 +85,10 @@ class cflk_link {
 	 */
 	function admin_display($data) {
 		return '
-			<p>
+			<div>
+				Type: <span class="type">'.$data['link_type'].'</span><br />
 				URL: <span class="link">'.$data['link'].'</span>
-			</p>
+			</div>
 			';
 	}
 	

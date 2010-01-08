@@ -10,6 +10,7 @@
 		
 	cflk.init = function() {
 		this.links_list = $('#cflk-list-sortable');
+		this.new_link_form = $('#cflk-new-link-form');
 		this.link_item_forms = $('#cflk-edit-forms-wrapper');
 		this.link_item_new_button = $('#cflk-new-list-item');
 		this.no_items_list_item = $('#cflk-list-sortable .cflk-no-items');
@@ -116,11 +117,17 @@
 		);
 	};
 	
+	// insert link HTML in to the list
 	cflk.insertNewLink = function(data) {
 		if (this.no_items_list_item.is(':visible')) {
 			this.no_items_list_item.hide();
 		}
+		
+		this.link_item_forms.hide();
+		this.link_item_new_button.show();
+		
 		this.links_list.append($('<li />').html(data.html));
+		this.new_link_form.resetForm();
 	};
 		
 	cflk.editLink = function() {
@@ -191,6 +198,12 @@
 					cflk.getNewListId();
 				});
 			}
+			
+		// Page Submit
+			$('#cflk-list-submit').click(function(){
+				$('#cflk-list-form').submit();
+				return false;
+			});
 		});
 	
 })(jQuery);

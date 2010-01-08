@@ -1,0 +1,79 @@
+/* Main */
+#cflk-available-lists p {
+	margin: 2px 0;
+}
+#cflk-available-lists p.submit {
+	margin: 0;
+	padding: 0;
+}
+#cflk-available-lists .cflk-list-title {
+	font-weight: bold;
+	font-size: 1.4em;
+	line-height: 1.2em;
+}
+#cflk-available-lists .cflk-showhide {
+	visibility: hidden;
+}
+#cflk-available-lists .cflk-details {
+	margin: 0;
+	padding: 3px 10px;
+}
+#cflk-available-lists .cflk-details ul {
+	margin: 5px 0;
+}
+#cflk-available-lists .cflk-details ul li {
+	margin: 0;
+	padding: 1px;
+	list-style: none outside;
+}
+
+/* EDIT */
+#cflk-list-form {
+	width: 70%;
+	min-width: 600px;
+}
+#cflk-list-form fieldset {
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	-khtml-border-radius:4px;
+	border-radius:4px;
+	border: 1px solid #DFDFDF;
+	padding: 8px;
+	background: #FFF;
+	margin: 10px 0;
+}
+#cflk-list-form #cflk-list-items {
+	-moz-border-radius: 5px 5px 0 0;
+	-webkit-border-radius: 5px 5px 0 0;
+	-khtml-border-radius: 5px 5px 0 0;
+	border-radius: 5px 5px 0 0;
+	margin-bottom: 0;
+}
+#cflk-list-items-footer {
+	border: 1px solid #DFDFDF;
+	border-width: 0 1px 1px 1px;
+	-moz-border-radius: 0 0 5px 5px;
+	-webkit-border-radius: 0 0 5px 5px;
+	-khtml-border-radius: 0 0 5px 5px;
+	border-radius: 0 0 5px 5px;
+	background: #EEE;
+	padding: 3px;
+}
+
+#cflk-list-form #cflk-edit-list-details {
+	padding: 0 8px;
+}
+.cflk-list-new #cflk-edit-list-details-display {
+	display: none;
+}
+.cflk-list-edit #cflk-edit-list-details-edit {
+	display: none;
+}
+#cflk-edit-list-details input,
+#cflk-edit-list-details textarea {
+	width: 98%;
+}
+#cflk-list-form .cflk-edit-forms fieldset {
+	border: none;
+	padding: 0;
+}

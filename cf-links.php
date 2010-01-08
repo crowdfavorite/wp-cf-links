@@ -117,7 +117,7 @@ function cflk_link_types() {
 	}
 	foreach ($authors as $author) {
 		$author_data[$author['login']] = array(
-				'link' => $author['user_id'], 
+				'link' => $author['id'], 
 				'description' => $author['display_name']
 		);
 	}	

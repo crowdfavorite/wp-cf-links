@@ -815,7 +815,7 @@ function cflk_edit() {
 													<input type="button" class="button" id="link_edit_title_'.$key.'" value="'.__('Edit Text', 'cf-links').'" onClick="editTitle(\''.$key.'\')" />
 												</span>
 												<span id="cflk_'.$key.'_title_input"'.$input_show.'>
-													<input type="text" id="cflk_'.$key.'_title" name="cflk['.$key.'][title]" value="'.strip_tags($setting['title']).'" style="max-width: 150px;" />
+													<input type="text" id="cflk_'.$key.'_title" name="cflk['.$key.'][title]" value="'.wp_specialchars($setting['title']).'" style="max-width: 150px;" />
 													<input type="button" class="button" id="link_clear_title_'.$key.'" value="'.__('&times;', 'cf-links').'" onClick="clearTitle(\''.$key.'\')" />
 												</span>
 											</td>

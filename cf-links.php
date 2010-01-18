@@ -77,6 +77,12 @@ add_filter('cflk_get_links_data','hn_login_cflinks_filter');
  * WP Admin Handling Functions
  * 
  */
+
+// Constants
+	define('CFLK_VERSION', '1.3.0');
+	define('CFLK_DIR',trailingslashit(realpath(dirname(__FILE__))));
+
+
 load_plugin_textdomain('cf-links');
 $cflk_types = array();
 $cflk_inside_widget = false;
@@ -222,7 +228,7 @@ function cflk_link_types() {
 	}
 	$cflk_types = apply_filters('cflk-types',$cflk_types);
 }
-if ($_GET['page'] == 'cf-links.php') {
+if (isset($_GET['cflk_page']) && $_GET['cflk_page'] == 'edit') {
 	add_action('admin_init', 'cflk_link_types');
 }
 
@@ -1823,7 +1829,7 @@ function cflk_get_list_links($blog = 0) {
 		$options = $wpdb->options;
 	}
 	
-	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM {$options} WHERE option_name LIKE 'cfl-%'");
+	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE 'cfl-%'");
 	$return = array();
 
 	if (is_array($cflk_list)) {
@@ -2125,6 +2131,84 @@ if(!is_null($wpmu_version)) {
  * CF Links Widget Handling Functions
  * 
  */
+
+/**
+ * new WordPress Widget format
+ * Wordpress 2.8 and above
+ * @see http://codex.wordpress.org/Widgets_API#Developing_Widgets
+ */
+class cflk_Widget extends WP_Widget {
+	function cflk_Widget() {
+		$widget_ops = array( 'classname' => 'cflk-widget', 'description' => 'Widget for showing links entered in the CF Links settings page.' );
+		$this->WP_Widget( 'cflk-widget', 'CF Links', $widget_ops );
+	}
+
+	function widget( $args, $instance ) {
+		extract( $args, EXTR_SKIP );
+		global $cflk_inside_widget;
+		$cflk_inside_widget = true;
+		$title = esc_attr( $instance['title'] );
+		$content = cflk_get_links($instance['list_key']);
+		
+		if (empty($content)) { return; }
+		echo $before_widget;
+		if (!empty($title)) {
+			echo $before_title . $title . $after_title;
+		}
+		echo $content;
+		echo $after_widget;
+		$cflk_inside_widget = false;
+	}
+
+	function update($new_instance, $old_instance) {
+		$instance = $old_instance;
+		$instance['title'] = strip_tags($new_instance['title']);
+		$instance['list_key'] = strip_tags($new_instance['list_key']);
+		return $instance;
+	}
+
+	function form($instance) {
+		$instance = wp_parse_args((array) $instance, array('title' => '', 'list_key' => ''));
+
+		$title = esc_attr( $instance['title'] );
+		$links_lists = cflk_get_list_links();
+		$links_select = '';
+		if (is_array($links_lists) && !empty($links_lists)) {
+			foreach ($links_lists as $key => $links_list) {
+				$links_select .= '<option value="'.$key.'"'.selected($instance['list_key'], $key, false).'>'.$links_list['nicename'].'</option>';
+			}
+		}
+		if (!empty($links_select)) {
+			?>
+			<p>
+				<label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'cf-links'); ?></label>
+				<input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" />
+			</p>
+			<p>
+				<label for="<?php echo $this->get_field_id('list_key'); ?>"><?php _e('Links List: ', 'cf-links'); ?></label>
+				<select id="<?php echo $this->get_field_id('list_key'); ?>" name="<?php echo $this->get_field_name('list_key'); ?>">
+					<option value="0">--Select Links List--</option>
+					<?php echo $links_select; ?>
+				</select>
+			</p>
+			<p>
+				<a href="<?php bloginfo('wpurl') ?>/wp-admin/options-general.php?page=cf-links.php"><?php _e('Edit Links','cf-links') ?></a>
+			</p>
+			<?php
+		}
+		else {
+			?>
+			<p>
+				<?php _e('No Links Lists have been setup.  Please <a href="'.get_bloginfo('wpurl').'/wp-admin/options-general.php?page=cf-links.php">setup a links list</a> before proceeding.', 'cf-links'); ?>
+			</p>
+			<?php
+		}
+	}
+}
+
+add_action( 'widgets_init', create_function( '', "register_widget('cflk_Widget');" ) );
+
+// Pre 2.8 Widget Controls
 
 function cflk_widget( $args, $widget_args = 1 ) {
 	global $cflk_inside_widget;

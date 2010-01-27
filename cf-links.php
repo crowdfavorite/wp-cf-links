@@ -1552,16 +1552,25 @@ add_shortcode('cflk_links','cflk_handle_shortcode',11);
 add_shortcode('cfl_links', 'cflk_handle_shortcode',11);
 
 /**
+ * Check if a givet links list exists
+ * @param string $key - id of the list being targeted
+ * @return bool
+ */
+function cflk_links_list_exists($key) {
+	$list = cflk_get_links_data($key);
+	if (!is_array($list)) { return false; }
+}
+
+/**
  * Return all relevant data about a list
  *
  * @param string $key - id of the list being targeted
- * @return array
+ * @return mixed - array or false.
  */
 function cflk_get_links_data($key) {
 	$links = get_option($key);
 	if (empty($links)) {
-		echo 'Could not find link list: '.htmlspecialchars($key);
-		return;
+		return false;
 	}
 	$links = maybe_unserialize($links);
 	$links['key'] = $key;
@@ -1595,7 +1604,7 @@ function cflk_get_links($key = null, $args = array()) {
 	$args['key'] = $key;
 	
 	$list = cflk_get_links_data($key);
-	if (!is_array($list)) { return ''; }
+	if (!is_array($list)) { echo 'Could not find link list: '.htmlspecialchars($key); }
 	
 	$ret = '';
 	$i = 0;
@@ -1613,7 +1622,7 @@ function cflk_get_links($key = null, $args = array()) {
 		}
 	}
 
-	$ret = cflk_build_list_items($list['data'],$args);
+	$ret = cflk_build_list_items($list['data'], $args);
 	$ret = apply_filters('cflk_get_links', $ret, $list, $args);
 	return $ret;
 }

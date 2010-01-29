@@ -1558,7 +1558,11 @@ add_shortcode('cfl_links', 'cflk_handle_shortcode',11);
  */
 function cflk_links_list_exists($key) {
 	$list = cflk_get_links_data($key);
-	if (!is_array($list)) { return false; }
+	if (is_array($list)) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 /**

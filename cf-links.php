@@ -149,7 +149,7 @@ function cflk_link_types() {
 		if (is_array($sites) && count($sites)) {
 			foreach ($sites as $site) {
 				$site_id = $site['id'];
-				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '$site_id' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);
+				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '".$wpdb->escape($site_id)."' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);
 				
 				if (is_array($blogs)) {
 					foreach ($blogs as $blog) {
@@ -1144,7 +1144,7 @@ function cflk_dialog() {
 	<p>
 		<ul>
 		<?php
-		$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
+		$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'"));
 		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
 			?>
@@ -1350,7 +1350,7 @@ function cflk_name_check($name) {
 	$title = $name;
 	$original_option = $option_name;
 	$original_title = $title;
-	while(count($wpdb->get_results("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '".$option_name."'")) > 0) {
+	while(count($wpdb->get_results($wpdb->prepare("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '".$wpdb->escape($option_name)."'"))) > 0) {
 		$option_name = $original_option.$i;
 		$title = $original_title.$i;
 		$i++;
@@ -1373,13 +1373,13 @@ function cflk_get_list_links($blog = 0) {
 	
 	// if we're on MU and another blog's details have been requested, change the options table assignment
 	if (!is_null($blog_id) && $blog != 0) {
-		$options = 'wp_'.$blog.'_options';
+		$options = 'wp_'.$wpdb->escape($blog).'_options';
 	}
 	else {
 		$options = $wpdb->options;
 	}
 	
-	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM {$options} WHERE option_name LIKE 'cfl-%'");
+	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM {$options} WHERE option_name LIKE 'cfl-%'"));
 	$return = array();
 
 	if (is_array($cflk_list)) {
@@ -1473,7 +1473,7 @@ function cflk_widget_control( $widget_args = 1 ) {
 		$select = $options[$number]['select'];
 	}
 
-	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
+	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'"));
 	$form_data = array();
 	foreach ($cflk_list as $cflk) {
 		$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
@@ -1925,7 +1925,7 @@ function cflk_get_wp_type($type) {
 
 function cflk_export_list($key) {
 	global $wpdb;
-	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE '$key'");
+	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE '".$wpdb->escape($key)."'"));
 	foreach ($cflk_list as $key => $value) {
 		$export = urlencode(serialize($value->option_value));
 		?>

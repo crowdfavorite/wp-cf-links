@@ -1021,7 +1021,9 @@ function cflk_import() {
 									');
 									if (is_array($reference_data)) {
 										foreach ($reference_data as $blog) {
-											$blog_links = cflk_get_list_links($blog['id']);
+											switch_to_blog($blog['id']);
+											$blog_links = cflk_get_list_links();
+											restore_current_blog();
 											if (is_array($blog_links)) {
 												foreach ($blog_links as $key => $info) {
 													if (!$info['reference']) {

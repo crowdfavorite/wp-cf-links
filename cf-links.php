@@ -761,6 +761,12 @@ function cflk_edit() {
 					<ul id="cflk-list">');
 						if ($cflk_count > 0) {
 							foreach ($cflk['data'] as $key => $setting) {
+								if (in_array($setting['type'], array('post','page'))) {
+									$postinfo = get_post($setting['link']);
+									if (!in_array($postinfo->post_status, array('publish','inherit'))) {
+										continue;
+									}
+								}
 								//$select_settings = cflk_edit_select($setting['type']);
 								$tr_class = '';
 								if($setting['link'] == 'HOLDER') {
@@ -1379,7 +1385,7 @@ function cflk_get_list_links($blog = 0) {
 		$options = $wpdb->options;
 	}
 	
-	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM {$options} WHERE option_name LIKE 'cfl-%'"));
+	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM {$options} WHERE option_name LIKE %s", 'cfl-%'));
 	$return = array();
 
 	if (is_array($cflk_list)) {
@@ -1767,7 +1773,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 				case 'post':
 				case 'page':
 					$postinfo = get_post(htmlspecialchars($link['link']));
-					if (is_a($postinfo, 'stdClass')) {
+					if (is_a($postinfo, 'stdClass') && in_array($postinfo->post_status, array('publish', 'inherit'))) {
 						$type_text = $postinfo->post_title;
 						$href = get_permalink(htmlspecialchars($link['link']));
 					}

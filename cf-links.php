@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced tool for adding collections of links, including pages, posts, and external URLs.
-Version: 1.3.1
+Version: 1.3.2
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -1150,7 +1150,7 @@ function cflk_dialog() {
 	<p>
 		<ul>
 		<?php
-		$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'"));
+		$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE %s",'cfl-%'));
 		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
 			?>
@@ -1479,7 +1479,7 @@ function cflk_widget_control( $widget_args = 1 ) {
 		$select = $options[$number]['select'];
 	}
 
-	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'"));
+	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE %s",'cfl-%'));
 	$form_data = array();
 	foreach ($cflk_list as $cflk) {
 		$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
@@ -1598,6 +1598,7 @@ function cflk_get_links_data($key) {
  */
 function cflk_get_links($key = null, $args = array()) {
 	if (!$key) { return ''; }
+	
 	$defaults = array(
 		'before' => '<ul class="cflk-list '.$key.'">',
 		'after' => '</ul>',
@@ -1614,7 +1615,8 @@ function cflk_get_links($key = null, $args = array()) {
 	$args['key'] = $key;
 	
 	$list = cflk_get_links_data($key);
-	if (!is_array($list)) { echo 'Could not find link list: '.htmlspecialchars($key); }
+	
+	if (!is_array($list) || $list == FALSE) { echo 'Could not find link list: '.htmlspecialchars($key); return; }
 	
 	$ret = '';
 	$i = 0;
@@ -1631,7 +1633,6 @@ function cflk_get_links($key = null, $args = array()) {
 			$list['data'] = array_merge($list['data']);
 		}
 	}
-
 	$ret = cflk_build_list_items($list['data'], $args);
 	$ret = apply_filters('cflk_get_links', $ret, $list, $args);
 	return $ret;

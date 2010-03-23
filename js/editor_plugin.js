@@ -20,7 +20,7 @@
             ed.addButton('cfLinksBtn', {
                 title: 'Select Link List Below',
                 cmd: 'cfLinks',
-				image : pluginUrl + 'images/brick_add.png',
+				image : pluginUrl + 'images/brick_add.png'
             });
             ed.onNodeChange.add(function(ed, cm, n, co) {
                 cm.setDisabled('cfLinks', co && n.nodeName != 'A');

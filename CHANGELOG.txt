@@ -1,5 +1,9 @@
 # CF Links Changelog
 
+## 1.3.3
+
+- Tested successfully on WordPress 3.0 
+
 ## 1.3.2
 
 - Ignores pages that have been sent to the trash bin

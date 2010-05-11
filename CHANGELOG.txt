@@ -1,5 +1,9 @@
 # CF Links Changelog
 
+## 1.3.4
+
+- Updated old widget style with distinguishing text to upgrade
+
 ## 1.3.3
 
 - Tested successfully on WordPress 3.0 

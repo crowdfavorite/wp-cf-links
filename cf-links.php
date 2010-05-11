@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced options for adding links
-Version: 1.2
+Version: 1.2.1 (Reference)
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -2326,8 +2326,8 @@ function cflk_widget_register() {
 	if ( !$options = get_option('cf_links_widget') )
 		$options = array();
 
-	$widget_ops = array('classname' => 'cf_links_widget', 'description' => __('Widget for showing links entered in the Advanced Links settings page.','cf-links'));
-	$name = __('CF Links', 'cf-links');
+	$widget_ops = array('classname' => 'cf_links_widget', 'description' => __('Widget for showing links entered in the Advanced Links settings page (Version 1.0, upgrade to 2.0 to continue functionality).','cf-links'));
+	$name = __('CF Links 1.0', 'cf-links');
 
 	$id = false;
 	foreach ( array_keys($options) as $o ) {

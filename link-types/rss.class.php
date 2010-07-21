@@ -11,6 +11,6 @@ class cflk_link_rss extends cflk_link {
 	}
 }
 
-cflk_register_link('cflk-rss','cflk_link_rss');
+cflk_register_link('rss','cflk_link_rss');
 
 ?>

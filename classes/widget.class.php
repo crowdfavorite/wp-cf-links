@@ -18,6 +18,7 @@ class cflk_widget extends WP_Widget {
 		echo 'CF Links Widget'; // Can set this with a widget option, or omit altogether
 		echo $after_title;
 
+		echo '<p>Wiget gohs heer!</p>';
 		//
 		// Widget display logic goes here
 		//

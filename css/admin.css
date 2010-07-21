@@ -27,6 +27,12 @@
 	list-style: none outside;
 }
 
+/* NOTICE */
+#cflk-notice code {
+	background: none;
+	font-size: 1.1em;
+}
+
 /* EDIT */
 #cflk-list-sortable {
 	margin: 0;
@@ -72,14 +78,21 @@
 #cflk-list-form #cflk-edit-list-details {
 	padding: 0 8px;
 }
+#cflk-list-form #cflk-edit-list-details-display p,
+#cflk-list-form #cflk-edit-list-details-display h4 {
+	margin: 5px 0;
+}
 .cflk-list-new #cflk-edit-list-details-display {
+	display: none;
+}
+.cflk-list-new #cflk-edit-list-details-cancel {
 	display: none;
 }
 .cflk-list-edit #cflk-edit-list-details-edit {
 	display: none;
 }
-#cflk-edit-list-details input,
-#cflk-edit-list-details textarea {
+#cflk-edit-list-details-edit input,
+#cflk-edit-list-details-edit textarea {
 	width: 98%;
 }
 #cflk-list-form .cflk-edit-forms fieldset {

@@ -26,6 +26,7 @@ load_plugin_textdomain('cf-links');
 	include('classes/link.class.php');
 	include('classes/widget.class.php');
 	if (is_admin()) {
+		include('classes/error.class.php');
 		include('classes/admin.class.php');
 	}
 

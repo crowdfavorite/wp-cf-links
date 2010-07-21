@@ -6,13 +6,13 @@ class cflk_links {
 		
 	function __construct() {
 		// register default link
-		$this->register_link_type('cflk-url','cflk_link');
+		$this->register_link_type('url', 'cflk_link');
 		
 		// enqueue_scripts
 		// enqueue_styles
 		
 		// add_actions
-		add_action('init',array($this,'import_included_link_types'),99999);
+		add_action('init', array($this, 'import_included_link_types'), 11);
 	}
 	
 	/**
@@ -25,6 +25,12 @@ class cflk_links {
 		return isset($this->link_types[$type]) && ($this->link_types[$type] instanceof cflk_link);
 	}
 	
+	/**
+	 * Retrieve a specific link type object
+	 *
+	 * @param string $type 
+	 * @return mixed object/bool
+	 */
 	function get_link_type($type) {
 		if ($this->is_valid_link_type($type)) {
 			return $this->link_types[$type];
@@ -61,18 +67,20 @@ class cflk_links {
 	 * @return bool
 	 */
 	function get_list_data($list_id) {
-		if (array_key_exists($this->lists[$list_id])) {
+		if (isset($this->lists[$list_id])) {
 			return $this->lists[$list_id];
 		}
 		
 		$list = maybe_unserialize(get_option($list_id));
 		
 		if (!is_array($list)) {
-			return false;
+			$list = false;
+		}
+		else {
+			$this->lists[$list_id] = $list;
 		}
 		
-		$this->lists[$list_id] = $list;
-		return apply_filters('cflk_get_links_data', $list);
+		return apply_filters('cflk_get_links_data', $list, $list_id);
 	}
 		
 	/**

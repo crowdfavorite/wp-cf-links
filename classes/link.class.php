@@ -59,21 +59,33 @@ class cflk_link {
 	 * @param array $data 
 	 * @return string html
 	 */
-	function _admin($data) {
-		$html = '
-			<div class="'.$this->id_base.$this->id.'">
-				<div class="'.$this->id_base.$this->id.'-data">
-					'.$this->admin_display($data).'
-					<div>Title: <span class="title">'.$data['title'].'</span></div>
-					<div>New Window: <span class="newwin">'.intval($data['newwin']).'</div>
+	function _admin($data, $edit = false) {
+		if ($edit) {
+			$html = '
+				<div class="'.$this->id_base.$this->id.' cflk-edit-link-form">
+					'.$this->admin_form($data).'
+					<div>
+						<input type="hidden" name="type" value="'.$this->id.'" />
+						<input type="button" class="button cflk-edit-done" value="'.__('Done', 'cf-links').'" /> | <a href="#" class="cflk-edit-cancel">'.__('cancel', 'cf-links').'</a>
+					</div>
 				</div>
-				<div class="cflk-link-edit">
-					<button class="button cflk-edit-link">Edit</button> | <a class="cflk-delete-link" href="#">delete</a>
+				';
+		}
+		else {
+			$html = '
+				<div class="'.$this->id_base.$this->id.' cflk-link-data-display">
+					<div class="'.$this->id_base.$this->id.'-data">
+						'.$this->admin_display($data).'
+						<div>'.__('Title:', 'cf-links').' <span class="title">'.$data['title'].'</span></div>
+						<div>'.__('New Window:', 'cf-links').' <span class="newwin">'.(intval($data['opennew']) == 1 ? 'Yes' : 'No').'</div>
+					</div>
+					<div class="cflk-link-edit">
+						<button class="button cflk-edit-link">'.__('Edit', 'cf-links').'</button> | <a class="cflk-delete-link" href="#">'.__('delete', 'cf-links').'</a>
+					</div>
+					<input type="hidden" class="clfk-link-data" name="cflk_links[]" value="'.(!empty($data) ? esc_attr(cf_json_encode($data)) : null).'" />
 				</div>
-				<input type="hidden" name="cflk-links[]" value="'.(!empty($data) ? cf_json_encode($data) : null).'" />
-			</div>
-			';
-
+				';
+		}
 		return $html;
 	}
 	
@@ -86,8 +98,8 @@ class cflk_link {
 	function admin_display($data) {
 		return '
 			<div>
-				Type: <span class="type">'.$data['link_type'].'</span><br />
-				URL: <span class="link">'.$data['link'].'</span>
+				'.__('Type:', 'cf-links').' <span class="type">'.$this->name.'</span><br />
+				'.__('URL:', 'cf-links').' <span class="link">'.$data['link'].'</span>
 			</div>
 			';
 	}
@@ -102,7 +114,7 @@ class cflk_link {
 		return '
 			<fieldset>
 				<div>
-					<label>'.$this->name.' (include <code>http://</code>)</label>
+					<label>'.__($this->name.' (include <code>http://</code>)', 'cf-links').'</label>
 					<input type="text" name="link" value="'.$data['link'].'" />
 				</div>
 				'.$this->title_field($data).'
@@ -114,7 +126,7 @@ class cflk_link {
 	function title_field($data) {
 		return '
 			<div>
-				<label>Title</label>
+				<label>'.__('Title', 'cf-links').'</label>
 				<input type="text" name="title" value="'.esc_html($data['title']).'" />
 			</div>
 		';
@@ -125,15 +137,22 @@ class cflk_link {
 			<div>
 				<label>
 					<input type="checkbox" name="opennew" value="1" '.($data['opennew'] ? ' checked="checked"' : null).' />
-					Open Link in New Window
+					'.__('Open Link in New Window', 'cf-links').'
 				</label>
 			</div>
 		';
 	}
 	
-	function update($new_data, $old_data) {
+	function _update($data) {
+		if (!empty($data['opennew'])) {
+			$data['opennew'] = (bool) $data['opennew'];
+		}
+		return $this->update($data);
+	}
+	
+	function update($data) {
 		// process
-		return $new_data;
+		return $data;
 	}
 	
 	function admin_js() {

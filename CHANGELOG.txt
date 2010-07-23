@@ -1,5 +1,9 @@
 # CF Links Changelog
 
+## trunk
+
+- Changing to role-based instead of integer-based user-level for admin menu
+
 ## 1.3.4
 
 - Updated old widget style with distinguishing text to upgrade

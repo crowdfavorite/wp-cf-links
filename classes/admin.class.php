@@ -217,7 +217,7 @@ class cflk_admin extends cflk_links {
 		if (is_array($data) || count($data)) {
 			foreach ($data as $item) {
 				$html .= '
-					<li id="'.$this->get_random_id($item['type']).'" class="cflk-item">'.$this->link_types[$item['type']]->_admin($item).'</li>
+					<li id="'.$this->get_random_id($item['type']).'" class="cflk-item">'.$this->link_types[$item['type']]->_admin_view($item).'</li>
 					';
 			}
 		}
@@ -261,7 +261,7 @@ class cflk_admin extends cflk_links {
 				';
 			$forms .= '
 				<li id="cflk-type-'.esc_attr($id).'"'.($i > 0 ? ' style="display: none;"' : null).'>
-					'.$type->admin_form(array()).'
+					'.$type->_admin_edit_form(array(), false).'
 					<input type="hidden" name="type" value="'.esc_attr($id).'" />
 				</li>
 				';
@@ -290,18 +290,18 @@ class cflk_admin extends cflk_links {
 			';
 	}
 	
-	function display_blocks() {
-		$html = '
-			<div id="cflk-display-blocks" style="display: none;">
-			';
-		foreach($this->link_types as $type) {
-			$html .= $type->_admin(array());
-		}	
-		$html .= '	
-			</div>
-		';
-		return $html;
-	}
+	// function display_blocks() {
+	// 	$html = '
+	// 		<div id="cflk-display-blocks" style="display: none;">
+	// 		';
+	// 	foreach($this->link_types as $type) {
+	// 		$html .= $type->_admin_form(array());
+	// 	}	
+	// 	$html .= '	
+	// 		</div>
+	// 	';
+	// 	return $html;
+	// }
 	
 	/**
 	 * Display an individual link item
@@ -605,7 +605,7 @@ class cflk_admin extends cflk_links {
 	function ajax_get_link_edit_form($args) {
 		$data = $args['form_data'];
 		if (!empty($data['type']) && $this->is_valid_link_type($data['type'])) {
-			$link_form = $this->get_link_type($data['type'])->_admin($data, true);
+			$link_form = $this->get_link_type($data['type'])->_admin_edit_form($data);
 			if ($link_form != false) {
 				$result = new cflk_message(array(
 					'success' => true,
@@ -641,7 +641,7 @@ class cflk_admin extends cflk_links {
 	function ajax_get_link_view($args) {
 		parse_str($args['form_data'], $data);
 		if (!empty($data['type']) && $this->is_valid_link_type($data['type'])) {
-			$link_view = $this->get_link_type($data['type'])->_admin($data);
+			$link_view = $this->get_link_type($data['type'])->_admin_view($data);
 			if ($link_view != false) {
 				$result = new cflk_message(array(
 					'success' => true,
@@ -721,7 +721,7 @@ class cflk_admin extends cflk_links {
 	 * Generic ID used for admin list display to assist in editing/creating links
 	 */
 	function get_random_id($salt) {
-		return $salt.'-'.md5(strval(time()).$salt);
+		return $salt.'-'.md5(strval(rand()).$salt);
 	}
 	
 	

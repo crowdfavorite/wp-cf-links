@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: CF Links
+Plugin Name: CF Links v2 Dev
 Plugin URI: http://crowdfavorite.com
 Description: A dynamic list builder.
 Version: 2.0b
@@ -47,7 +47,7 @@ load_plugin_textdomain('cf-links');
 	 * @return void
 	 */
 	function cflk_links($list_id, $args) {
-		echo cflk_get_links($list_id);
+		echo cflk_get_links($list_id, $args);
 	} 
 		
 	/**
@@ -61,7 +61,9 @@ load_plugin_textdomain('cf-links');
 	 */
 	function cflk_get_links($list_id, $args) {
 		global $cflk_links;
+
 		$list = $cflk_links->get_list($list_id, $args);
+
 		if ($list != false) {
 			return $list->display();
 		}

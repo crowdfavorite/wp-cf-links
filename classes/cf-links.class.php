@@ -5,9 +5,6 @@ class cflk_links {
 	protected $lists;
 		
 	function __construct() {
-		// register default link
-		$this->register_link_type('url', 'cflk_link');
-		
 		// enqueue_scripts
 		// enqueue_styles
 		
@@ -22,7 +19,7 @@ class cflk_links {
 	 * @return void
 	 */
 	function is_valid_link_type($type) {
-		return isset($this->link_types[$type]) && ($this->link_types[$type] instanceof cflk_link);
+		return isset($this->link_types[$type]) && ($this->link_types[$type] instanceof cflk_link_base);
 	}
 	
 	/**
@@ -48,15 +45,15 @@ class cflk_links {
 	 * @return string html
 	 */
 	function get_list($list_id, $args) {
-		if ($list != $this->get_list_data($this->list_id)) {
+		if (!($list = $this->get_list_data($list_id))) {
 			return false;
 		}
-		
+
 		if (!isset($args['context'])) {
 			$args['context'] == 'default';
 		}
-		
-		$list = new cflk_list($list, $args, &$this->list_types);
+
+		$list = new cflk_list($list, $args, &$this->link_types);
 		return apply_filters('cflk_get_list', $list);
 	}
 
@@ -72,7 +69,7 @@ class cflk_links {
 		}
 		
 		$list = maybe_unserialize(get_option($list_id));
-		
+
 		if (!is_array($list)) {
 			$list = false;
 		}
@@ -99,13 +96,8 @@ class cflk_links {
 		$paths = apply_filters('cflk-link-dirs', array(trailingslashit(CFLK_PLUGIN_DIR).'link-types'));
 		$types = array();
 		foreach ($paths as $path) {
-			$path = trailingslashit($path);
-			if (is_dir($path) && $handle = opendir($path)) {
-				while (false !== ($file = readdir($handle))) {
-					if (is_file($path.$file) && pathinfo($file, PATHINFO_EXTENSION) == 'php') {
-						$types[] = $path.$file;
-					}
-				}
+			if (is_dir($path)) {
+				$types = array_merge($types, glob(trailingslashit($path).'*.php'));
 			}
 		}
 

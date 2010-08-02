@@ -1,17 +1,19 @@
 <?php
 
-class cf_links_list {
-	protected $data;
+class cflk_list {
+	protected $list;
 	protected $args;
+	protected $current_list;
 	protected $link_types;
 	
 	protected $hierarchal_data;
 	
-	function __construct($data, $args, $link_types) {
-		$this->data = $data;
+	function __construct($list, $args, $link_types) {
+		$this->list = $list;
 		$this->args = $args;
+		$this->current_list = $this->list['key'];
 		$this->link_types = $link_types;
-		$this->hierarchial_data = $this->format_hierarchal_list($list_['data']);
+		$this->hierarchical_data = $this->format_hierarchical_list($list['data']);
 	}
 	
 	/**
@@ -23,12 +25,8 @@ class cf_links_list {
 	 * @param int $level 
 	 * @return string html
 	 */
-	function build_list($list, $args, $level=0) {
-		$heirarchal = $this->format_hierarchal_list($list['data']);
-		$html = '';
-		foreach($hierarchal as $item) {
-			$html .= $this->build_list_recursive($hierarchal,$args);
-		}
+	function display() {
+		$html = $this->build_list_recursive($this->hierarchical_data, $this->args);
 		return $html;
 	}
 	
@@ -63,6 +61,10 @@ class cf_links_list {
 		return apply_filters('cflk_wrappers', $defaults, $list_key, $args, $level);
 	}
 	
+	public function apply_class($item, $class) {
+		return preg_replace('/(\{.*?\})/', $class, $item);
+	}
+	
 	/**
 	 * Recursively build list items
 	 *
@@ -74,6 +76,7 @@ class cf_links_list {
 	function build_list_recursive($items, $args, $level = 0) {
 		// @TODO run this after figuring out the classes, pass in classes
 		$wrappers = $this->get_wrappers($this->current_list, $args, $level);
+		$ret = '';
 		
 		foreach ($items as $key => $item) {
 			$wrapper_class = array(
@@ -95,16 +98,17 @@ class cf_links_list {
 				$item['class'] .= ' cflk-opennewwindow';
 				add_action('wp_footer',array($this,'footer_js'));
 			}
-			
+
 			$ret .= $this->apply_class($wrappers['child_before'], implode(' ', $wrapper_class)).
-					$this->link_types[$item['type']]->display($item);
+					$this->link_types[$item['type']]->_display($item);
 			if (isset($item['children'])) {
 				$ret .= $this->build_list_recursive($item['children'], $args, $item['level']++);
 			}
 			$ret .= $wrappers['child_after'];
 		}
 		$ret .= $wrappers['parent_after'];
-		return apply_filters('cfli_list_html', $ret, $items, $args, $level);
+
+		return apply_filters('cflk_list_html', $ret, $items, $args, $level);
 	}
 	
 	/**
@@ -119,7 +123,7 @@ class cf_links_list {
 	 * @param int $start 
 	 * @return array
 	 */
-	function format_hierarchal_list(&$links, $level = 0, $start = 0, $ancestors = array()) {
+	function format_hierarchical_list(&$links, $level = 0, $start = 0, $ancestors = array()) {
 		$parent = null;
 		if ($start > 0 ) {
 			array_push($ancestors,$links[($start-1)]['link']);
@@ -136,7 +140,7 @@ class cf_links_list {
 
 				// go deeper or stop
 				if ($links[$i+1]['level'] > $level) {
-					$children = format_hierarchal_list($links, $links[$i+1]['level'], $i+1, $ancestors);
+					$children = format_hierarchical_list($links, $links[$i+1]['level'], $i+1, $ancestors);
 					$ret[$i]['children'] = $children['ret'];
 					$i = $children['i'];
 				}

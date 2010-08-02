@@ -1,9 +1,8 @@
 <?php
 
 /**
- * new WordPress Widget format
- * Wordpress 2.8 and above
- * @see http://codex.wordpress.org/Widgets_API#Developing_Widgets
+ * Widget for CF-Links Plugin
+ * @package cf-links
  */
 class cflk_widget extends WP_Widget {
 	function cflk_widget() {
@@ -13,32 +12,44 @@ class cflk_widget extends WP_Widget {
 
 	function widget( $args, $instance ) {
 		extract( $args, EXTR_SKIP );
-		echo $before_widget;
-		echo $before_title;
-		echo 'CF Links Widget'; // Can set this with a widget option, or omit altogether
-		echo $after_title;
+		
+		$html = $before_widget.
+				$before_title.'CF Links Widget'.$after_title;
 
-		echo '<p>Wiget gohs heer!</p>';
-		//
-		// Widget display logic goes here
-		//
+		$list_args = array(
+			'context' => 'widget'
+		);
+		$html .= cflk_get_links(esc_attr($instance['cflk-list']), $list_args);
 
-		echo $after_widget;
+		$html .= $after_widget;
+		echo $html;
 	}
 
 	function update( $new_instance, $old_instance ) {
-		// update logic goes here
 		$updated_instance = $new_instance;
 		return $updated_instance;
 	}
 
 	function form( $instance ) {
 		$instance = wp_parse_args( (array) $instance, array() );
-
-		// display field names here using:
-		// $this->get_field_id('option_name') - the CSS ID
-		// $this->get_field_name('option_name') - the HTML name
-		// $instance['option_name'] - the option value
+		
+		global $cflk_links;
+		$lists = $cflk_links->get_all_lists_for_blog();
+		
+		$html = '
+			<div>
+				<select name="'.$this->get_field_name('cflk-list').'" id="'.$this->get_field_id('cflk-list').'">';
+		if (!empty($lists)) {
+			foreach($lists as $id => $list) {
+				$html .= '
+						<option value="'.$id.'"'.selected($instance['cflk-list'], $id, false).'>'.$list['nicename'].'</option>';
+				
+			}
+		}
+		$html .= '
+				</select>
+			</div>';
+		echo $html;
 	}
 }
 

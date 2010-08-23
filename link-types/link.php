@@ -33,10 +33,13 @@ class cflk_link extends cflk_link_base {
 	function admin_display($data) {
 		return '
 			<div>
-				'.__('Type:', 'cf-links').' <span class="type">'.$this->name.'</span><br />
 				'.__('URL:', 'cf-links').' <span class="link">'.$data['link'].'</span>
 			</div>
 			';
+	}
+	
+	function admin_display_type() {
+		return $this->name;
 	}
 	
 	/**

@@ -16,6 +16,16 @@
 		this.no_items_list_item = $('#cflk-list-sortable .cflk-no-items');
 		this.list_details = $('#cflk-edit-list-details-display');
 		this.list_details_edit = $('#cflk-edit-list-details-edit');
+		
+		$("#cflk-list-sortable").sortable({
+			handle : ".handle",
+			update : function() {
+				$("input#cflk-log").val($("#cflk-list-sortable").sortable("serialize"));
+			},
+			containment: "document",
+			opacity: 0.5
+			// stop: cflk_levels_refactor
+		});
 	};
 
 // Unique Name/Slug check
@@ -97,7 +107,7 @@
 		
 		this.link_item_forms.hide();
 		this.link_item_new_button.show();
-				
+
 		if (data.new_link) {
 			this.links_list.append($('<li id="' + data.id + '"/>').html(data.html));
 		}
@@ -116,6 +126,10 @@
 	cflk.selectType = function() {
 		_this = $(this);
 		$('#cflk-type-' + _this.val(), _this.parents('div.cflk-type-select').siblings('.cflk-type-forms'))
+			.css({'display':'block'})
+			.siblings()
+			.css({'display':'none'});
+		$('#cflk-type-display-' + _this.val(), _this.parents('div.cflk-type-select').siblings('.cflk-type-type'))
 			.css({'display':'block'})
 			.siblings()
 			.css({'display':'none'});
@@ -311,7 +325,7 @@
 			$('#cflk_list_name:visible').focus();
 
 			// Item type select
-			$('select[name="cflk-types"]').live('change', cflk.selectType);
+			$('select[name="cflk-types"]').change(cflk.selectType);
 
 			// Unique list slug setting
 			$('.cflk-list-new #cflk_list_name').blur(function() {

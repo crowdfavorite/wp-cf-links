@@ -39,12 +39,15 @@ class cflk_link_page extends cflk_link_base {
 		}
 		return '
 			<div>
-				'.__('Type:', 'cf-links').' <span class="type">'.$this->name.'</span><br />
 				'.__('Page:', 'cf-links').' <span class="link">'.esc_html($page).'</span>
 			</div>
 			';
 	}
-
+	
+	function admin_display_type() {
+		return $this->name;
+	}
+	
 	function admin_form($data) {
 		$args = array(
 			'echo' => false,
@@ -55,7 +58,7 @@ class cflk_link_page extends cflk_link_base {
 		$pages = wp_dropdown_pages($args);
 		return '
 			<div>
-				'.$pages.'
+				'.__('Page: ', 'cf-links').$pages.'
 			</div>
 			';
 	}

@@ -331,29 +331,6 @@ class cflk_admin extends cflk_links {
 				</div>
 			</div>
 			';
-			
-		/*
-		
-		<div id="cflk-edit-forms-wrapper" style="display: none;">
-			<div class="cflk-edit-forms">
-				<div class="cflk-type-select">
-					<select name="cflk-types">
-						'.$options.'
-					</select>
-				</div>
-				<div class="cflk-type-forms">
-					<ul>
-						'.$forms.'
-					</ul>
-				</div>
-				<div class="cflk-type-actions">
-					<button class="button cflk-link-edit-done">Done</button>
-					<a href="#" class="cflk-cancel">cancel</a>
-				</div>
-			</div>
-		</div>
-		
-		*/
 	}
 	
 	// function display_blocks() {

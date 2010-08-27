@@ -154,7 +154,7 @@ class cflk_admin extends cflk_links {
 	 *
 	 * @return void
 	 */
-	function _edit() {				
+	function _edit() {
 		$list_id = (!empty($_GET['list']) ? esc_attr($_GET['list']) : false);
 		$new = ($list_id == false ? true : false);
 		
@@ -527,22 +527,55 @@ class cflk_admin extends cflk_links {
 
 # Export List
 	
-	function export_list() {}
+	function export_list() {
+		
+	}
 
 # Import
 
-	function import_list() {}
+	function import_list() {
+		
+	}
 
 # Helpers
 
-	function get_authors() {}
+	function get_authors() {
+		global $wpdb;
+		$sql = "
+			SELECT DISTINCT u.ID
+			FROM {$wpdb->users} AS u, 
+				{$wpdb->usermeta} AS um
+			WHERE u.ID = um.user_id
+			AND um.meta_key LIKE '{$wpdb->prefix}capabilities'
+			AND um.meta_value NOT LIKE '%subscriber%'
+			ORDER BY u.user_nicename
+			";
+		$results = '';
+		$count = 1;
+		$users = $wpdb->get_results($sql);
+		if (is_array($users) && !empty($users)) {
+			foreach($users as $u) {
+				$results .= $u->ID;
+				if ($count < count($users)) {
+					$results .= ',';
+				}
+				$count++;
+			}
+		}
+		return $results;
+	}
 	
 	function get_all_lists_for_blog($blog = 0) {
 		global $wpdb, $blog_id;
 
 		// if we're on MU and another blog's details have been requested, change the options table assignment
 		if (!is_null($blog_id) && $blog != 0) {
-			$options = 'wp_'.$blog.'_options';
+			if ($blog_id == 1) {
+				$options = 'wp_options';
+			}
+			else {
+				$options = 'wp_'.$blog.'_options';
+			}
 		}
 		else {
 			$options = $wpdb->options;
@@ -558,6 +591,7 @@ class cflk_admin extends cflk_links {
 					'nicename' => $options['nicename'], 
 					'description' => $options['description'],
 					'count' => count($options['data']),
+					'data' => $options['data']
 				);
 			}
 		}
@@ -573,7 +607,7 @@ class cflk_admin extends cflk_links {
 	 *
 	 * @return html
 	 */
-	function get_messages_html() {
+	function get_messages_html($msg_id = 0) {
 		$html = '';
 		if (!empty($_GET['cflk_message'])) {
 			$messages = explode(',', $_GET['cflk_message']);
@@ -586,6 +620,13 @@ class cflk_admin extends cflk_links {
 				}
 			$html .= '</div>';
 			}
+		}
+		else if ($msg_id && !empty($this->messages[$msg_id])) {
+			$html .= '
+			<div class="cflk-message updated fade below-h2">
+				<p>'.$this->messages[$msg_id].'</p>
+			<div>
+			';
 		}
 		return $html;
 	}
@@ -697,7 +738,7 @@ class cflk_admin extends cflk_links {
 			if ($processed) {
 				$result = new cflk_message(array(
 					'success' => true,
-					'message' => __('List '.$processed['name'].' deleted.', 'cf-links')
+					'html_message' => $this->get_messages_html(3)
 				));
 			}
 			else {

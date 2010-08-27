@@ -45,12 +45,13 @@ class cflk_link_author_rss extends cflk_link_base {
 	}
 	
 	function admin_form($data) {
+		global $cflk_links;
 		$args = array(
 			'echo' => false,
 			'id' => 'cflk-dropdown-authors',
 			'name' => 'cflk-author-id',
 			'selected' => (!empty($data['cflk-author-id']) ? intval($data['cflk-author-id']) : 0),
-			'include' => $this->get_users()
+			'include' => $cflk_links->get_authors()
 		);
 		$authors = wp_dropdown_users($args);
 		return '
@@ -63,32 +64,6 @@ class cflk_link_author_rss extends cflk_link_base {
 	function update($data) {
 		$data['link'] = $data['cflk-author-id'];
 		return $data;
-	}
-	
-	function get_users() {
-		global $wpdb;
-		$sql = "
-			SELECT DISTINCT u.ID
-			FROM {$wpdb->users} AS u, 
-				{$wpdb->usermeta} AS um
-			WHERE u.ID = um.user_id
-			AND um.meta_key LIKE '{$wpdb->prefix}capabilities'
-			AND um.meta_value NOT LIKE '%subscriber%'
-			ORDER BY u.user_nicename
-			";
-		$results = '';
-		$count = 1;
-		$users = $wpdb->get_results($sql);
-		if (is_array($users) && !empty($users)) {
-			foreach($users as $u) {
-				$results .= $u->ID;
-				if ($count < count($users)) {
-					$results .= ',';
-				}
-				$count++;
-			}
-		}
-		return $results;
 	}
 }
 cflk_register_link('author_rss','cflk_link_author_rss');

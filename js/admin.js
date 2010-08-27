@@ -75,7 +75,12 @@
 				this.opts.ajax_url,
 				data,
 				function(r, statusText) {
-					cflk.error(r.message);
+					if (r.success) {
+						$(".cflk-navigation").prepend(r.html_message);
+					}
+					else {
+						cflk.error(r.message);
+					}
 				},
 				'json'
 			);

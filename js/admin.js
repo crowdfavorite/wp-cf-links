@@ -59,7 +59,30 @@
 	cflk.insertNewListId = function(data) {
 		$('#cflk_list_key').val(data.list_id);
 	};
+
+// Delete List
 	
+	cflk.deleteList = function(list_key) {
+		if (confirm('Are you sure you want to delete this list? There is no way to undo this delete.')) {
+			$("#cflk-list-"+list_key).remove();
+			var data = {
+				action:'cflk_ajax',
+				func:'delete_list',
+				args:JSON.stringify({list_key:list_key})
+			};
+
+			$.post(
+				this.opts.ajax_url,
+				data,
+				function(r, statusText) {
+					cflk.error(r.message);
+				},
+				'json'
+			);
+		}
+		return false;
+	}
+
 // Add Links	
 
 	// show new link form
@@ -258,18 +281,11 @@
 		});
 	
 		// Main Page Actions
-		if ($('#cflk-available-lists').size() == 1) {
-			
-			$('.cflk-list-edit').click(function() {
-				
-				return false;
-			});
-			
-			$('.cflk-list-delete').click(function() {
-			
-				return false;
-			});
-		}
+		$(".cflk-delete-list").click(function() {
+			var list_key = $(this).attr('id').replace('list-delete-', '');
+			cflk.deleteList(list_key);
+			return false;
+		});
 	
 		// List Edit Page Actions
 		if ($('#cflk-list-form').size() == 1) {

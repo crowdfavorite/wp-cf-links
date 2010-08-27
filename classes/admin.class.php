@@ -45,7 +45,9 @@ class cflk_admin extends cflk_links {
 					$this->process_list();
 					break;
 				case 'delete_list':
-					$this->delete_list();
+					if (!empty($_POST['list_key'])) {
+						$this->delete_list(esc_attr($_POST['list_key']));
+					}
 					break;
 			}
 		}
@@ -116,10 +118,10 @@ class cflk_admin extends cflk_links {
 								</p>
 							</td>
 							<td class="cflk-list-edit" style="text-align:center; vertical-align:middle;">
-								<input type="button" class="button cflk-edit-list" name="list-edit-'.$id.'" value="'.__('Edit', 'cf-links').'" />
+								<a class="button" href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'">'.__('Edit', 'cf-links').'</a>
 							</td>
 							<td class="cflk-list-delete" style="text-align:center; vertical-align:middle;">
-								<input type="button" class="button cflk-delete-list" name="list-delete-'.$id.'" value="'.__('Delete', 'cf-links').'" />
+								<a class="button cflk-delete-list" id="list-delete-'.$id.'" href="#">'.__('Delete', 'cf-links').'</a>
 							</td>
 						</tr>
 					';
@@ -409,18 +411,28 @@ class cflk_admin extends cflk_links {
 
 # Delete list
 
-	function delete_list() {
+	function delete_list($list_key = 0) {
 		$this->errors = new cflk_error;
 		
-		if (!empty($_POST['list_key'])) {
-			$list = $this->get_list_data(esc_attr($_POST['list_key']));
-			if ($list !== false) {
-				
+		$list = $this->get_list_data(esc_attr($list_key));
+		if ($list !== false) {
+			$name = $list['nicename'];
+			$result = $this->delete_list_data($list_key);
+			if ($result) {
+				$return = array(
+					'list_key' => esc_attr($list_key),
+					'name' => $name
+				);
 			}
 			else {
-				$this->errors->add('invalid-list-id', 'Invalid List ID supplied for Delete List');
+				$return = false;
 			}
 		}
+		else {
+			$return = false;
+			$this->errors->add('invalid-list-id', __('Invalid List ID supplied for Delete List'));
+		}
+		return $return;
 	}
 
 # Save/Update list
@@ -501,6 +513,16 @@ class cflk_admin extends cflk_links {
 			update_option($list['key'], $list);
 		}
 		return true;
+	}
+	
+	/**
+	 * Delete the list data
+	 *
+	 * @param string $list_id 
+	 * @return bool
+	 */
+	function delete_list_data($list_key) {
+		return delete_option($list_key);
 	}
 
 # Export List
@@ -670,7 +692,28 @@ class cflk_admin extends cflk_links {
 	}
 	
 	function ajax_delete_list($args) {
-		
+		if (!empty($args['list_key'])) {
+			$processed = $this->delete_list(esc_attr($args['list_key']));
+			if ($processed) {
+				$result = new cflk_message(array(
+					'success' => true,
+					'message' => __('List '.$processed['name'].' deleted.', 'cf-links')
+				));
+			}
+			else {
+				$result = new cflk_message(array(
+					'success' => false,
+					'message' => __('Could not delete list "'.esc_attr($args['list_key']).'".'.$info, 'cf-links')
+				));
+			}
+		}
+		else {
+			$result = new cflk_message(array(
+				'success' => false,
+				'message' => __('Could not process empty ID.', 'cf-links')
+			));
+		}
+		return $result;
 	}
 	
 	function ajax_autocomplete($args) {
@@ -804,7 +847,6 @@ class cflk_admin extends cflk_links {
 	function get_random_id($salt) {
 		return $salt.'-'.md5(strval(rand()).$salt);
 	}
-	
 	
 	/**
 	 * Send the Admin JS

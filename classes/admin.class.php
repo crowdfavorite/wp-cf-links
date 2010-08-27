@@ -310,14 +310,11 @@ class cflk_admin extends cflk_links {
 			<div id="cflk-edit-forms-wrapper" style="display:none;">
 				<div class="cflk-edit-forms">
 					<div class="cflk-type-select">
+					</div>
+					<div class="cflk-type-type">
 						<select name="cflk-types">
 							'.$options.'
 						</select>
-					</div>
-					<div class="cflk-type-type">
-						<ul>
-							'.$types.'
-						</ul>
 					</div>
 					<div class="cflk-type-forms">
 						<ul>

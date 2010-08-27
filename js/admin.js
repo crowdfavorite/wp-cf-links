@@ -125,11 +125,7 @@
 	
 	cflk.selectType = function() {
 		_this = $(this);
-		$('#cflk-type-' + _this.val(), _this.parents('div.cflk-type-select').siblings('.cflk-type-forms'))
-			.css({'display':'block'})
-			.siblings()
-			.css({'display':'none'});
-		$('#cflk-type-display-' + _this.val(), _this.parents('div.cflk-type-select').siblings('.cflk-type-type'))
+		$('#cflk-type-' + _this.val(), _this.parents('div.cflk-type-type').siblings('.cflk-type-forms'))
 			.css({'display':'block'})
 			.siblings()
 			.css({'display':'none'});

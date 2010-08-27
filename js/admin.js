@@ -215,7 +215,7 @@
 	};
 	
 	cflk.submitListEditForm = function() {
-		$('#cflk-list-form').submit();
+		$("#cflk-list-submit-button").trigger('click');
 	};
 	
 	cflk.toggleListDetailsEdit = function(dir) {
@@ -340,7 +340,7 @@
 				cflk.submitListEditForm();
 				return false;
 			});
-			
+
 			// Edit List Details
 			$('#cflk-edit-list-details').click(function() {
 				cflk.toggleListDetailsEdit('open');

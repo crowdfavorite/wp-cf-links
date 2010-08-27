@@ -31,7 +31,7 @@ class cflk_link_base {
 	 * @return string html
 	 */
 	function display($data) {
-		return '<li class="'.trim($data['class']).'"><a href="'.$data['link'].'">'.(!empty($data['title']) ? $data['title'] : $data['link']).'</a></li>';
+		return '<li class="'.trim($data['class']).'">'.(!empty($data['link']) ? '<a href="'.$data['link'].'">' : '').(!empty($data['title']) ? $data['title'] : $data['link']).(!empty($data['link']) ? '</a>' : '').'</li>';
 	}
 	
 	/**
@@ -42,15 +42,6 @@ class cflk_link_base {
 	 */
 	function admin_display($data) {
 		trigger_error('::admin_display() should be overriden in child class. Do not call this parent method directly.', E_USER_ERROR);
-	}
-	
-	/**
-	 * Admin type display
-	 *
-	 * @return string html
-	 */
-	function admin_display_type() {
-		trigger_error('::admin_display_type() should be overriden in child class. Do not call this parent method directly.', E_USER_ERROR);
 	}
 	
 	/**
@@ -172,6 +163,12 @@ class cflk_link_base {
 	 * @return void
 	 */
 	function _admin_view($data) {
+		// If there is no title to display, don't display the title div.  This keeps the admin interface a little cleaner
+		$title = '';
+		if (!empty($data['title'])) {
+			$title = '<div>'.__('Title:', 'cf-links').' <span class="title">'.$data['title'].'</span></div>';
+		}
+		
 		return '
 			<div class="'.$this->id_base.$this->id.' cflk-link-data-display">
 				<div class="cflk-link-move">
@@ -182,7 +179,7 @@ class cflk_link_base {
 				</div>
 				<div class="cflk-link-data '.$this->id_base.$this->id.'-data">
 					'.$this->admin_display($data).'
-					<div>'.__('Title:', 'cf-links').' <span class="title">'.$data['title'].'</span></div>
+					'.$title.'
 					<div>'.__('New Window:', 'cf-links').' <span class="newwin">'.(intval($data['opennew']) == 1 ? 'Yes' : 'No').'</span></div>
 				</div>
 				<div class="cflk-link-edit">
@@ -230,6 +227,10 @@ class cflk_link_base {
 				</label>
 			</div>
 		';
+	}
+	
+	function admin_display_type() {
+		return $this->name;
 	}
 	
 	//function admin_js() {

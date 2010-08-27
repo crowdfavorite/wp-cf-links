@@ -38,10 +38,6 @@ class cflk_link extends cflk_link_base {
 			';
 	}
 	
-	function admin_display_type() {
-		return $this->name;
-	}
-	
 	/**
 	 * Admin edit display
 	 *

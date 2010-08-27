@@ -159,7 +159,7 @@ class cflk_admin extends cflk_links {
 		if ($list_id) {
 			$list = $this->get_list_data($list_id);
 		}
-				
+
 		if (empty($list)) {
 			$list = array();
 			if (!$new) {
@@ -185,7 +185,7 @@ class cflk_admin extends cflk_links {
 		$html = $this->admin_wrapper_open('Edit List :: CF Links').$this->admin_navigation('edit').'
 			'.(!empty($notice) ? $notice : null).'
 			'.$this->admin_messages().'
-			<form method="post" id="cflk-list-form" class="cflk-list-'.($new ? 'new' : 'edit').'" action="">
+			<form method="post" id="cflk-list-form" name="cflk_list_form" class="cflk-list-'.($new ? 'new' : 'edit').'" action="'.$_SERVER['REQUEST_URI'].'">
 				<input type="hidden" name="cflk_action" value="edit_list" />
 				<h3>'.__('List Details','cf-links').'</h3>
 				<fieldset id="cflk-edit-list-details">
@@ -258,7 +258,7 @@ class cflk_admin extends cflk_links {
 						</ul>
 					</fieldset>
 				</div>
-				<input type="submit" value="'.__($button_text,'cf-links').'" style="display: none;" />
+				<input type="submit" id="cflk-list-submit-button" value="'.__($button_text,'cf-links').'" style="display: none;" />
 			</form>
 			<form id="cflk-new-link-form" action="">
 				<div id="cflk-list-items-footer">
@@ -274,47 +274,10 @@ class cflk_admin extends cflk_links {
 		$button_text = ($new ? 'Save List' : 'Update List');
 		$html .= '
 			<p class="submit">
-				<input id="cflk-list-submit" type="submit" class="button-primary" name="cflk-submit" value="'.__($button_text,'cf-links').'" />
+				<input id="cflk-list-submit" type="button" class="button-primary" value="'.__($button_text,'cf-links').'" />
 			</p>
 			'.$this->admin_wrapper_close();
 		return $html;
-		
-		/*
-		
-		<table id="cflk-list-items" class="widefat">
-			<thead>
-				<tr>
-					<th scope="col" width="200px">'.__('Type', 'cf-links').'</th>
-					<th scope="col">'.__('Details', 'cf-links').'</th>
-					<th scope="col" style="text-align:center;" width="80px">'.__('Edit', 'cf-links').'</th>
-					<th scope="col" style="text-align:center;" width="80px">'.__('Delete', 'cf-links').'</th>
-				</tr>
-			</thead>
-			<tbody id="cflk-list-sortable">
-			';
-			if (is_array($data) || count($data)) {
-				foreach ($data as $item) {
-					$html .= '<tr id="'.$this->get_random_id($item['type']).'">'.$this->link_types[$item['type']]->_admin_view($item).'</tr>';
-				}
-			}
-			$html .= '
-			</tbody>
-		</table>
-		
-					<fieldset id="cflk-list-items">
-						<ul id="cflk-list-sortable">
-							<li class="cflk-no-items" '.(!is_array($data) || !count($data) ? null : ' style="display: none;"').'><p>There are no items in this list. Use the "Add Link" button to get started</p></li>
-
-				if (is_array($data) || count($data)) {
-					foreach ($data as $item) {
-						$html .= '
-							<li id="'.$this->get_random_id($item['type']).'" class="cflk-item">'.$this->link_types[$item['type']]->_admin_view($item).'</li>
-							';
-					}
-				}
-					</ul>
-				</fieldset>
-		*/
 	}
 	
 	/**

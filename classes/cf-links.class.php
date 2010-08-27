@@ -7,9 +7,6 @@ class cflk_links {
 	function __construct() {
 		// enqueue_scripts
 		// enqueue_styles
-		
-		// add_actions
-		add_action('init', array($this, 'import_included_link_types'), 11);
 	}
 	
 	/**
@@ -89,16 +86,14 @@ class cflk_links {
 	 * @return array
 	 */
 	function find_included_link_types() {
-		if ($modules = wp_cache_get('cflk_included_modules', 'cfct_build')) {
-			return $modules;
+		if ($types = wp_cache_get('cflk_included_modules', 'cflk_links')) {
+			return $types;
 		}
 
-		$paths = apply_filters('cflk-link-dirs', array(trailingslashit(CFLK_PLUGIN_DIR).'link-types'));
+		$path = trailingslashit(CFLK_PLUGIN_DIR).'link-types';
 		$types = array();
-		foreach ($paths as $path) {
-			if (is_dir($path)) {
-				$types = array_merge($types, glob(trailingslashit($path).'*.php'));
-			}
+		if (is_dir($path)) {
+			$types = array_merge($types, glob(trailingslashit($path).'*.php'));
 		}
 
 		wp_cache_set('cflk_included_modules', $types, 'cflk_links', 3600);

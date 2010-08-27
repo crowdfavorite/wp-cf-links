@@ -44,10 +44,6 @@ class cflk_link_page extends cflk_link_base {
 			';
 	}
 	
-	function admin_display_type() {
-		return $this->name;
-	}
-	
 	function admin_form($data) {
 		$args = array(
 			'echo' => false,
@@ -64,7 +60,7 @@ class cflk_link_page extends cflk_link_base {
 	}
 	
 	function update($data) {
-		$data['link'] = get_permalink($data['cflk-page-id']);
+		$data['link'] = $data['cflk-page-id'];
 		return $data;
 	}
 }

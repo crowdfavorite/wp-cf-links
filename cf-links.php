@@ -137,11 +137,85 @@ load_plugin_textdomain('cf-links');
 		return $cflk_links->register_link_type($id, $classname);
 	}
 	
-	function cflk_tinymce_dialog() {} // replaces cflk_dialog()
-	function cflk_tinymce_register_button() {} // replaces cflk_register_button()
-	function cflk_tinymce_add_pluing() {} // replaces cflk_add_tinymce_button
-	function cflk_tinymce_add() {} // replaces cflk_addtinymce
+	/**
+	 * Add the TinyMCE functionality for the post edit screen
+	 */
+	function cflk_tinymce_dialog() {
+		global $cflk_links;
+		$lists = $cflk_links->_tinymce();
+		?>
+		<html>
+			<head>
+				<title><?php _e('Select CF Links List', 'cf-links'); ?></title>
+				<script type="text/javascript" src="<?php echo includes_url('js/jquery/jquery.js'); ?>"></script>
+				<script type="text/javascript" src="<?php echo includes_url('js/tinymce/tiny_mce_popup.js'); ?>"></script>
+				<script type="text/javascript" src="<?php echo includes_url('js/quicktags.js'); ?>"></script>
+				<script type="text/javascript">
+					;(function($) {
+						$(function() {
+							$(".cflk-list-link").live('click', function() {
+								var key = $(this).attr('rel');
+								cflk_insert(key);
+							});
+						});
+						
+						function cflk_insert(key) {
+							tinyMCEPopup.execCommand("mceBeginUndoLevel");
+							tinyMCEPopup.execCommand("mceInsertContent", false, '<p>[cflk key="'+key+'"]</p>');
+							tinyMCEPopup.execCommand("mceEndeUndoLevel");
+							tinyMCEPopup.close();
+							return false;
+						}
+					})(jQuery);
+				</script>
+			</head>
+			<body id="cflink">
+				<?php
+				if (!empty($lists)) {
+					echo '<p>'.__('Click on the Links List title below to add the shortcode to the content of the post.', 'cf-links').'</p>';
+					echo '<p>'.$lists.'</p>';
+				}
+				else {
+					echo '<p>'.__('No Links Lists have been setup.  Please create a Links List before proceeding.', 'cf-links').'</p>';
+				}
+				?>
+			</body>
+		</html>
+		<?php
+	}
+	
+	function cflk_tinymce_register_button($buttons) {
+		array_push($buttons, '|', "cfLinksBtn");
+		return $buttons;
+	}
+	
+	function cflk_tinymce_add_plugin($plugin_array) {
+		$plugin_array['cflinks'] = CFLK_PLUGIN_URL.'/js/editor_plugin.js';
+		return $plugin_array;
+	}
+	
+	function cflk_tinymce_add() {
+		// Don't bother doing this stuff if the current user lacks permissions
+		if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) { return; }
 
+		// Add only in Rich Editor mode
+		if (get_user_option('rich_editing') == 'true') {
+			add_filter("mce_external_plugins", "cflk_tinymce_add_plugin");
+			add_filter('mce_buttons', 'cflk_tinymce_register_button');
+		}
+		
+		// Get the Dialog Box Content based on $_GET var
+		if (!empty($_GET['cf_action'])) {
+			switch ($_GET['cf_action']) {
+				case 'cflk-dialog':
+					cflk_tinymce_dialog();
+					die();
+					break;
+			}
+		}
+	}
+	add_action('init', 'cflk_tinymce_add');
+	
 ## Auxiliary
 
 if (!function_exists('cf_get_blog_list') && ((defined('WP_ALLOW_MULTISITE') && WP_ALLOW_MULTISITE) || (defined('MULTISITE') && MULTISITE))) {
@@ -190,6 +264,10 @@ if (!function_exists('cf_get_blog_list') && ((defined('WP_ALLOW_MULTISITE') && W
 	}
 }
 
+/**
+ * Add some information to the "Right Now" section of the WP Admin Dashboard.  This will make it easier to
+ * get into the Links edit screen.
+ */
 function cflk_rightnow_end() {
 	global $cflk_links;
 	$count = count($cflk_links->get_all_lists_for_blog());
@@ -197,7 +275,7 @@ function cflk_rightnow_end() {
 	?>
 	<tr>
 		<td class="first b b-tags"><a href="<?php echo $link; ?>"><?php echo $count; ?></a></td>
-		<td class="t tags"><a href="<?php echo $link; ?>"><?php _e('CF Links Lists', 'cf-links'); ?></a></td>
+		<td class="t tags"><a href="<?php echo $link; ?>"><?php _e('CF Links List', 'cf-links'); echo ($count == 1) ? '' : 's'; ?></a></td>
 	</tr>
 	<?php
 }

@@ -409,6 +409,28 @@ class cflk_admin extends cflk_links {
 		return $html;
 	}
 
+	/**
+	 * TinyMCE Display
+	 *
+	 * @return void
+	 */
+	function _tinymce() {
+		$html = '';
+		$lists = $this->get_all_lists_for_blog();
+		if (is_array($lists) && function_exists('cf_sort_by_key')) {
+			$lists = cf_sort_by_key($lists,'nicename');
+		}
+		
+		if (is_array($lists) && count($lists)) {
+			$html = '<ul id="cflk-list-links">';
+			foreach ($lists as $id => $list) {
+				$html .= '<li><a href="#" class="cflk-list-link" rel="'.esc_attr($id).'">'.esc_attr($list['nicename']).'</a></li>';
+			}
+			$html .= '</ul>';
+		}
+		return $html;
+	}
+
 # Delete list
 
 	function delete_list($list_key = 0) {

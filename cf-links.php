@@ -29,6 +29,12 @@ load_plugin_textdomain('cf-links');
 		include('classes/error.class.php');
 		include('classes/admin.class.php');
 	}
+	
+## Testing Includes
+	
+	if (is_admin()) {
+		include('lib/tests.php');
+	}
 
 ## Retained functions & filters (if in name only)
 	
@@ -183,4 +189,18 @@ if (!function_exists('cf_get_blog_list') && ((defined('WP_ALLOW_MULTISITE') && W
 			return array_slice( $blogs, $start, $num );
 	}
 }
+
+function cflk_rightnow_end() {
+	global $cflk_links;
+	$count = count($cflk_links->get_all_lists_for_blog());
+	$link = admin_url('options-general.php?page='.CFLK_BASENAME);
+	?>
+	<tr>
+		<td class="first b b-tags"><a href="<?php echo $link; ?>"><?php echo $count; ?></a></td>
+		<td class="t tags"><a href="<?php echo $link; ?>"><?php _e('CF Links Lists', 'cf-links'); ?></a></td>
+	</tr>
+	<?php
+}
+add_action('right_now_content_table_end', 'cflk_rightnow_end');
+
 ?>

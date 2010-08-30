@@ -162,7 +162,7 @@ load_plugin_textdomain('cf-links');
 						function cflk_insert(key) {
 							tinyMCEPopup.execCommand("mceBeginUndoLevel");
 							tinyMCEPopup.execCommand("mceInsertContent", false, '<p>[cflk key="'+key+'"]</p>');
-							tinyMCEPopup.execCommand("mceEndeUndoLevel");
+							tinyMCEPopup.execCommand("mceEndUndoLevel");
 							tinyMCEPopup.close();
 							return false;
 						}

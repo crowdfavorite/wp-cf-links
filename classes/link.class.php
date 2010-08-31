@@ -31,7 +31,7 @@ class cflk_link_base {
 	 * @return string html
 	 */
 	function display($data) {
-		return '<li class="'.trim($data['class']).'">'.(!empty($data['link']) ? '<a href="'.$data['link'].'">' : '').(!empty($data['title']) ? $data['title'] : $data['link']).(!empty($data['link']) ? '</a>' : '').'</li>';
+		return (!empty($data['link']) ? '<a href="'.$data['link'].'">' : '').(!empty($data['title']) ? $data['title'] : $data['link']).(!empty($data['link']) ? '</a>' : '');
 	}
 	
 	/**
@@ -70,7 +70,11 @@ class cflk_link_base {
 	function _display($data) {
 		$data['class'] = $this->id_base.$this->id.' '.$this->get_unique_class($data);
 		$link = apply_filters('cflk-link-'.$this->id.'-item', $this->display($data), $data);
-		return $link;
+		$link_data = array(
+			'link' => $link,
+			'class' => $data['class']
+		);
+		return $link_data;
 	}
 	
 // Admin
@@ -130,30 +134,6 @@ class cflk_link_base {
 				<div class="clear"></div>
 			</div>';
 		return $html;
-		
-		/*
-		
-				<fieldset>
-					'.$this->admin_form($data);
-		
-		if ($this->show_title_field) {
-			$html .= $this->title_field($data);
-		}
-		if ($this->show_new_window_field) {
-			$html .= $this->new_window_field($data);
-		}
-		$html .= '
-				</fieldset>';
-		if ($include_buttons) {
-			$html .= '
-					<div>
-						<input type="hidden" name="type" value="'.$this->id.'" />
-						<input type="button" class="button cflk-edit-done" value="'.__('Done', 'cf-links').'" /> | <a href="#" class="cflk-edit-cancel">'.__('cancel', 'cf-links').'</a>
-					</div>';
-		}
-		$html .= '		
-		
-		*/
 	}
 
 	/**
@@ -168,7 +148,7 @@ class cflk_link_base {
 		if (!empty($data['title'])) {
 			$title = '<div>'.__('Title:', 'cf-links').' <span class="title">'.$data['title'].'</span></div>';
 		}
-		
+
 		return '
 			<div class="'.$this->id_base.$this->id.' cflk-link-data-display">
 				<div class="cflk-link-move">
@@ -202,7 +182,7 @@ class cflk_link_base {
 		return $this->update($data);
 	}
 
-// amdin helpers
+// admin helpers
 
 	function get_unique_class($data) {
 		$class = $data['class'];

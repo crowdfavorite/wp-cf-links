@@ -98,17 +98,23 @@ class cflk_list {
 				$item['class'] .= ' cflk-opennewwindow';
 				add_action('wp_footer',array($this,'footer_js'));
 			}
-
-			$ret .= $this->apply_class($wrappers['child_before'], implode(' ', $wrapper_class)).
-					$this->link_types[$item['type']]->_display($item);
-			if (isset($item['children'])) {
-				$ret .= $this->build_list_recursive($item['children'], $args, $item['level']++);
-			}
-			$ret .= $wrappers['child_after'];
+			
+			$ret .= $this->build_item_recursive($item, $wrappers, $wrapper_class);
 		}
+		
 		$ret .= $wrappers['parent_after'];
 
 		return apply_filters('cflk_list_html', $ret, $items, $args, $level);
+	}
+	
+	function build_item_recursive($item, $wrappers, $wrapper_class) {
+		$link_data = $this->link_types[$item['type']]->_display($item);
+		$ret .= $this->apply_class($wrappers['child_before'], implode(' ', $wrapper_class).$item['class'].' '.$link_data['class']).$link_data['link'];
+		if (isset($item['children'])) {
+			$ret .= $this->build_list_recursive($item['children'], $args, $item['level']++);
+		}
+		$ret .= $wrappers['child_after'];
+		return apply_filters('cflk_list_item_html', $ret, $item, $wrappers, $wrapper_class);
 	}
 	
 	/**
@@ -159,6 +165,21 @@ class cflk_list {
 		else {
 			return array('ret' => $ret, 'i' => $i);
 		}
+	}
+	
+	function footer_js() {
+		?>
+		<script type="text/javascript">
+			;(function($) {
+				$(function() {
+					$(".cflk-opennewwindow a").live('click', function() {
+						window.open($(this).attr('href'));
+						return false;
+					});
+				});
+			})(jQuery);
+		</script>
+		<?php
 	}
 }
 

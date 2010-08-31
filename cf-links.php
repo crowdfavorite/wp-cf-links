@@ -30,6 +30,8 @@ load_plugin_textdomain('cf-links');
 		include('classes/admin.class.php');
 	}
 	
+	wp_enqueue_script('jquery');
+	
 ## Testing Includes
 	
 	if (is_admin()) {
@@ -98,9 +100,36 @@ load_plugin_textdomain('cf-links');
 	add_action('admin_menu','cflk_menu_items');
 	
 	
-	function cflk_add_readme() {}
-	function cflk_readme() {}
-	function cflk_handle_shortcode() {}
+	function cflk_handle_shortcode($attrs, $content=null) {
+		// Check to make sure we have something to filter
+		if (is_array($attrs)) {
+			$key = '';
+			// Find the legacy value for the key
+			if (!empty($attrs['name'])) {
+				$key = stripslashes($attrs['name']);
+			}
+			// Find the key using the new method
+			else if (!empty($attrs['key'])) {
+				$key = stripslashes($attrs['key']);
+			}
+			
+			// Check to see if we have a key to search for and display
+			if (!empty($key)) {
+				global $cflk_links;
+
+				$list = $cflk_links->get_list($key, array());
+
+				if ($list != false) {
+					return $list->display();
+				}
+			}
+		}
+		return false;
+	}
+	add_shortcode('cflk', 'cflk_handle_shortcode');
+	// Legacy Shortcodes
+	add_shortcode('cflk_links', 'cflk_handle_shortcode');
+	add_shortcode('cfl_links', 'cflk_handle_shortcode');
 	
 ## Functions
 
@@ -280,5 +309,12 @@ function cflk_rightnow_end() {
 	<?php
 }
 add_action('right_now_content_table_end', 'cflk_rightnow_end');
+
+/**
+ * Add functionality for the CF Readme plugin
+ */
+function cflk_add_readme() {}
+function cflk_readme() {}
+
 
 ?>

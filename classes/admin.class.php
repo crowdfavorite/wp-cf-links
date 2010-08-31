@@ -3,7 +3,7 @@
 class cflk_admin extends cflk_links {
 	
 	private $in_ajax = false;
-	
+	private $editing_list = false;
 	protected $messages = array(
 		'1' => 'List Created',
 		'2' => 'List Saved',
@@ -157,7 +157,7 @@ class cflk_admin extends cflk_links {
 	function _edit() {
 		$list_id = (!empty($_GET['list']) ? esc_attr($_GET['list']) : false);
 		$new = ($list_id == false ? true : false);
-		
+		$this->editing_list = $list_id;
 		if ($list_id) {
 			$list = $this->get_list_data($list_id);
 		}
@@ -244,6 +244,10 @@ class cflk_admin extends cflk_links {
 							}
 							else if (is_array($data) || count($data)) {
 								foreach ($data as $item) {
+									// Check to see if the list key is part of the data, and add it if it isn't
+									if (empty($item['list_key'])) {
+										$item['list_key'] = $key;
+									}
 									$class = '';
 									if ($first) {
 										$class = ' cflk-first';
@@ -301,7 +305,7 @@ class cflk_admin extends cflk_links {
 				';
 			$forms .= '
 				<li id="cflk-type-'.esc_attr($id).'"'.($i > 0 ? ' style="display: none;"' : null).'>
-					'.$type->_admin_edit_form(array(), false).'
+					'.$type->_admin_edit_form(array('list_key' => $this->editing_list), false).'
 					<input type="hidden" name="type" value="'.esc_attr($id).'" />
 				</li>
 				';
@@ -791,6 +795,9 @@ class cflk_admin extends cflk_links {
 	 */
 	function ajax_get_link_edit_form($args) {
 		$data = $args['form_data'];
+		if (empty($data['list_key'])) {
+			$data['list_key'] = $this->editing_list;
+		}
 		if (!empty($data['type']) && $this->is_valid_link_type($data['type'])) {
 			$link_form = $this->get_link_type($data['type'])->_admin_edit_form($data);
 			if ($link_form != false) {

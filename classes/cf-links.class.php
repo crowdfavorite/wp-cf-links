@@ -10,6 +10,21 @@ class cflk_links {
 	}
 	
 	/**
+	 * 
+	 * Check to see that a link list exists by list id
+	 * 
+	 * @param string $list_id
+	 * @return bool
+	 */
+	function is_valid_list($list_id) {
+		$list = get_option($list_id);
+		if (!$list) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
 	 * Check to see that a link type is a valid
 	 *
 	 * @param string $type 
@@ -126,19 +141,6 @@ class cflk_links {
 			return true;
 		}
 		return false;
-	}
-	
-	function footer_js() {
-		echo '
-<script type="text/javascript">
-jQuery(function($) {
-	$(".cflk-opennewwindow a").click(function(){
-		window.open(this.href);
-		return false;
-	});
-});
-</script>
-		';
 	}
 	
 	function js() {} // not needed?

@@ -33,7 +33,7 @@ class cflk_link_wordpress extends cflk_link_base {
 	function admin_display($data) {
 		if (!empty($data['cflk-wordpress-id'])) {
 			$info = $this->get_info($data['cflk-wordpress-id']);
-			$title = $info['title'];
+			$title = $info['description'];
 		}
 		else {
 			$title = __('Unknown WordPress Type', 'cf-links');

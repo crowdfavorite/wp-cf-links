@@ -14,7 +14,7 @@ class cflk_link_author_rss extends cflk_link_base {
 	function display($data) {
 		if (!empty($data['cflk-author-id'])) {
 			$data['link'] = get_author_rss_link(false, $data['cflk-author-id']);
-			$data['title'] = get_author_name($data['cflk-author-id']);
+			$data['title'] = '<img src="'.CFLK_PLUGIN_URL.'/images/feed-icon-16x16.png" title="rss"> '.get_author_name($data['cflk-author-id']);
 		}
 		else {
 			$data['link'] = '';

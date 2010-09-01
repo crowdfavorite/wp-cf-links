@@ -108,6 +108,8 @@ class cflk_list {
 	}
 	
 	function build_item_recursive($item, $wrappers, $wrapper_class) {
+		// This filter is so we can get in before the display of the item, and mess with its data.  Perhaps changing the type, or something similar
+		$item = apply_filters('cflk_get_links_data', $item);
 		$link_data = $this->link_types[$item['type']]->_display($item);
 		$ret .= $this->apply_class($wrappers['child_before'], implode(' ', $wrapper_class).$item['class'].' '.$link_data['class']).$link_data['link'];
 		if (isset($item['children'])) {

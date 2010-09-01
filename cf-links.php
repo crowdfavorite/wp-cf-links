@@ -54,8 +54,8 @@ load_plugin_textdomain('cf-links');
 	 * @param array $args 
 	 * @return void
 	 */
-	function cflk_links($list_id, $args) {
-		echo cflk_get_links($list_id, $args);
+	function cflk_links($list_id, $args = array()) {
+		echo apply_filters('cflk_links', cflk_get_links($list_id, $args));
 	} 
 		
 	/**
@@ -67,13 +67,13 @@ load_plugin_textdomain('cf-links');
 	 * @param array $args 
 	 * @return string html
 	 */
-	function cflk_get_links($list_id, $args) {
+	function cflk_get_links($list_id, $args = array()) {
 		global $cflk_links;
 
 		$list = $cflk_links->get_list($list_id, $args);
 
 		if ($list != false) {
-			return $list->display();
+			return apply_filters('cflk_get_links', $list->display());
 		}
 		else {
 			return '';
@@ -84,7 +84,7 @@ load_plugin_textdomain('cf-links');
 	function cflk_get_list_links($list) {} 
 	
 	// retain as accessor function?
-	function cflk_get_links_data($list) {} 
+	function cflk_get_links_data($list_id) {} 
 	
 	function cflk_menu_items() {
 		if (current_user_can('manage_options')) {
@@ -115,13 +115,7 @@ load_plugin_textdomain('cf-links');
 			
 			// Check to see if we have a key to search for and display
 			if (!empty($key)) {
-				global $cflk_links;
-
-				$list = $cflk_links->get_list($key, array());
-
-				if ($list != false) {
-					return $list->display();
-				}
+				return cflk_get_links($key);
 			}
 		}
 		return false;
@@ -166,9 +160,8 @@ load_plugin_textdomain('cf-links');
 		return $cflk_links->register_link_type($id, $classname);
 	}
 	
-	/**
-	 * Add the TinyMCE functionality for the post edit screen
-	 */
+## TinyMCE Functionality
+
 	function cflk_tinymce_dialog() {
 		global $cflk_links;
 		$lists = $cflk_links->_tinymce();

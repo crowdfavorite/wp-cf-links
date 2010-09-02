@@ -265,6 +265,60 @@
 	$(cflk).bind('ajaxError', function(evt, xhr, opts, err) {
 		cflk.error('There was an error contacting the server');
 	});
+
+// Export List Handling
+
+	cflk.export_list = function(list_key) {
+		var data = {
+			action:'cflk_ajax',
+			func:'export_list',
+			args:JSON.stringify({list_key:list_key})
+		};
+
+		$.post(
+			this.opts.ajax_url,
+			data,
+			function(r, statusText) {
+				cflk.popup(r.message)
+			},
+			'json'
+		);
+	}
+
+// Popup Handling
+	
+	cflk.popup = function(html) {
+		var t_html = "<div id=\"disposible-wapper\">"+html+"</div>";
+		var w = 500;
+		var h = 500;
+		
+		var opts = {
+			windowSourceID:t_html,
+			borderSize:0,
+			windowBGColor:"transparent",
+			windowPadding: 0,
+			positionType:"centered",
+			width:w,
+			height:h,
+			overlay:1,
+			overlayOpacity:"65"
+		};
+		$.openDOMWindow(opts);
+		$('#DOMWindow').css('overflow','visible');
+		
+		// fix the height on browsers that don't honor the max-height css directive
+		var _contentdiv = $('#DOMWindow .cflk-popup-content');
+		if (_contentdiv.height() > h-20) {
+			_contentdiv.css({'height':(h-20) + 'px'});
+		} 
+		
+		$(".cflk-popup-close").click(function(){
+			$.closeDOMWindow();
+			return false;
+		});
+		
+		return true;
+	}
 	
 // Init
 
@@ -368,6 +422,13 @@
 				cflk.toggleListDetailsEdit('close');
 				return false;
 			});
+			
+			// Export
+			$("#cflk-list-export").click(function() {
+				var list_key = $("#cflk_list_key").val();
+				cflk.export_list(list_key);
+				return false;
+			})
 		}
 	});
 	

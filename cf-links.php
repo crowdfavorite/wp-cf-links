@@ -80,11 +80,11 @@ load_plugin_textdomain('cf-links');
 		}
 	} 
 		
-	// retain as accessor function?
-	function cflk_get_list_links($list) {} 
+	// retain as accessor function? Not needed
+	// function cflk_get_list_links($list) {} 
 	
-	// retain as accessor function?
-	function cflk_get_links_data($list_id) {} 
+	// retain as accessor function? Not needed
+	// function cflk_get_links_data($list_id) {} 
 	
 	function cflk_menu_items() {
 		if (current_user_can('manage_options')) {

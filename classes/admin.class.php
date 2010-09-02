@@ -80,7 +80,7 @@ class cflk_admin extends cflk_links {
 		}
 		
 		// show list of available lists
-		$html = $this->admin_wrapper_open('CF Links').$this->admin_navigation('main').'
+		$html = $this->admin_wrapper_open().$this->admin_navigation('main').'
 			<table id="cflk-available-lists" class="widefat">
 				<thead>
 					<tr>
@@ -184,7 +184,7 @@ class cflk_admin extends cflk_links {
 		extract($listdata);
 		
 		// list details
-		$html = $this->admin_wrapper_open('Edit List :: CF Links').$this->admin_navigation('edit').'
+		$html = $this->admin_wrapper_open('Edit List').$this->admin_navigation('edit').'
 			'.(!empty($notice) ? $notice : null).'
 			'.$this->admin_messages().'
 			<form method="post" id="cflk-list-form" name="cflk_list_form" class="cflk-list-'.($new ? 'new' : 'edit').'" action="'.$_SERVER['REQUEST_URI'].'">
@@ -196,7 +196,7 @@ class cflk_admin extends cflk_links {
 						<p '.($new ? ' style="display: none;"' : '').'><b>List Key:</b> <span class="cflk-list-slug">'.($new ? '' : $key).'</span></p>
 						<p class="cflk-list-description"><b>Description:</b> '.$description.'</p>
 						<p class="cflk-list-details-edit">
-							<input type="button" class="button" name="cflk-edit-list-details" id="cflk-edit-list-details" value="Edit Details" />
+							<a href="#" class="button" id="cflk-edit-list-details">'.__('Edit Details', 'cf-links').'</a>
 						</p>
 					</div>
 					<div id="cflk-edit-list-details-edit">
@@ -213,7 +213,7 @@ class cflk_admin extends cflk_links {
 							<textarea name="description" id="cflk_list_description">'.$description.'</textarea>
 						</p>
 						<p id="cflk-edit-list-details-cancel">
-							<a href="#">cancel edit</a>
+							<a href="#" class="button">Cancel</a>
 						</p>
 					</div>
 				</fieldset>
@@ -281,8 +281,13 @@ class cflk_admin extends cflk_links {
 		$html .= '
 			<p class="submit">
 				<input id="cflk-list-submit" type="button" class="button-primary" value="'.__($button_text,'cf-links').'" />
+				<a href="#" id="cflk-list-export" class="button-primary">'.__('Export List', 'cf-links').'</a>
 			</p>
-			'.$this->admin_wrapper_close();
+			';
+
+		// $html .= $this->export_list($list_id);
+		
+		$html .= $this->admin_wrapper_close();
 		return $html;
 	}
 	
@@ -405,7 +410,7 @@ class cflk_admin extends cflk_links {
 	 */
 	function _import() {
 		// import a list
-		$html = $this->admin_wrapper_open('Import List :: CF Links').'
+		$html = $this->admin_wrapper_open('Import List').$this->admin_navigation('import').'
 			<form method="post" id="cflk-import-form">
 				<p>TBD</p>
 			</form>
@@ -541,6 +546,13 @@ class cflk_admin extends cflk_links {
 		return true;
 	}
 	
+	function get_list_data($list_key) {
+		if ($list = get_option($list_key)) {
+			return $list;
+		}
+		return false;
+	}
+	
 	/**
 	 * Delete the list data
 	 *
@@ -553,8 +565,46 @@ class cflk_admin extends cflk_links {
 
 # Export List
 	
-	function export_list() {
-		
+	function export_list($list_key) {
+		ob_start();
+		?>
+		<div id="cflk-popup" class="cflk-popup">
+			<div class="cflk-popup-head">
+				<span class="cflk-popup-close-link">
+					<a href="#" class="cflk-popup-close"><?php _e('Close', 'cf-links'); ?></a>
+				</span>
+				<h2><?php _e('Export List', 'cf-links'); ?></h2>
+			</div>
+			<div class="cflk-popup-content">
+				<div class="cflk-popup-body">
+					<p><?php _e('Copy the data in the text area below.  Then paste this data into the <i>CF Links Import page</i> of the destination site.', 'cf-links')?></p>
+					<?php
+					if (!empty($list_key)) {
+						$list = $this->get_list_data($list_key);
+						if (!empty($list)) {
+							$list = json_encode($list);
+						}
+						else {
+							$list = __('Error, invalid list. Please try again.', 'cf-links');
+						}
+						?>
+						<textarea id="cflk-popup-export-content" class="widefat" rows="20"><?php echo $list; ?></textarea>
+						<?php
+					}
+					else {
+						_e('Error, no list ID passed in!', 'cf-links');
+					}
+					?>
+				</div>
+				<div class="cflk-popup-body-foot">
+					<a href="#" class="cflk-popup-close button-primary"><?php _e('Close', 'cf-links'); ?></a>
+				</div>
+			</div><!--cflk-popup-content-->
+		</div><!--cflk-popup-->
+		<?php
+		$message = ob_get_contents();
+		ob_end_clean();
+		return $message;
 	}
 
 # Import
@@ -679,10 +729,13 @@ class cflk_admin extends cflk_links {
 		return (isset($_POST[$key])) ? esc_attr($_POST[$key]) : esc_attr($value);
 	}
 
-	function admin_wrapper_open($title="CF Links") {
+	function admin_wrapper_open($title="") {
+		if (!empty($title)) {
+			$title = ' || '.$title;
+		}
 		return '
 			<div id="cflk-wrap" class="wrap">
-				<h2>'.screen_icon().__($title, 'cf-links').'</h2>
+				<h2>'.screen_icon().__('CF Links'.$title, 'cf-links').'</h2>
 			';
 	}
 	
@@ -696,7 +749,7 @@ class cflk_admin extends cflk_links {
 			case 'new-list':
 				$new_list_class = ' current';
 				break;
-			case 'import-list':
+			case 'import':
 				$import_list_class = ' current';
 				break;
 			case 'edit':
@@ -717,7 +770,7 @@ class cflk_admin extends cflk_links {
 						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit').'" class="cflk-new-list'.$new_list_class.'">'.__('Add New List', 'cf-links').'</a>&nbsp;|
 					</li>
 					<li>
-						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=import').'" class="cflk-import-list'.$import_list_class.'">'.__('Import New List', 'cf-links').'</a>&nbsp|
+						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=import').'" class="cflk-import-list'.$import_list_class.'">'.__('Import List', 'cf-links').'</a>&nbsp|
 					</li>
 					<li>
 						<a href="'.admin_url('widgets.php').'" class="cflk-widget-link">'.__('Edit Widgets', 'cf-links').'</a>
@@ -734,7 +787,6 @@ class cflk_admin extends cflk_links {
 		$this->in_ajax = true;
 		
 		$method = 'ajax_'.strval($_POST['func']);
-
 		if (method_exists($this, $method)) {
 			$args = cf_ajax_decode_json($_POST['args'], true);
 			$result = $this->$method($args);
@@ -755,7 +807,28 @@ class cflk_admin extends cflk_links {
 	}
 	
 	function ajax_export_list($args) {
-		
+		if (is_array($args) && !empty($args) && !empty($args['list_key'])) {
+			$export = $this->export_list(esc_attr($args['list_key']));
+			if ($export) {
+				$result = new cflk_message(array(
+					'success' => true,
+					'message' => $export
+				));
+			}
+			else {
+				$result = new cflk_message(array(
+					'success' => false,
+					'message' => __('Could not export list "'.esc_attr($args['list_key']).'".', 'cf-links')
+				));
+			}
+		}
+		else {
+			$result = new cflk_message(array(
+				'success' => false,
+				'message' => __('Could not process empty ID.', 'cf-links')
+			));
+		}
+		return $result;
 	}
 	
 	function ajax_delete_list($args) {
@@ -770,7 +843,7 @@ class cflk_admin extends cflk_links {
 			else {
 				$result = new cflk_message(array(
 					'success' => false,
-					'message' => __('Could not delete list "'.esc_attr($args['list_key']).'".'.$info, 'cf-links')
+					'message' => __('Could not delete list "'.esc_attr($args['list_key']).'".', 'cf-links')
 				));
 			}
 		}
@@ -927,6 +1000,7 @@ class cflk_admin extends cflk_links {
 		$js = file_get_contents(CFLK_PLUGIN_DIR.'/js/admin.js').PHP_EOL.PHP_EOL;
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/lib/cf-json/js/json2.js');
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.hotkeys-0.7.9.js');
+		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.DOMWindow.js');
 		
 		header('content-type: application/javascript');
 		echo $js;

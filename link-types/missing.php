@@ -3,6 +3,11 @@
 class cflk_link_missing extends cflk_link_base {
 	function __construct() {
 		parent::__construct('missing', __('Missing', 'cf-links'));
+		if (is_admin()) {
+			$this->show_new_window_field = false;
+			$this->show_title_field = false;
+			$this->show_edit_button = false;
+		}
 	}
 	
 	/**
@@ -66,9 +71,6 @@ class cflk_link_missing extends cflk_link_base {
 			/* Missing Link Type Debug Info CSS */
 			.cflk-missing {
 				background-color:#DFDFDF;
-			}
-			.cflk-missing .cflk-edit-link {
-				display:none;
 			}
 			.cflk-missing-debug {
 				background-color:#FFFFE0;

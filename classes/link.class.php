@@ -16,6 +16,7 @@ class cflk_link_base {
 	
 	public $show_new_window_field = true;
 	public $show_title_field = true;
+	public $show_edit_button = true;
 	
 	function __construct($id, $name) {
 		$this->id = $id;
@@ -112,12 +113,14 @@ class cflk_link_base {
 					if ($this->show_title_field) {
 						$html .= $this->title_field($data);
 					}
-					if ($this->show_new_window_field) {
-						$html .= $this->new_window_field($data);
-					}
 					$html .= '
 				</fieldset>
 				';
+				$html .= '<div class="cflk-link-opennew" style="width:78px">';
+				if ($this->show_new_window_field) {
+					$html .= $this->new_window_field($data);
+				}
+				$html .= '</div>';
 				if ($include_buttons) {
 					$html .= '
 					<div class="cflk-link-edit">
@@ -146,10 +149,20 @@ class cflk_link_base {
 	 * @return void
 	 */
 	function _admin_view($data) {
-		// If there is no title to display, don't display the title div.  This keeps the admin interface a little cleaner
 		$title = '';
+		$opennew = '';
+		$editbutton = '';
+		
+		// If there is no title to display, don't display the title div.  This keeps the admin interface a little cleaner
 		if (!empty($data['title'])) {
 			$title = '<div>'.__('Title:', 'cf-links').' <span class="title">'.$data['title'].'</span></div>';
+		}
+		
+		if ($this->show_new_window_field) {
+			$opennew = '<span class="newwin">'.(intval($data['opennew']) == 1 ? 'Yes' : 'No').'</span>';
+		}
+		if ($this->show_edit_button) {
+			$editbutton = '<button class="button cflk-edit-link">'.__('Edit', 'cf-links').'</button>';
 		}
 
 		return '
@@ -163,10 +176,12 @@ class cflk_link_base {
 				<div class="cflk-link-data '.$this->id_base.$this->id.'-data">
 					'.$this->admin_display($data).'
 					'.$title.'
-					<div>'.__('New Window:', 'cf-links').' <span class="newwin">'.(intval($data['opennew']) == 1 ? 'Yes' : 'No').'</span></div>
+				</div>
+				<div class="cflk-link-opennew">
+					'.$opennew.'
 				</div>
 				<div class="cflk-link-edit">
-					<button class="button cflk-edit-link">'.__('Edit', 'cf-links').'</button>
+					'.$editbutton.'
 				</div>
 				<div class="cflk-link-delete">
 					<button class="button cflk-delete-link">'.__('Delete', 'cf-links').'</button>
@@ -206,7 +221,7 @@ class cflk_link_base {
 			<div>
 				<label>
 					<input type="checkbox" name="opennew" value="1" '.($data['opennew'] ? ' checked="checked"' : null).' />
-					'.__('Open Link in New Window', 'cf-links').'
+					'.__('New?', 'cf-links').'
 				</label>
 			</div>
 		';

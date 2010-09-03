@@ -88,7 +88,7 @@
 	-khtml-border-radius: 0 0 5px 5px;
 	border-radius: 0 0 5px 5px;
 	background: #EEE;
-	width:953px;
+	width:1044px;
 }
 
 #cflk-list-header {
@@ -111,17 +111,19 @@
 }
 
 .cflk-list-items-display {
-	width:955px;
+	width:1046px;
 }
 
 .cflk-link-move,
 .cflk-link-type,
 .cflk-link-data,
+.cflk-link-opennew,
 .cflk-link-edit,
 .cflk-link-delete,
 .cflk-type-select,
 .cflk-type-type,
 .cflk-type-forms,
+.cflk-type-opennew,
 .cflk-type-done,
 .cflk-type-cancel {
 	padding:7px 7px 8px;
@@ -143,6 +145,8 @@
 }
 .cflk-link-edit,
 .cflk-link-delete,
+.cflk-link-opennew,
+.cflk-type-opennew,
 .cflk-type-done,
 .cflk-type-cancel {
 	width:80px;

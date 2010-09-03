@@ -45,7 +45,7 @@ class cflk_list {
 			'child_before' => '<li class="{child_class}">',
 			'child_after' => '</li>'
 		);
-		
+
 		// legacy data handling: honor before & after for parent wrappers
 		if ($level == 0 && isset($args['before']) && isset($args['after'])) {
 			$defaults['parent_before'] = $args['before'];
@@ -77,37 +77,39 @@ class cflk_list {
 		// @TODO run this after figuring out the classes, pass in classes
 		$wrappers = $this->get_wrappers($this->current_list, $args, $level);
 		$ret = '';
-		
-		foreach ($items as $key => $item) {
-			$wrapper_class = array(
-				'cflk-item-level-'.$level,					
-				);
-			
-			// see if we're first or last
-			if (!isset($items[$key-1])) {
-				$wrapper_class[] = ' cflk-first';
+
+		if (is_array($items) && !empty($items)) {
+			$ret = $this->apply_class($wrappers['parent_before'], $this->current_list);
+			foreach ($items as $key => $item) {
+				$wrapper_class = array(
+					'cflk-item-level-'.$level,					
+					);
+
+				// see if we're first or last
+				if (!isset($items[$key-1])) {
+					$wrapper_class[] = ' cflk-first';
+				}
+				elseif (!isset($items[$key+1])) {
+					$wrapper_class[] = 'cflk-last';
+				}				
+
+				$item['class'] .= ' a-level-'.$level;
+				$item['list_id'] = $this->current_list;
+
+				if (!empty($item['opennew'])) {
+					$item['class'] .= ' cflk-opennewwindow';
+					add_action('wp_footer',array($this,'footer_js'));
+				}
+				$ret .= $this->build_item_recursive($item, $wrappers, $wrapper_class);
 			}
-			elseif (!isset($items[$key+1])) {
-				$wrapper_class[] = 'cflk-last';
-			}				
-			
-			$item['class'] .= ' a-level-'.$level;
-			$item['list_id'] = $this->current_list;
-			
-			if (!empty($item['opennew'])) {
-				$item['class'] .= ' cflk-opennewwindow';
-				add_action('wp_footer',array($this,'footer_js'));
-			}
-			
-			$ret .= $this->build_item_recursive($item, $wrappers, $wrapper_class);
+			$ret .= $wrappers['parent_after'];
 		}
-		
-		$ret .= $wrappers['parent_after'];
 
 		return apply_filters('cflk_list_html', $ret, $items, $args, $level);
 	}
 	
 	function build_item_recursive($item, $wrappers, $wrapper_class) {
+		if (empty($this->link_types[$item["type"]])) { return; }
 		// This filter is so we can get in before the display of the item, and mess with its data.  Perhaps changing the type, or something similar
 		$item = apply_filters('cflk_get_links_data', $item);
 		$link_data = $this->link_types[$item['type']]->_display($item);

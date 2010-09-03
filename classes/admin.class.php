@@ -240,6 +240,7 @@ class cflk_admin extends cflk_links {
 						<div class="cflk-link-move">'.__('Sort', 'cf-links').'</div>
 						<div class="cflk-link-type">'.__('Type', 'cf-links').'</div>
 						<div class="cflk-link-data">'.__('Details', 'cf-links').'</div>
+						<div class="cflk-link-opennew">'.__('New Window', 'cf-links').'</div>
 						<div class="cflk-link-edit">'.__('Edit', 'cf-links').'</div>
 						<div class="cflk-link-delete">'.__('Delete', 'cf-links').'</div>
 						<div class="clear"></div>
@@ -351,6 +352,8 @@ class cflk_admin extends cflk_links {
 						<ul>
 							'.$forms.'
 						</ul>
+					</div>
+					<div class="cflk-type-opennew">
 					</div>
 					<div class="cflk-type-done">
 						<button class="button cflk-link-edit-done">'.__('Done', 'cf-links').'</button>

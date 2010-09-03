@@ -8,7 +8,8 @@ class cflk_admin extends cflk_links {
 		'1' => 'List Created',
 		'2' => 'List Saved',
 		'3' => 'List Deleted',
-		'4' => 'List Imported'
+		'4' => 'List Imported',
+		'5' => 'List Import Error'
 	);
 	
 	function __construct() {
@@ -49,6 +50,12 @@ class cflk_admin extends cflk_links {
 						$this->delete_list(esc_attr($_POST['list_key']));
 					}
 					break;
+				case 'import_list':
+					if (!empty($_POST['cflk-import-encoded'])) {
+						$this->import_list(stripslashes($_POST['cflk-import-encoded']));
+					}
+					die();
+					break;
 			}
 		}
 	}
@@ -86,6 +93,7 @@ class cflk_admin extends cflk_links {
 					<tr>
 						<th scope="col">'.__('Available Lists', 'cf-links').'</th>
 						<th scope="col" style="text-align:center;" width="80px">'.__('Count', 'cf-links').'</th>
+						<th scope="col" style="text-align:center;" width="80px">'.__('Export', 'cf-links').'</th>
 						<th scope="col" style="text-align:center;" width="80px">'.__('Edit', 'cf-links').'</th>
 						<th scope="col" style="text-align:center;" width="80px">'.__('Delete', 'cf-links').'</th>
 					</tr>
@@ -116,6 +124,9 @@ class cflk_admin extends cflk_links {
 								<p>
 									'.$list['count'].'
 								</p>
+							</td>
+							<td class="cflk-list-export" style="text-align:center; vertical-align:middle;">
+								<a  class="button cflk-export-list" id="list-export-'.$id.'" href="#">'.__('Export', 'cf-links').'</a>
 							</td>
 							<td class="cflk-list-edit" style="text-align:center; vertical-align:middle;">
 								<a class="button" href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'">'.__('Edit', 'cf-links').'</a>
@@ -182,6 +193,7 @@ class cflk_admin extends cflk_links {
 			),$list);
 					
 		extract($listdata);
+		
 		
 		// list details
 		$html = $this->admin_wrapper_open('Edit List').$this->admin_navigation('edit').'
@@ -253,9 +265,17 @@ class cflk_admin extends cflk_links {
 										$class = ' cflk-first';
 										$first = false;
 									}
+
+									if (!empty($this->link_types[$item['type']])) {
+										$item_view = $this->link_types[$item['type']]->_admin_view($item);
+									}
+									else {
+										$item_view = $this->link_types['missing']->_admin_view($item);
+									}
+									
 									$html .= '
 									<li id="'.$this->get_random_id($item['type']).'" class="cflk-item'.$class.'">
-										'.$this->link_types[$item['type']]->_admin_view($item).'
+										'.$item_view.'
 									</li>
 									';
 								}
@@ -344,19 +364,6 @@ class cflk_admin extends cflk_links {
 			';
 	}
 	
-	// function display_blocks() {
-	// 	$html = '
-	// 		<div id="cflk-display-blocks" style="display: none;">
-	// 		';
-	// 	foreach($this->link_types as $type) {
-	// 		$html .= $type->_admin_form(array());
-	// 	}	
-	// 	$html .= '	
-	// 		</div>
-	// 	';
-	// 	return $html;
-	// }
-	
 	/**
 	 * Display an individual link item
 	 *
@@ -411,8 +418,25 @@ class cflk_admin extends cflk_links {
 	function _import() {
 		// import a list
 		$html = $this->admin_wrapper_open('Import List').$this->admin_navigation('import').'
-			<form method="post" id="cflk-import-form">
-				<p>TBD</p>
+			<form method="post" id="cflk-import-form" name="cflk_import_form" class="cflk-import" action="'.$_SERVER['REQUEST_URI'].'">
+				<table id="cflk-import" class="widefat">
+					<thead>
+						<tr>
+							<th scope="col">'.__('Input the data here to be imported.  This data should be copied from an export of a CF Links List.', 'cf-links').'</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<textarea name="cflk-import-encoded" id="cflk-import-encoded" class="cflk-import-encoded widefat" rows="10"></textarea>						
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<p class="submit">
+					<input id="cflk-import-submit" type="submit" class="button-primary" value="'.__('Import Data','cf-links').'" />
+					<input type="hidden" name="cflk_action" value="import_list" />
+				</p>
 			</form>
 			'.$this->admin_wrapper_close();
 		return $html;
@@ -515,6 +539,17 @@ class cflk_admin extends cflk_links {
 						$list['data'][] = $linkdata;
 					}
 				}
+				else {
+					// If we don't have a valid link type, using the missing link type to keep the data intact until
+					// the link type is valid in the system
+					$linkdata = $this->get_link_type('missing')->_update($link);
+					if (empty($linkdata)) {
+						$this->errors->add('list-data', 'Error processing link type data');
+					}
+					else {
+						$list['data'][] = $linkdata;
+					}
+				}
 			}
 		}
 
@@ -609,8 +644,21 @@ class cflk_admin extends cflk_links {
 
 # Import
 
-	function import_list() {
+	function import_list($data) {
+		$data = json_decode($data, true);
 		
+		if (get_option($data['key'])) {
+			$processed = $this->check_unique_list_id($data['key']);
+			$data['key'] = $processed['list_id'];
+			$data['list_key'] = $processed['list_id'];
+		}
+		
+		if ($this->save_list_data($data)) {
+			wp_redirect(admin_url('options-general.php?page=cf-links&cflk_page=edit&list='.$data['key'].'&cflk_message=4'));
+			exit;
+		}
+		wp_redirect(admin_url('options-general.php?page=cf-links&cflk_page=import&cflk_message=5'));
+		exit;
 	}
 
 # Helpers
@@ -1002,6 +1050,15 @@ class cflk_admin extends cflk_links {
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.hotkeys-0.7.9.js');
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.DOMWindow.js');
 		
+		// Get the Link Types Admin JS
+		if (is_array($this->link_types) && !empty($this->link_types)) {
+			foreach ($this->link_types as $key => $type) {
+				if (method_exists($this->link_types[$key], 'admin_js')) {
+					$js .= $this->link_types[$key]->admin_js();
+				}
+			}
+		}
+		
 		header('content-type: application/javascript');
 		echo $js;
 		exit;
@@ -1014,6 +1071,15 @@ class cflk_admin extends cflk_links {
 	 */
 	function admin_css() {
 		$css = file_get_contents(CFLK_PLUGIN_DIR.'/css/admin.css');
+		
+		// Get the Link Types Admin CSS
+		if (is_array($this->link_types) && !empty($this->link_types)) {
+			foreach ($this->link_types as $key => $type) {
+				if (method_exists($this->link_types[$key], 'admin_css')) {
+					$css .= $this->link_types[$key]->admin_css();
+				}
+			}
+		}
 		
 		header('content-type: text/css');
 		echo $css;

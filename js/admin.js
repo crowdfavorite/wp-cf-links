@@ -88,6 +88,25 @@
 		return false;
 	}
 
+// Export List
+
+	cflk.exportList = function(list_key) {
+		var data = {
+			action:'cflk_ajax',
+			func:'export_list',
+			args:JSON.stringify({list_key:list_key})
+		};
+
+		$.post(
+			this.opts.ajax_url,
+			data,
+			function(r, statusText) {
+				cflk.popup(r.message)
+			},
+			'json'
+		);
+	}
+
 // Add Links	
 
 	// show new link form
@@ -266,25 +285,6 @@
 		cflk.error('There was an error contacting the server');
 	});
 
-// Export List Handling
-
-	cflk.export_list = function(list_key) {
-		var data = {
-			action:'cflk_ajax',
-			func:'export_list',
-			args:JSON.stringify({list_key:list_key})
-		};
-
-		$.post(
-			this.opts.ajax_url,
-			data,
-			function(r, statusText) {
-				cflk.popup(r.message)
-			},
-			'json'
-		);
-	}
-
 // Popup Handling
 	
 	cflk.popup = function(html) {
@@ -343,6 +343,12 @@
 		$(".cflk-delete-list").click(function() {
 			var list_key = $(this).attr('id').replace('list-delete-', '');
 			cflk.deleteList(list_key);
+			return false;
+		});
+		
+		$(".cflk-export-list").click(function() {
+			var list_key = $(this).attr('id').replace('list-export-', '');
+			cflk.exportList(list_key);
 			return false;
 		});
 	
@@ -426,9 +432,9 @@
 			// Export
 			$("#cflk-list-export").click(function() {
 				var list_key = $("#cflk_list_key").val();
-				cflk.export_list(list_key);
+				cflk.exportList(list_key);
 				return false;
-			})
+			});
 		}
 	});
 	

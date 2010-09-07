@@ -14,7 +14,7 @@ class cflk_link_blog extends cflk_link_base {
 	function display($data) {
 		if (!empty($data['cflk-blog-id'])) {
 			$details = get_blog_details(intval($data['cflk-blog-id']));
-			if (is_array($details) && !empty($details)) {
+			if (!empty($details)) {
 				$data['link'] = $details->siteurl;
 				$data['title'] = $details->blogname;
 			}
@@ -39,7 +39,7 @@ class cflk_link_blog extends cflk_link_base {
 	function admin_display($data) {
 		if (!empty($data['cflk-blog-id'])) {
 			$details = get_blog_details(intval($data['cflk-blog-id']));
-			if (is_array($details) && !empty($details)) {
+			if (!empty($details)) {
 				$title = $details->blogname;
 			}
 			else {
@@ -86,6 +86,7 @@ class cflk_link_blog extends cflk_link_base {
 		$bloglist = cf_get_blog_list(0,'all');
 		$html = '<select name="'.$name.'" id="'.$id.'">';
 		$html .= '<option value="0">'.__('--Select Blog--', 'cf-links').'</option>';
+
 		if (is_array($bloglist) && !empty($bloglist)) {
 			foreach ($bloglist as $blog) {
 				$html .= '<option value="'.esc_attr($blog['blog_id']).'"'.selected($selected, $blog['blog_id'], false).'>'.esc_attr($blog['blogname']).'</option>';

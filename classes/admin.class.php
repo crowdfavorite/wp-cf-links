@@ -184,10 +184,16 @@ class cflk_admin extends cflk_links {
 					';
 			}
 		}
+
+		// So we can support legacy data without the "Key" being set
+		$default_key = '';
+		if (!$new && empty($list['key'])) {
+			$default_key = $list_id;
+		}
 						
 		$listdata = array_merge(array(
 				'nicename' => '',
-				'key' => '',
+				'key' => $default_key,
 				'description' => '',
 				'data' => array()
 			),$list);

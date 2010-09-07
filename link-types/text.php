@@ -2,7 +2,7 @@
 
 class cflk_link_text extends cflk_link_base {
 	function __construct() {
-		parent::__construct('blank', __('Text Only', 'cf-links'));
+		parent::__construct('text', __('Text Only', 'cf-links'));
 	}
 	
 	/**
@@ -33,6 +33,6 @@ class cflk_link_text extends cflk_link_base {
 		return $data;
 	}
 }
-cflk_register_link('blank','cflk_link_text');
+cflk_register_link('text','cflk_link_text');
 
 ?>

@@ -419,7 +419,7 @@
 			});
 
 			// Edit List Details
-			$('#cflk-edit-list-details').click(function() {
+			$('#cflk-edit-list-details-button').click(function() {
 				cflk.toggleListDetailsEdit('open');
 				return false;
 			});

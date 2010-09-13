@@ -30,6 +30,11 @@ load_plugin_textdomain('cf-links');
 		include('classes/admin.class.php');
 	}
 	
+	// Include the Reference class if we are in the admin and in a multisite environment
+	if (is_admin() && defined('MULTISITE') && MULTISITE) {
+		include('classes/reference.class.php');
+	}
+	
 	wp_enqueue_script('jquery');
 	
 ## Testing Includes
@@ -143,6 +148,10 @@ load_plugin_textdomain('cf-links');
 		}
 		$cflk_links = new $class();
 		$cflk_links->import_included_link_types();
+		
+		if (is_admin() && defined('MULTISITE') && MULTISITE && class_exists('cflk_reference')) {
+			$cflk_reference = new cflk_reference();
+		}
 	}
 	add_action('plugins_loaded','cflk_init',1);
 	
@@ -249,40 +258,46 @@ if (!function_exists('cf_get_blog_list') && ((defined('WP_ALLOW_MULTISITE') && W
 	 * @param string $num 
 	 * @return array
 	 */
-	function cf_get_blog_list( $start = 0, $num = 10 ) {
+	function cf_get_blog_list($start = 0, $num = 10) {
 		global $wpdb;
 
-		$blogs = get_site_option( "blog_list" );
+		// $blogs = get_site_option("blog_list");
 		$update = false;
-		if ( is_array( $blogs ) ) {
-			if ( ( $blogs['time'] + 60 ) < time() ) { // cache for 60 seconds.
+		if (is_array($blogs)) {
+			if (($blogs['time'] + 60) < time()) { // cache for 60 seconds.
 				$update = true;
 			}
 		} else {
 			$update = true;
 		}
 
-		if ( $update == true ) {
-			unset( $blogs );
-			$blogs = $wpdb->get_results( $wpdb->prepare("SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = %d AND public = '1' AND archived = '0' AND mature = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid), ARRAY_A );
+		if ($update == true) {
+			unset($blogs);
+			$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = %d AND public = '1' AND archived = '0' AND mature = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid), ARRAY_A);
 
-			foreach ( (array) $blogs as $details ) {
-				$blog_list[ $details['blog_id'] ] = $details;
-				$blog_list[ $details['blog_id'] ]['postcount'] = $wpdb->get_var( "SELECT COUNT(ID) FROM " . $wpdb->base_prefix . $details['blog_id'] . "_posts WHERE post_status='publish' AND post_type='post'" );
-				$blog_list[ $details['blog_id'] ]['blogname'] = $wpdb->get_var( "SELECT option_value FROM " . $wpdb->base_prefix . $details['blog_id'] . "_options WHERE option_name='blogname'" );
+			foreach ((array) $blogs as $details) {
+				$blog_list[$details['blog_id']] = $details;
+				if ($details['blog_id'] == 1) {
+					$blog_list[$details['blog_id']]['postcount'] = $wpdb->get_var("SELECT COUNT(ID) FROM ".$wpdb->base_prefix."posts WHERE post_status='publish' AND post_type='post'");
+					$blog_list[$details['blog_id']]['blogname'] = $wpdb->get_var("SELECT option_value FROM ".$wpdb->base_prefix."options WHERE option_name='blogname'");
+				}
+				else {
+					$blog_list[$details['blog_id']]['postcount'] = $wpdb->get_var("SELECT COUNT(ID) FROM ".$wpdb->base_prefix.$details['blog_id']."_posts WHERE post_status='publish' AND post_type='post'");
+					$blog_list[$details['blog_id']]['blogname'] = $wpdb->get_var("SELECT option_value FROM ".$wpdb->base_prefix.$details['blog_id']."_options WHERE option_name='blogname'");
+				}
 			}
-			unset( $blogs );
+			unset($blogs);
 			$blogs = $blog_list;
-			update_site_option( "blog_list", $blogs );
+			update_site_option("blog_list", $blogs);
 		}
 
-		if ( false == is_array( $blogs ) )
+		if (false == is_array($blogs))
 			return array();
 
-		if ( $num == 'all' )
-			return array_slice( $blogs, $start, count( $blogs ) );
+		if ($num == 'all')
+			return array_slice($blogs, $start, count($blogs));
 		else
-			return array_slice( $blogs, $start, $num );
+			return array_slice($blogs, $start, $num);
 	}
 }
 

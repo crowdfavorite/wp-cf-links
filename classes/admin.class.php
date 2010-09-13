@@ -4,13 +4,14 @@ class cflk_admin extends cflk_links {
 	
 	private $in_ajax = false;
 	private $editing_list = false;
-	protected $messages = array(
+	private $messages = array(
 		'1' => 'List Created',
 		'2' => 'List Saved',
 		'3' => 'List Deleted',
 		'4' => 'List Imported',
 		'5' => 'List Import Error'
 	);
+	public $allow_edit = true;
 	
 	function __construct() {
 		parent::__construct();
@@ -102,18 +103,29 @@ class cflk_admin extends cflk_links {
 				';
 		if (is_array($lists) && count($lists)) {
 			foreach($lists as $id => $list) {
-				$description = '';
+				// Check to see if we should allow the edit buttons to display
+				$this->allow_edit = apply_filters('cflk_link_edit_allow', $this->allow_edit, $id);
 				
+				$description = '';
 				if (!empty($list['description'])) {
-					$description = '<p class="cflk-description">'.$list['description'].'</p>';
+					$description = '<p>'.$list['description'].'</p>';
 				}
+				$description .= apply_filters('cflk_main_list_description', '', $id);
 				
 				$html .= '
 						<tr id="cflk-list-'.$id.'">
 							<td class="cflk-list-info">
 								<p><a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'" class="cflk-list-title">'.$list['nicename'].'</a> | <span><a class="cflk-toggle" href="#cflk-details-'.$id.'">Details</a></span></p>
 								<div id="cflk-details-'.$id.'" class="cflk-details" style="display: none">
-									'.$description.'
+									';
+									if (!empty($description)) {
+										$html .= '
+										<div class="cflk-description">
+											'.$description.'
+										</div>
+										';
+									}
+									$html .= '
 									<ul class="cflk-description-items">
 										<li><span class="cflk-description-item cflk-description-item-template">Template Tag:</span> <code>&lt;?php if (function_exists(&quot;cflk_links&quot;)) { cflk_links(&quot;'.$id.'&quot;); } ?&gt;</code></li>
 										<li><span class="cflk-description-item cflk-description-item-shortcode">Shortcode:</span> <code>[cflk_links name=&quot;'.$id.'&quot;]</code></li>
@@ -126,10 +138,21 @@ class cflk_admin extends cflk_links {
 								</p>
 							</td>
 							<td class="cflk-list-export" style="text-align:center; vertical-align:middle;">
-								<a  class="button cflk-export-list" id="list-export-'.$id.'" href="#">'.__('Export', 'cf-links').'</a>
+								';
+								if ($this->allow_edit) {
+									$html .= '<a  class="button cflk-export-list" id="list-export-'.$id.'" href="#">'.__('Export', 'cf-links').'</a>';
+								}
+								$html .= '
 							</td>
 							<td class="cflk-list-edit" style="text-align:center; vertical-align:middle;">
-								<a class="button" href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'">'.__('Edit', 'cf-links').'</a>
+								';
+								if ($this->allow_edit) {
+									$html .= '<a class="button" href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'">'.__('Edit', 'cf-links').'</a>';
+								}
+								else {
+									$html .= '<a class="button" href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'">'.__('View', 'cf-links').'</a>';
+								}
+								$html .= '
 							</td>
 							<td class="cflk-list-delete" style="text-align:center; vertical-align:middle;">
 								<a class="button cflk-delete-list" id="list-delete-'.$id.'" href="#">'.__('Delete', 'cf-links').'</a>
@@ -184,6 +207,9 @@ class cflk_admin extends cflk_links {
 					';
 			}
 		}
+		
+		// Check to see if we should allow the edit buttons to display
+		$this->allow_edit = apply_filters('cflk_link_edit_allow', $this->allow_edit, $list_id);
 
 		// So we can support legacy data without the "Key" being set
 		$default_key = '';
@@ -213,9 +239,15 @@ class cflk_admin extends cflk_links {
 						<p class="cflk-list-name"><b>List Title: </b> '.$nicename.'</p>
 						<p '.($new ? ' style="display: none;"' : '').'><b>List Key:</b> <span class="cflk-list-slug">'.($new ? '' : $key).'</span></p>
 						<p class="cflk-list-description"><b>Description:</b> '.$description.'</p>
+						'.apply_filters('cflk_edit_list_details', '', $key);
+						if ($this->allow_edit) {
+						$html .= '
 						<p class="cflk-list-details-edit">
-							<a href="#" class="button" id="cflk-edit-list-details">'.__('Edit Details', 'cf-links').'</a>
+							<a href="#" class="button" id="cflk-edit-list-details-button">'.__('Edit Details', 'cf-links').'</a>
 						</p>
+						';
+						}
+						$html .= '
 					</div>
 					<div id="cflk-edit-list-details-edit">
 						<p class="cflk-edit-list-name">
@@ -230,6 +262,7 @@ class cflk_admin extends cflk_links {
 							<label for="cflk_list_description">'.__('Description (optional)', 'cf-links').'</label>
 							<textarea name="description" id="cflk_list_description">'.$description.'</textarea>
 						</p>
+						'.apply_filters('cflk_edit_list_details_edit', '', $key).'
 						<p id="cflk-edit-list-details-cancel">
 							<a href="#" class="button">Cancel</a>
 						</p>
@@ -293,27 +326,31 @@ class cflk_admin extends cflk_links {
 				</div>
 				<input type="submit" id="cflk-list-submit-button" value="'.__($button_text,'cf-links').'" style="display: none;" />
 			</form>
-			<form id="cflk-new-link-form" action="">
-				<div id="cflk-list-items-footer">
-					'.$this->edit_forms(true).'
-					<div>
-						<input type="button" class="button-secondary" name="cflk-new-list-item" id="cflk-new-list-item" value="'.__('Add Link','cf-links').'" />
+		';
+		
+		if ($this->allow_edit) {
+			$html .= '
+				<form id="cflk-new-link-form" action="">
+					<div id="cflk-list-items-footer">
+						'.$this->edit_forms(true).'
+						<div>
+							<input type="button" class="button-secondary" name="cflk-new-list-item" id="cflk-new-list-item" value="'.__('Add Link','cf-links').'" />
+						</div>
 					</div>
-				</div>
-			</form>
+				</form>
 			';
+		}
 		
 		// Submit
-		$button_text = ($new ? 'Save List' : 'Update List');
-		$html .= '
-			<p class="submit">
-				<input id="cflk-list-submit" type="button" class="button-primary" value="'.__($button_text,'cf-links').'" />
-				<a href="#" id="cflk-list-export" class="button-primary">'.__('Export List', 'cf-links').'</a>
-			</p>
-			';
-
-		// $html .= $this->export_list($list_id);
-		
+		if ($this->allow_edit) {
+			$button_text = ($new ? 'Save List' : 'Update List');
+			$html .= '
+				<p class="submit">
+					<input id="cflk-list-submit" type="button" class="button-primary" value="'.__($button_text,'cf-links').'" />
+					<a href="#" id="cflk-list-export" class="button-primary">'.__('Export List', 'cf-links').'</a>
+				</p>
+				';
+		}
 		$html .= $this->admin_wrapper_close();
 		return $html;
 	}
@@ -326,6 +363,7 @@ class cflk_admin extends cflk_links {
 	 */
 	function edit_forms() {
 		$i = 0;
+		
 		foreach ($this->link_types as $id => $type) {
 			$options .= '
 				<option value="'.esc_attr($id).'">'.esc_html($type->name).'</option>
@@ -447,7 +485,7 @@ class cflk_admin extends cflk_links {
 					<input type="hidden" name="cflk_action" value="import_list" />
 				</p>
 			</form>
-			'.$this->admin_wrapper_close();
+			'.apply_filters('cflk_admin_import_after','').$this->admin_wrapper_close();
 		return $html;
 	}
 
@@ -561,6 +599,8 @@ class cflk_admin extends cflk_links {
 				}
 			}
 		}
+		
+		$list = apply_filters('cflk_process_list', $list, $_POST);
 
 		// Save
 		if (!$this->errors->have_errors()) {
@@ -587,6 +627,7 @@ class cflk_admin extends cflk_links {
 		else {
 			update_option($list['key'], $list);
 		}
+		do_action('cflk_save_list', $list['key']);
 		return true;
 	}
 	
@@ -604,6 +645,7 @@ class cflk_admin extends cflk_links {
 	 * @return bool
 	 */
 	function delete_list_data($list_key) {
+		do_action('cflk_delete_list', $list_key);
 		return delete_option($list_key);
 	}
 
@@ -741,6 +783,7 @@ class cflk_admin extends cflk_links {
 	 * @return html
 	 */
 	function get_messages_html($msg_id = 0) {
+		$this->messages = apply_filters('cflk_admin_messages', $this->messages);
 		$html = '';
 		if (!empty($_GET['cflk_message'])) {
 			$messages = explode(',', $_GET['cflk_message']);
@@ -1027,7 +1070,15 @@ class cflk_admin extends cflk_links {
 	 */
 	function check_unique_list_id($name) {
 		global $wpdb;
-		$list_id = $id = 'cfl-'.sanitize_title($name);
+		$sanitized_name = sanitize_title($name);
+		
+		// Do a check to make sure that "cfl" is the first part of the key
+		$check = explode('-', $sanitized_name, 2);
+		if ($check[0] != 'cfl') {
+			$sanitized_name = sanitize_title('cfl-'.$sanitized_name);
+		}
+		
+		$list_id = $id = $sanitized_name;
 		$list_name = $name;
 
 		$i=1;

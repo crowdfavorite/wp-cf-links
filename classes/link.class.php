@@ -17,6 +17,7 @@ class cflk_link_base {
 	public $show_new_window_field = true;
 	public $show_title_field = true;
 	public $show_edit_button = true;
+	public $editable = true;
 	
 	function __construct($id, $name) {
 		$this->id = $id;
@@ -90,24 +91,23 @@ class cflk_link_base {
 	 * @return string html
 	 */
 	function _admin_edit_form($data, $include_buttons = true) {
+		global $cflk_links;
 		$html = '
 			<div class="'.$this->id_base.$this->id.' cflk-edit-link-form">
+				<div class="cflk-link-move">
 				';
-				if ($include_buttons) {
-					$html .= '
-					<div class="cflk-link-move">
-							<img src="'.plugins_url('cf-links/images/arrow_up_down.png').'" class="cflk-link-move-img handle" />
-					</div>
-					';
-				}
-				if ($include_buttons) {
-					$html .= '
-					<div class="cflk-link-type">
-						'.$this->admin_display_type().'
-					</div>
-					';
+				if ($cflk_links->allow_edit) {
+					$html .= '<img src="'.plugins_url('cf-links/images/arrow_up_down.png').'" class="cflk-link-move-img handle" />';
 				}
 				$html .= '
+				</div>
+				<div class="cflk-link-type">
+				';
+				if ($cflk_links->allow_edit) {
+					$html .= $this->admin_display_type();
+				}
+				$html .= '
+				</div>
 				<fieldset class="cflk-link-data '.$this->id_base.$this->id.'-data" style="border:0;">
 					'.$this->admin_form($data);
 					if ($this->show_title_field) {
@@ -115,27 +115,27 @@ class cflk_link_base {
 					}
 					$html .= '
 				</fieldset>
+				<div class="cflk-link-opennew" style="width:78px">
 				';
-				$html .= '<div class="cflk-link-opennew" style="width:78px">';
 				if ($this->show_new_window_field) {
 					$html .= $this->new_window_field($data);
 				}
-				$html .= '</div>';
-				if ($include_buttons) {
-					$html .= '
-					<div class="cflk-link-edit">
-							<button class="button cflk-edit-done">'.__('Done', 'cf-links').'</button>
-					</div>
-					';
-				}
-				if ($include_buttons) {
-					$html .= '
-					<div class="cflk-link-delete">
-							<button class="button cflk-edit-cancel">'.__('Cancel', 'cf-links').'</button>
-					</div>
-					';
+				$html .= '
+				</div>
+				<div class="cflk-link-edit">
+				';
+				if ($cflk_links->allow_edit) {
+					$html .= '<button class="button cflk-edit-done">'.__('Done', 'cf-links').'</button>';
 				}
 				$html .= '
+				</div>
+				<div class="cflk-link-delete">
+				';
+				if ($cflk_links->allow_edit) {
+					$html .= '<button class="button cflk-edit-cancel">'.__('Cancel', 'cf-links').'</button>';
+				}
+				$html .= '
+				</div>
 				<input type="hidden" name="type" value="'.$this->id.'" />
 				<div class="clear"></div>
 			</div>';
@@ -149,6 +149,8 @@ class cflk_link_base {
 	 * @return void
 	 */
 	function _admin_view($data) {
+		global $cflk_links;
+		
 		$title = '';
 		$opennew = '';
 		$editbutton = '';
@@ -161,35 +163,46 @@ class cflk_link_base {
 		if ($this->show_new_window_field) {
 			$opennew = '<span class="newwin">'.(intval($data['opennew']) == 1 ? 'Yes' : 'No').'</span>';
 		}
-		if ($this->show_edit_button) {
-			$editbutton = '<button class="button cflk-edit-link">'.__('Edit', 'cf-links').'</button>';
-		}
 
-		return '
-			<div class="'.$this->id_base.$this->id.' cflk-link-data-display">
-				<div class="cflk-link-move">
-					<img src="'.plugins_url('cf-links/images/arrow_up_down.png').'" class="cflk-link-move-img handle" />
-				</div>
-				<div class="cflk-link-type">
-					'.$this->admin_display_type().'
-				</div>
-				<div class="cflk-link-data '.$this->id_base.$this->id.'-data">
-					'.$this->admin_display($data).'
-					'.$title.'
-				</div>
-				<div class="cflk-link-opennew">
-					'.$opennew.'
-				</div>
-				<div class="cflk-link-edit">
-					'.$editbutton.'
-				</div>
-				<div class="cflk-link-delete">
-					<button class="button cflk-delete-link">'.__('Delete', 'cf-links').'</button>
-					<input type="hidden" class="clfk-link-data" name="cflk_links[]" value="'.(!empty($data) ? esc_attr(cf_json_encode($data)) : null).'" />
-				</div>
-				<div class="clear"></div>
-			</div>
+		$html = '
+		<div class="'.$this->id_base.$this->id.' cflk-link-data-display">
+			<div class="cflk-link-move">
 			';
+			if ($cflk_links->allow_edit) {
+				$html .= '<img src="'.plugins_url('cf-links/images/arrow_up_down.png').'" class="cflk-link-move-img handle" />';
+			}
+			$html .= '
+			</div>
+			<div class="cflk-link-type">
+				'.$this->admin_display_type().'
+			</div>
+			<div class="cflk-link-data '.$this->id_base.$this->id.'-data">
+				'.$this->admin_display($data).'
+				'.$title.'
+			</div>
+			<div class="cflk-link-opennew">
+				'.$opennew.'
+			</div>
+			<div class="cflk-link-edit">
+			';
+			if ($this->show_edit_button && $cflk_links->allow_edit) {
+				$html .= '<button class="button cflk-edit-link">'.__('Edit', 'cf-links').'</button>';
+			}
+			$html .= '
+			</div>
+			<div class="cflk-link-delete">
+			';
+			if ($cflk_links->allow_edit) {
+				$html .= '<button class="button cflk-delete-link">'.__('Delete', 'cf-links').'</button>';
+			}
+			$html .= '
+				<input type="hidden" class="clfk-link-data" name="cflk_links[]" value="'.(!empty($data) ? esc_attr(cf_json_encode($data)) : null).'" />
+			</div>
+			<div class="clear"></div>
+		</div>
+		';
+
+		return $html;
 	}
 	
 	

@@ -111,6 +111,6 @@ class cflk_link_wordpress extends cflk_link_base {
 	}
 	
 }
-cflk_register_link('wordpress','cflk_link_wordpress');
+cflk_register_link('cflk_link_wordpress');
 
 ?>

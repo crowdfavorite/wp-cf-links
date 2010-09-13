@@ -97,7 +97,7 @@ class cflk_link_blog extends cflk_link_base {
 	}
 }
 if ((defined('WP_ALLOW_MULTISITE') && WP_ALLOW_MULTISITE) || (defined('MULTISITE') && MULTISITE)) {
-	cflk_register_link('blog','cflk_link_blog');
+	cflk_register_link('cflk_link_blog');
 }
 
 ?>

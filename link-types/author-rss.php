@@ -66,6 +66,6 @@ class cflk_link_author_rss extends cflk_link_base {
 		return $data;
 	}
 }
-cflk_register_link('author_rss','cflk_link_author_rss');
+cflk_register_link('cflk_link_author_rss');
 
 ?>

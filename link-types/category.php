@@ -66,6 +66,6 @@ class cflk_link_category extends cflk_link_base {
 		return $data;
 	}
 }
-cflk_register_link('category','cflk_link_category');
+cflk_register_link('cflk_link_category');
 
 ?>

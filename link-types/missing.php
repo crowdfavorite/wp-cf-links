@@ -116,6 +116,6 @@ class cflk_link_missing extends cflk_link_base {
 		';
 	}
 }
-cflk_register_link('missing','cflk_link_missing');
+cflk_register_link('cflk_link_missing');
 
 ?>

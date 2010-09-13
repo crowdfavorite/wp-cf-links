@@ -58,6 +58,6 @@ class cflk_link extends cflk_link_base {
 		return $data;
 	}
 }
-cflk_register_link('url','cflk_link');
+cflk_register_link('cflk_link');
 
 ?>

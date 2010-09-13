@@ -164,9 +164,9 @@ load_plugin_textdomain('cf-links');
 		echo $cflk_links->admin();
 	}
 	
-	function cflk_register_link($id, $classname) {
+	function cflk_register_link($classname) {
 		global $cflk_links;
-		return $cflk_links->register_link_type($id, $classname);
+		return $cflk_links->register_link_type($classname);
 	}
 	
 ## TinyMCE Functionality

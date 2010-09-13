@@ -106,6 +106,6 @@ class cflk_link_list extends cflk_link_base {
 		return $html;
 	}
 }
-cflk_register_link('list','cflk_link_list');
+cflk_register_link('cflk_link_list');
 
 ?>

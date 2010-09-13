@@ -66,6 +66,6 @@ class cflk_link_author extends cflk_link_base {
 		return $data;
 	}
 }
-cflk_register_link('author','cflk_link_author');
+cflk_register_link('cflk_link_author');
 
 ?>

@@ -136,8 +136,10 @@ class cflk_links {
 	 *
 	 * @package default
 	 */
-	function register_link_type($id, $classname) {
-		if (class_exists($classname) && $this->link_types[$id] = new $classname()) {
+	function register_link_type($classname) {
+		if (class_exists($classname)) {
+			$class = new $classname();
+			$this->link_types[$class->id] = $class;
 			return true;
 		}
 		return false;

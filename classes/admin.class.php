@@ -1112,11 +1112,19 @@ class cflk_admin extends cflk_links {
 		
 		// Get the Link Types Admin JS
 		if (is_array($this->link_types) && !empty($this->link_types)) {
+			$js .= '
+// Link type Admin JS
+
+;(function($) {
+';
 			foreach ($this->link_types as $key => $type) {
 				if (method_exists($this->link_types[$key], 'admin_js')) {
 					$js .= $this->link_types[$key]->admin_js();
 				}
 			}
+			$js .= '
+})(jQuery);
+';
 		}
 		
 		header('content-type: application/javascript');
@@ -1134,6 +1142,10 @@ class cflk_admin extends cflk_links {
 		
 		// Get the Link Types Admin CSS
 		if (is_array($this->link_types) && !empty($this->link_types)) {
+			$css .= '
+/* Link Type Admin CSS */ 
+			
+';
 			foreach ($this->link_types as $key => $type) {
 				if (method_exists($this->link_types[$key], 'admin_css')) {
 					$css .= $this->link_types[$key]->admin_css();

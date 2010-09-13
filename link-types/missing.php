@@ -92,29 +92,27 @@ class cflk_link_missing extends cflk_link_base {
 	
 	function admin_js() {
 		return '
-		;(function($) {
-			$(function() {
-				/* Missing Link Type Debug Info JS */
-				// Show the Debug Info
-				$(".cflk-missing-debug-show").click(function() {
-					var _this = $(this);
-					var id = _this.attr("id").replace("cflk-missing-debug-show-", "");
-					$("#cflk-missing-debug-info-"+id).slideDown();
-					$("#cflk-missing-debug-hide-"+id).show();
-					_this.hide();
-					return false;
-				});
-				// Hide the Debug Info
-				$(".cflk-missing-debug-hide").click(function() {
-					var _this = $(this);
-					var id = _this.attr("id").replace("cflk-missing-debug-hide-", "");
-					$("#cflk-missing-debug-info-"+id).slideUp();
-					$("#cflk-missing-debug-show-"+id).show();
-					_this.hide();
-					return false;
-				});
+		$(function() {
+			/* Missing Link Type Debug Info JS */
+			// Show the Debug Info
+			$(".cflk-missing-debug-show").click(function() {
+				var _this = $(this);
+				var id = _this.attr("id").replace("cflk-missing-debug-show-", "");
+				$("#cflk-missing-debug-info-"+id).slideDown();
+				$("#cflk-missing-debug-hide-"+id).show();
+				_this.hide();
+				return false;
 			});
-		})(jQuery);
+			// Hide the Debug Info
+			$(".cflk-missing-debug-hide").click(function() {
+				var _this = $(this);
+				var id = _this.attr("id").replace("cflk-missing-debug-hide-", "");
+				$("#cflk-missing-debug-info-"+id).slideUp();
+				$("#cflk-missing-debug-show-"+id).show();
+				_this.hide();
+				return false;
+			});
+		});
 		';
 	}
 }

@@ -15,14 +15,16 @@ class cflk_admin extends cflk_links {
 	
 	function __construct() {
 		parent::__construct();
-		// enqueue_scripts
-		wp_enqueue_script('cflk-admin-css',admin_url('/index.php?page=cflk-links&cflk_action=admin_js'),array('jquery'),CFLK_PLUGIN_VERS);
-		wp_enqueue_script('jquery-form');
-		wp_enqueue_script('jquery-ui-core');
-		wp_enqueue_script('jquery-ui-sortable');
-		// enqueue_styles
-		wp_enqueue_style('cflk-admin-js',admin_url('/index.php?page=cflk-links&cflk_action=admin_css'),array(),CFLK_PLUGIN_VERS,'all');
-		// add_actions
+		if (!empty($_GET['page']) && strpos($_GET['page'], 'cf-links') !== false) {
+			// enqueue_scripts
+			wp_enqueue_script('cflk-admin-css',admin_url('/index.php?page=cflk-links&cflk_action=admin_js'),array('jquery'),CFLK_PLUGIN_VERS);
+			wp_enqueue_script('jquery-form');
+			wp_enqueue_script('jquery-ui-core');
+			wp_enqueue_script('jquery-ui-sortable');
+			// enqueue_styles
+			wp_enqueue_style('cflk-admin-js',admin_url('/index.php?page=cflk-links&cflk_action=admin_css'),array(),CFLK_PLUGIN_VERS,'all');
+			// add_actions
+		}
 		add_action('init', array($this,'admin_request_handler'), 12);
 		add_action('wp_ajax_cflk_ajax', array($this,'ajax_handler'));
 	}
@@ -192,6 +194,7 @@ class cflk_admin extends cflk_links {
 		$list_id = (!empty($_GET['list']) ? esc_attr($_GET['list']) : false);
 		$new = ($list_id == false ? true : false);
 		$this->editing_list = $list_id;
+		$missing_link_types = false;
 		if ($list_id) {
 			$list = $this->get_list_data($list_id);
 		}
@@ -225,132 +228,86 @@ class cflk_admin extends cflk_links {
 			),$list);
 					
 		extract($listdata);
-		
-		
+
 		// list details
 		$html = $this->admin_wrapper_open('Edit List').$this->admin_navigation('edit').'
 			'.(!empty($notice) ? $notice : null).'
 			'.$this->admin_messages().'
-			<form method="post" id="cflk-list-form" name="cflk_list_form" class="cflk-list-'.($new ? 'new' : 'edit').'" action="'.$_SERVER['REQUEST_URI'].'">
-				<input type="hidden" name="cflk_action" value="edit_list" />
-				<h3>'.__('List Details','cf-links').'</h3>
-				<fieldset id="cflk-edit-list-details">
-					<div id="cflk-edit-list-details-display">
-						<p class="cflk-list-name"><b>List Title: </b> '.$nicename.'</p>
-						<p '.($new ? ' style="display: none;"' : '').'><b>List Key:</b> <span class="cflk-list-slug">'.($new ? '' : $key).'</span></p>
-						<p class="cflk-list-description"><b>Description:</b> '.$description.'</p>
-						'.apply_filters('cflk_edit_list_details', '', $key);
-						if ($this->allow_edit) {
-						$html .= '
-						<p class="cflk-list-details-edit">
-							<a href="#" class="button" id="cflk-edit-list-details-button">'.__('Edit Details', 'cf-links').'</a>
-						</p>
-						';
-						}
-						$html .= '
-					</div>
-					<div id="cflk-edit-list-details-edit">
-						<p class="cflk-edit-list-name">
-							<label for="cflk_list_name">'.__('List Name', 'cf-links').':</label>
-							<input type="text" name="nicename" id="cflk_list_name" value="'.$nicename.'" />
-						</p>
-						<p class="cflk-edit-list-key">
-							<label for="cflk_list_key">'.__('List ID', 'cf-links').':</label>
-							<input type="text" name="key" id="cflk_list_key" readonly="readonly" value="'.$key.'" />
-						</p>
-						<p class="cflk-edit-list-description">
-							<label for="cflk_list_description">'.__('Description (optional)', 'cf-links').'</label>
-							<textarea name="description" id="cflk_list_description">'.$description.'</textarea>
-						</p>
-						'.apply_filters('cflk_edit_list_details_edit', '', $key).'
-						<p id="cflk-edit-list-details-cancel">
-							<a href="#" class="button">Cancel</a>
-						</p>
-					</div>
-				</fieldset>
 			';
 		
-		// Links list 
-		$first = true;
 		$html .= '
-				<div class="cflk-list-items-display">
-					<h3>'.__('List Items','cf-links').'</h3>
-					<div id="cflk-list-header">
-						<div class="cflk-link-move">'.__('Sort', 'cf-links').'</div>
-						<div class="cflk-link-type">'.__('Type', 'cf-links').'</div>
-						<div class="cflk-link-data">'.__('Details', 'cf-links').'</div>
-						<div class="cflk-link-opennew">'.__('New Window', 'cf-links').'</div>
-						<div class="cflk-link-edit">'.__('Edit', 'cf-links').'</div>
-						<div class="cflk-link-delete">'.__('Delete', 'cf-links').'</div>
-						<div class="clear"></div>
+			<form method="post" id="cflk-list-form" name="cflk_list_form" class="cflk-list-'.($new ? 'new' : 'edit').'" action="'.$_SERVER['REQUEST_URI'].'">
+				<fieldset class="lbl-pos-left">
+					<div class="elm-block elm-width-300">
+						<label class="lbl-text">'.__('Title', 'cf-links').'</label>
+						<input type="text" name="nicename" id="cflk_list_name" value="'.$nicename.'" class="elm-text" />
 					</div>
-					<fieldset id="cflk-list-items">
-						<ul id="cflk-list-sortable">
+					<div class="elm-block elm-width-300">
+						<label class="lbl-text">'.__('List ID', 'cf-links').'</label>
+						<input type="text" name="key" id="cflk_list_key" value="'.$key.'" class="elm-text" readonly="readonly" />
+					</div>
+					<div class="elm-block elm-width-500">
+						<label class="lbl-textarea">'.__('Description (optional)', 'cf-links').'</label>
+						<textarea name="description" id="cflk_list_description" rows="3" cols="40" class="elm-textarea">'.$description.'</textarea>
+					</div>
+					<div class="elm-block">
+					'.apply_filters('cflk_edit_list_details_edit', '', $key).'
+					</div>
+					<div class="elm-block no-hover">
+						<label class="lbl-textarea">'.__('List Items', 'cf-links').'</label> 
+						<div class="sortable-wrapper">
+							<ul id="menu-to-edit" class="menu ui-sortable">
 							';
-							if (!is_array($data) || !count($data)) {
+							foreach ($data as $id => $item) {
+								$level = 0;
+								if (!empty($item['level'])) {
+									$level = $item['level'];
+								}
+								// Check to see if the list key is part of the data, and add it if it isn't
+								if (empty($item['list_key'])) {
+									$item['list_key'] = $key;
+								}
+
+								// $id = $this->get_random_id($item['type']);							
+								$html .= '<li id="menu-item-'.$id.'" class="cflk-item menu-item menu-item-depth-'.$level.' menu-item-edit-inactive">';
+					
+								if (!empty($this->link_types[$item['type']])) {
+									$html .= $this->link_types[$item['type']]->_admin_view($item, $id);
+								}
+								else {
+									$missing_link_types = true;
+									$html .= $this->link_types['missing']->_admin_view($item, $id);
+								}
 								$html .= '
-								<li class="cflk-no-items cflk-first">
-									<p>'.__('There are no items in this list.  Use the "Add Link" button to get started.', 'cf-links').'</p>
+									<ul class="menu-item-transport"></ul>
+									<div class="clear"></div>
 								</li>
 								';
 							}
-							else if (is_array($data) || count($data)) {
-								foreach ($data as $item) {
-									// Check to see if the list key is part of the data, and add it if it isn't
-									if (empty($item['list_key'])) {
-										$item['list_key'] = $key;
-									}
-									$class = '';
-									if ($first) {
-										$class = ' cflk-first';
-										$first = false;
-									}
-
-									if (!empty($this->link_types[$item['type']])) {
-										$item_view = $this->link_types[$item['type']]->_admin_view($item);
-									}
-									else {
-										$item_view = $this->link_types['missing']->_admin_view($item);
-									}
-									
-									$html .= '
-									<li id="'.$this->get_random_id($item['type']).'" class="cflk-item'.$class.'">
-										'.$item_view.'
-									</li>
-									';
-								}
-							}
 							$html .= '
-						</ul>
-					</fieldset>
-				</div>
-				<input type="submit" id="cflk-list-submit-button" value="'.__($button_text,'cf-links').'" style="display: none;" />
-			</form>
-		';
-		
-		if ($this->allow_edit) {
-			$html .= '
-				<form id="cflk-new-link-form" action="">
-					<div id="cflk-list-items-footer">
-						'.$this->edit_forms(true).'
-						<div>
-							<input type="button" class="button-secondary" name="cflk-new-list-item" id="cflk-new-list-item" value="'.__('Add Link','cf-links').'" />
+							</ul>
 						</div>
 					</div>
-				</form>
+				</fieldset>
+				<p class="submit">
+					<input type="hidden" name="cflk_action" value="edit_list" />
+					<input type="submit" name="Submit" class="button-primary" value="'.__('Update', 'cf-links').'" />
+				</p>
+			</form>
+		';
+
+		if ($missing_link_types) {
+			$html .= '
+			<script type="text/javascript">
+				(function($) {
+					$(function(){
+						$("#cflk-list-items-missing-notification").show();
+					});
+				})(jQuery);
+			</script>
 			';
 		}
 		
-		// Submit
-		if ($this->allow_edit) {
-			$button_text = ($new ? 'Save List' : 'Update List');
-			$html .= '
-				<p class="submit">
-					<input id="cflk-list-submit" type="button" class="button-primary" value="'.__($button_text,'cf-links').'" />
-					<a href="#" id="cflk-list-export" class="button-primary">'.__('Export List', 'cf-links').'</a>
-				</p>
-				';
-		}
 		$html .= $this->admin_wrapper_close();
 		return $html;
 	}
@@ -365,6 +322,7 @@ class cflk_admin extends cflk_links {
 		$i = 0;
 		
 		foreach ($this->link_types as $id => $type) {
+			if ($id == 'missing') { continue; }
 			$options .= '
 				<option value="'.esc_attr($id).'">'.esc_html($type->name).'</option>
 				';
@@ -375,10 +333,13 @@ class cflk_admin extends cflk_links {
 				';
 			$forms .= '
 				<li id="cflk-type-'.esc_attr($id).'"'.($i > 0 ? ' style="display: none;"' : null).'>
-					'.$type->_admin_edit_form(array('list_key' => $this->editing_list), false).'
+					'.$type->_admin_edit_form(array('list_key' => $this->editing_list), false, true).'
 					<input type="hidden" name="type" value="'.esc_attr($id).'" />
 				</li>
 				';
+			if ($i == 0) {
+				$opennew .= $type->new_window_field();
+			}
 			$i++;
 		}
 				
@@ -398,6 +359,7 @@ class cflk_admin extends cflk_links {
 						</ul>
 					</div>
 					<div class="cflk-type-opennew">
+						'.$opennew.'
 					</div>
 					<div class="cflk-type-done">
 						<button class="button cflk-link-edit-done">'.__('Done', 'cf-links').'</button>
@@ -551,6 +513,7 @@ class cflk_admin extends cflk_links {
 			'nicename' => '',
 			'key' => '',
 			'description' => '',
+			'custom-class' => '',
 			'data' => array()
 		);
 
@@ -576,9 +539,15 @@ class cflk_admin extends cflk_links {
 		$list['data'] = array();
 		if (!empty($_POST['cflk_links'])) {
 			foreach ($_POST['cflk_links'] as $position => $link) {
-				$link = cf_ajax_decode_json($link, true);
-				if ($this->is_valid_link_type($link['type'])) {
-					$linkdata = $this->get_link_type($link['type'])->_update($link);
+				$data = cf_ajax_decode_json($link['data'], true);
+				if (!empty($link['level'])) {
+					$data['level'] = $link['level'];
+				}
+				else {
+					$data['level'] = 0;
+				}
+				if ($this->is_valid_link_type($data['type'])) {
+					$linkdata = $this->get_link_type($data['type'])->_update($data);
 					if (empty($linkdata)) {
 						$this->errors->add('list-data', 'Error processing link type data');
 					}
@@ -834,13 +803,14 @@ class cflk_admin extends cflk_links {
 			$title = ' || '.$title;
 		}
 		return '
-			<div id="cflk-wrap" class="wrap">
+			<div class="wrap">
 				<h2>'.screen_icon().__('CF Links'.$title, 'cf-links').'</h2>
+				<div id="cf">
 			';
 	}
 	
 	function admin_wrapper_close() {
-		return '</div>';
+		return '</div></div>';
 	}
 	
 	function admin_navigation($location = 'main') {
@@ -861,23 +831,23 @@ class cflk_admin extends cflk_links {
 		}
 		
 		return '
-			<div class="cflk-navigation">
-				<ul class="subsubsub">
+			<div id="cf-header">
+				<ul id="cf-nav">
 					<li>
-						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME).'" class="cflk-main'.$main_class.'">'.__('Lists', 'cf-links').'</a>&nbsp;|
+						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME).'" class="cflk-main'.$main_class.'">'.__('Lists', 'cf-links').'</a>
 					</li>
 					<li>
-						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit').'" class="cflk-new-list'.$new_list_class.'">'.__('Add New List', 'cf-links').'</a>&nbsp;|
+						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit').'" class="cflk-new-list'.$new_list_class.'">'.__('Add New List', 'cf-links').'</a>
 					</li>
 					<li>
-						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=import').'" class="cflk-import-list'.$import_list_class.'">'.__('Import List', 'cf-links').'</a>&nbsp|
+						<a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=import').'" class="cflk-import-list'.$import_list_class.'">'.__('Import List', 'cf-links').'</a>
 					</li>
 					<li>
 						<a href="'.admin_url('widgets.php').'" class="cflk-widget-link">'.__('Edit Widgets', 'cf-links').'</a>
 					</li>
 				</ul>
-				<div class="clear"></div>
-			</div>
+			</div><!-- #cf-options-tabs -->
+			<div class="clear"></div>
 		';
 	}
 	
@@ -888,7 +858,7 @@ class cflk_admin extends cflk_links {
 		
 		$method = 'ajax_'.strval($_POST['func']);
 		if (method_exists($this, $method)) {
-			$args = cf_ajax_decode_json($_POST['args'], true);
+			$args = cf_ajax_decode_json(stripslashes($_POST['args']), true);
 			$result = $this->$method($args);
 			if (!($result instanceof cflk_message)) {
 				$result = new cflk_message(array(
@@ -1106,6 +1076,7 @@ class cflk_admin extends cflk_links {
 	 */
 	function admin_js() {
 		$js = file_get_contents(CFLK_PLUGIN_DIR.'/js/admin.js').PHP_EOL.PHP_EOL;
+		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/nav-menu.js').PHP_EOL.PHP_EOL;
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/lib/cf-json/js/json2.js');
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.hotkeys-0.7.9.js');
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.DOMWindow.js');
@@ -1139,6 +1110,10 @@ class cflk_admin extends cflk_links {
 	 */
 	function admin_css() {
 		$css = file_get_contents(CFLK_PLUGIN_DIR.'/css/admin.css');
+		// $css .= file_get_contents(CFLK_PLUGIN_DIR.'/css/nav-menu.css');
+		$css .= file_get_contents(CFLK_PLUGIN_DIR.'/css/form-elements.css');
+		$css .= file_get_contents(CFLK_PLUGIN_DIR.'/css/styles.css');
+		$css .= file_get_contents(CFLK_PLUGIN_DIR.'/css/utility.css');
 		
 		// Get the Link Types Admin CSS
 		if (is_array($this->link_types) && !empty($this->link_types)) {

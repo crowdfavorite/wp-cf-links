@@ -1,8 +1,10 @@
 <?php
 
 class cflk_link_missing extends cflk_link_base {
+	private $type_display = '';
 	function __construct() {
-		parent::__construct('missing', __('Missing', 'cf-links'));
+		$this->type_display = __('Missing', 'cf-links');
+		parent::__construct('missing', $this->type_display);
 		if (is_admin()) {
 			$this->show_new_window_field = false;
 			$this->show_title_field = false;
@@ -22,44 +24,49 @@ class cflk_link_missing extends cflk_link_base {
 		return parent::display($data);
 	}
 	
-	/**
-	 * Admin info display
-	 *
-	 * @param array $data 
-	 * @return string html
-	 */
-	function admin_display($data) {
-		$debug = '';
-		if (is_array($data) && !empty($data)) {
-			$id = $data['list_key'].'-'.$data['link'].'-'.$data['type'];
-			$debug .= '
-			<div class="cflk-missing-debug">
-				'.__('DEBUG Info for Missing Link Type.', 'cf-links').' | <a href="#" class="cflk-missing-debug-show" id="cflk-missing-debug-show-'.$id.'">'.__('Show', 'cf-links').'</a><a href="#" class="cflk-missing-debug-hide" id="cflk-missing-debug-hide-'.$id.'">'.__('Hide', 'cf-links').'</a>
-				<div class="cflk-missing-debug-info" id="cflk-missing-debug-info-'.$id.'">
-				';
-				foreach ($data as $key => $value) {
-					$debug .= '<b>Key:</b> '.esc_html($key).' -- <b>Value:</b> '.esc_html($value).'<br />';
-				}
-				$debug .= '
-				</div>
-			</div>
+	function _admin_view($data, $item_id) {
+		$type = $data['type'];
+		$html = '
+			<dl class="menu-item-bar">
+				<dt class="menu-item-handle">
+					<div class="item-view">
+						<p class="item-title">'.__('Missing Link Type', 'cf-links').': '.$data['type'].'</p>
+						<p>'.__('Original Type', 'cf-links').': '.$type.'</p>
+						<span class="item-actions" id="item-actions-'.$item_id.'"><a href="#">Edit</a></span>
+					</div>
+				</dt>
+			</dl>
+		';
+
+		return $html;
+	}
+
+	function admin_form($data) {
+		$id = $data['list_key'].'-'.$data['link'].'-'.$data['type'];
+		$debug .= '
+		<div class="elm-block cflk-missing-debug">
+			'.__('DEBUG Info for Missing Link Type.', 'cf-links').' | <a href="#" class="cflk-missing-debug-show" id="cflk-missing-debug-show-'.$id.'">'.__('Show', 'cf-links').'</a><a href="#" class="cflk-missing-debug-hide" id="cflk-missing-debug-hide-'.$id.'">'.__('Hide', 'cf-links').'</a>
+			<div class="cflk-missing-debug-info" id="cflk-missing-debug-info-'.$id.'">
 			';
-		}
+			foreach ($data as $key => $value) {
+				$debug .= '<b>Key:</b> '.esc_html($key).' -- <b>Value:</b> '.esc_html($value).'<br />';
+			}
+			$debug .= '
+			</div>
+		</div>
+		';
 		
 		return '
-			<div>
-				'.__('Unknown Link Type:', 'cf-links').' <span class="link">'.esc_html($data['type']).'</span>
-				'.$debug.'
+			<div class="elm-block elm-width-200">
+				<label>'.__('Unknown Link Type', 'cf-links').'</label>
+				<span class="cflk-unknown-link-type">'.esc_html($data['type']).'</span>
 			</div>
-			';
+			'.$debug.'
+		';
 	}
-	
-	function admin_form($data) {
-		return '
-			<div>
-				'.__('Unknown Link Type:', 'cf-links').' <span class="link">'.esc_html($data['type']).'</span>
-			</div>
-			';
+
+	function type_display() {
+		return $this->type_display;
 	}
 	
 	function update($data) {

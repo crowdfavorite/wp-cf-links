@@ -10,7 +10,7 @@ class cflk_reference extends cflk_links {
 		add_action('cflk_delete_list', array($this, 'delete_list'));
 		add_action('init', array($this,'admin_request_handler'), 12);
 		
-		// add_filters
+		// Admin filters
 		add_filter('cflk_admin_import_after', array($this, 'display_import_reference'));
 		add_filter('cflk_admin_messages', array($this, 'admin_messages'));
 		add_filter('cflk_link_base_admin_view_editable', array($this, 'admin_edit_include_buttons'), 10, 2);
@@ -24,7 +24,10 @@ class cflk_reference extends cflk_links {
 		add_filter('cflk_process_reference', array($this, 'process_reference_author_rss'), 10);
 		add_filter('cflk_process_reference', array($this, 'process_reference_category'), 10);
 		add_filter('cflk_process_reference', array($this, 'process_reference_list'), 10);
-
+		
+		// Front end filters
+		add_filter('cflk_build_list_parent_before_class', array($this, 'parent_before_class'), 10, 2);
+		add_filter('cflk_build_item_before_class', array($this, 'child_before_class'), 10, 2);
 	}
 	
 	/**
@@ -174,7 +177,6 @@ class cflk_reference extends cflk_links {
 		// Check to make sure we have a proper list and children to update
 		if (!is_array($list) || empty($list) || empty($list['reference_children'])) { return; }
 		
-		error_log('FILE: '.basename(__FILE__).' -- LINE: '.__LINE__);
 		// Allow anybody to filter the content of this list
 		$list = apply_filters("cflk_process_reference", $list);
 		
@@ -243,11 +245,26 @@ class cflk_reference extends cflk_links {
 	 * @return string
 	 */
 	function edit_list_details($content, $key) {
+
+		return $content;
+	}
+	
+	/**
+	 * Add additional information to the edit form, so we can make sure that the reference children stay put in the data structure
+	 *
+	 * @param string $content 
+	 * @param string $key 
+	 * @return string
+	 */
+	function edit_list_details_edit($content, $key) {
+		global $cflk_links;
+		$info = '';
+		$input = '';
+		
 		if ($this->is_reference($key)) {
 			// Get the list's data, so we can find out its parent, if it has one
 			global $cflk_links;
 			$list = $cflk_links->get_list_data($key);
-			$content .= '<p><b>'.__('Reference', 'cf-links').':</b> ';
 
 			// Check to see if we have a parent list to get info about
 			if (is_array($list) && !empty($list)) {
@@ -258,16 +275,14 @@ class cflk_reference extends cflk_links {
 				$name = get_bloginfo('name');
 				restore_current_blog();
 				
-				$content .= __('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">here</a>.';
+				$info .= __('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">here</a>.';
 			}
 			// If we don't, we're in trouble
 			else {
-				$content .= __('This list is an orphaned reference list.', 'cf-links');
+				$info .= __('This list is an orphaned reference list.', 'cf-links');
 			}
-			$content .= '</p>';
 		}
 		else if ($this->has_children($key)) {
-			$content .= '<p><b>'.__('Reference', 'cf-links').':</b> ';
 			// Get the lists's data, so we can find out what children it has.
 			global $cflk_links;
 			$list = $cflk_links->get_list_data($key);
@@ -288,21 +303,8 @@ class cflk_reference extends cflk_links {
 					$count++;
 				}
 			}
-			$content .= 'This list has children on blog'.(count($list['reference_children']) > 1 ? 's' : '').': '.$blogs;
-			$content .= '</p>';
-		}
-		return $content;
-	}
-	
-	/**
-	 * Add additional information to the edit form, so we can make sure that the reference children stay put in the data structure
-	 *
-	 * @param string $content 
-	 * @param string $key 
-	 * @return string
-	 */
-	function edit_list_details_edit($content, $key) {
-		global $cflk_links;
+			$info .= 'This list has a child on blog'.(count($list['reference_children']) > 1 ? 's' : '').': '.$blogs;
+		}		
 		
 		if ($this->has_children($key)) {
 			$list = $cflk_links->get_list_data(esc_attr($key));
@@ -310,6 +312,17 @@ class cflk_reference extends cflk_links {
 				<input type="hidden" name="cflk_reference_children" value="'.(!empty($list['reference_children']) ? esc_attr(cf_json_encode($list['reference_children'])) : null).'" />
 			';
 		}
+
+		if (!empty($info)) {
+			$content .= '
+				<div class="elm-block">
+					<label class="lbl-input">'.__('Reference', 'cf-links').'</label>
+					'.$info.'
+					'.$input.'
+				</div>
+			';
+		}
+
 		return $content;
 	}
 	
@@ -469,6 +482,42 @@ class cflk_reference extends cflk_links {
 		}
 		return false;
 	}
+	
+	/**
+	 *
+	 * Front End Display Filters
+	 *
+	 */
+
+	/**
+	 * Function to add a custom class to the image display for reference lists
+	 *
+	 * @param string $class
+	 * @param string $key
+	 * @return string
+	 */
+	function parent_before_class($class, $key) {
+		if (!empty($key) && $this->is_reference($key)) {
+			$class .= ' cflk-reference-list';
+		}
+		return $class;
+	}
+	
+	/**
+	 * Update the class being applied to the link to remove the "fixed" class for reference items, to add back the
+	 * original link type class for easier handling
+	 *
+	 * @param string $class
+	 * @param string $item
+	 * @return string
+	 */
+	function child_before_class($class, $item) {
+		if (is_array($item) && !empty($item) && !empty($item['original'])) {
+			$class = str_replace('cflk-'.$item['type'], '', $class);
+			$class .= ' cflk-'.$item['original'];
+		}
+		return $class;
+	}
 
 	
 	/**
@@ -493,6 +542,8 @@ class cflk_reference extends cflk_links {
 				// Update the item with the new info
 				$list['data'][$key]['type'] = 'url';
 				$list['data'][$key]['link'] = $link;
+				// Save the original type, so we process it later
+				$list['data'][$key]['original'] = $item['type'];
 				// We only need to filter the title if we don't already have a title
 				if (empty($list['data'][$key]['title'])) {
 					$list['data'][$key]['title'] = $title;
@@ -518,6 +569,8 @@ class cflk_reference extends cflk_links {
 				// Update the item with the new info
 				$list['data'][$key]['type'] = 'url';
 				$list['data'][$key]['link'] = $link;
+				// Save the original type, so we process it later
+				$list['data'][$key]['original'] = $item['type'];
 				// We only need to filter the title if we don't already have a title
 				if (empty($list['data'][$key]['title'])) {
 					$list['data'][$key]['title'] = $title;
@@ -543,6 +596,8 @@ class cflk_reference extends cflk_links {
 				// Update the item with the new info
 				$list['data'][$key]['type'] = 'url';
 				$list['data'][$key]['link'] = $link;
+				// Save the original type, so we process it later
+				$list['data'][$key]['original'] = $item['type'];
 				// We only need to filter the title if we don't already have a title
 				if (empty($list['data'][$key]['title'])) {
 					$list['data'][$key]['title'] = $title;
@@ -569,6 +624,8 @@ class cflk_reference extends cflk_links {
 				// Update the item with the new info
 				$list['data'][$key]['type'] = 'url';
 				$list['data'][$key]['link'] = $link;
+				// Save the original type, so we process it later
+				$list['data'][$key]['original'] = $item['type'];
 				// We only need to filter the title if we don't already have a title
 				if (empty($list['data'][$key]['title'])) {
 					$list['data'][$key]['title'] = $title;

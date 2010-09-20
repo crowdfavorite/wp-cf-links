@@ -10,8 +10,10 @@
  * @package default
  */
 class cflk_link extends cflk_link_base {
+	public $type_display = '';
 	function __construct() {
-		parent::__construct('url', __('URL', 'cf-links'));
+		$this->type_display = __('URL', 'cf-links');
+		parent::__construct('url', $this->type_display);
 	}
 	
 	/**
@@ -24,33 +26,37 @@ class cflk_link extends cflk_link_base {
 		return parent::display($data);
 	}
 	
-	/**
-	 * Admin info display
-	 *
-	 * @param array $data 
-	 * @return string html
-	 */
 	function admin_display($data) {
-		return '
-			<div>
-				'.__('URL:', 'cf-links').' <span class="link">'.$data['link'].'</span>
-			</div>
-			';
+		$description = $title = '';
+		
+		if (!empty($data['link'])) {
+			$description = $data['link'];
+		}
+		
+		if (!empty($data['title'])) {
+			$title = $data['title'];
+		}
+		else {
+			$title = $description;
+		}
+		
+		return array(
+			'title' => $title,
+			'description' => $description
+		);
 	}
 	
-	/**
-	 * Admin edit display
-	 *
-	 * @param array $data 
-	 * @return string html
-	 */
 	function admin_form($data) {
 		return '
-			<div>
-				<label>'.__($this->name.' (include <code>http://</code>)', 'cf-links').'</label>
-				<input type="text" name="link" value="'.$data['link'].'" />
+			<div class="elm-block elm-width-200">
+				<label>'.__('Link (include', 'cf-links').' <code>http://</code>)</label>
+				<input type="text" name="link" value="'.$data['link'].'" class="elm-text" />
 			</div>
-			';		
+		';		
+	}
+
+	function type_display() {
+		return $this->type_display;
 	}
 	
 	function update($data) {

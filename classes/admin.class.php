@@ -17,12 +17,12 @@ class cflk_admin extends cflk_links {
 		parent::__construct();
 		if (!empty($_GET['page']) && strpos($_GET['page'], 'cf-links') !== false) {
 			// enqueue_scripts
-			wp_enqueue_script('cflk-admin-css',admin_url('/index.php?page=cflk-links&cflk_action=admin_js'),array('jquery'),CFLK_PLUGIN_VERS);
+			wp_enqueue_script('cflk-admin-js',admin_url('/index.php?page=cflk-links&cflk_action=admin_js'),array('jquery'),CFLK_PLUGIN_VERS);
 			wp_enqueue_script('jquery-form');
 			wp_enqueue_script('jquery-ui-core');
 			wp_enqueue_script('jquery-ui-sortable');
 			// enqueue_styles
-			wp_enqueue_style('cflk-admin-js',admin_url('/index.php?page=cflk-links&cflk_action=admin_css'),array(),CFLK_PLUGIN_VERS,'all');
+			wp_enqueue_style('cflk-admin-css',admin_url('/index.php?page=cflk-links&cflk_action=admin_css'),array(),CFLK_PLUGIN_VERS,'all');
 			// add_actions
 		}
 		add_action('init', array($this,'admin_request_handler'), 12);
@@ -240,23 +240,21 @@ class cflk_admin extends cflk_links {
 				<fieldset class="lbl-pos-left">
 					<div class="elm-block elm-width-300">
 						<label class="lbl-text">'.__('Title', 'cf-links').'</label>
-						<input type="text" name="nicename" id="cflk_list_name" value="'.$nicename.'" class="elm-text" />
+						'.($this->allow_edit ? '<input type="text" name="nicename" id="cflk_list_name" value="'.$nicename.'" class="elm-text" />' : $nicename).'
 					</div>
 					<div class="elm-block elm-width-300">
 						<label class="lbl-text">'.__('List ID', 'cf-links').'</label>
-						<input type="text" name="key" id="cflk_list_key" value="'.$key.'" class="elm-text" readonly="readonly" />
+						'.($this->allow_edit ? '<input type="text" name="key" id="cflk_list_key" value="'.$key.'" class="elm-text" readonly="readonly" />' : $key).'
 					</div>
 					<div class="elm-block elm-width-500">
 						<label class="lbl-textarea">'.__('Description (optional)', 'cf-links').'</label>
-						<textarea name="description" id="cflk_list_description" rows="3" cols="40" class="elm-textarea">'.$description.'</textarea>
+						'.($this->allow_edit ? '<textarea name="description" id="cflk_list_description" rows="3" cols="40" class="elm-textarea">'.$description.'</textarea>' : $description).'
 					</div>
-					<div class="elm-block">
 					'.apply_filters('cflk_edit_list_details_edit', '', $key).'
-					</div>
 					<div class="elm-block no-hover">
 						<label class="lbl-textarea">'.__('List Items', 'cf-links').'</label> 
 						<div class="sortable-wrapper">
-							<ul id="menu-to-edit" class="menu ui-sortable">
+							<ul id="'.($this->allow_edit ? 'menu-to-edit' : '').'" class="menu ui-sortable">
 							';
 							foreach ($data as $id => $item) {
 								$level = 0;
@@ -286,6 +284,23 @@ class cflk_admin extends cflk_links {
 							}
 							$html .= '
 							</ul>
+							';
+							if ($this->allow_edit) {
+								$id = $this->get_random_id(time());
+								$html .= '<div id="menu-item-new">';
+								$html .= '
+									<dl class="menu-item-bar">
+										<dt class="menu-item-handle">
+											<div class="item-view" style="text-align:center;">
+												<a id="menu-item-new-button" class="button" href="#">Add New</a>
+											</div>
+										</dt>
+									</dl>
+								';
+								$html .= $this->new_link_form();
+								$html .= '</div>';
+							}
+							$html .= '
 						</div>
 					</div>
 				</fieldset>
@@ -318,7 +333,51 @@ class cflk_admin extends cflk_links {
 	 * @param bool $hidden 
 	 * @return string html
 	 */
-	function edit_forms() {
+	function new_link_form() {
+		$options = '';
+		$forms = '';
+		$title_field = '';
+		$custom_class_field = '';
+		$new_window_fields = '';
+		$i = 0;
+		if (is_array($this->link_types) && !empty($this->link_types)) {
+			foreach ($this->link_types as $id => $type) {
+				if ($id == 'missing') { continue; }
+				$options .= '<option value="'.esc_attr($id).'">'.esc_html($type->name).'</option>';
+				$forms .= '<li id="cflk-type-'.esc_attr($id).'"'.($i > 0 ? ' style="display:none;"' : null).'>'.$type->admin_form('', 'new').'</li>';
+				
+				if ($i == 0) {
+					$title_field = $type->title_field('', 'new');
+					$custom_class_field = $type->custom_class_field('', 'new');
+					$new_window_field = $type->new_window_field('', 'new');
+				}
+				
+				$i++;
+			}
+		}
+		
+		return '
+		<div id="new-item-edit" class="item-edit cflk-edit-link-form cflk-new-edit-form">
+			<div class="elm-block elm-width-200">
+				<label for="new-type-selector">'.__('Link Type', 'cf-links').'</label>
+				<select class="elm-select" id="new-type-selector" name="type">'.$options.'</option></select>
+			</div>
+			<ul class="cflk-edit-forms" style="margin-left:0;">
+				'.$forms.'
+			</ul>
+			'.$title_field.'
+			'.$custom_class_field.'
+			'.$new_window_field.'
+			<div class="edit-actions">
+				<a href="#" class="edit-done button">'.__('Done', 'cf-links').'</a>
+				<a href="#" class="edit-remove lnk-remove">'.__('Cancel', 'cf-links').'</a>				
+			</div>
+			<input type="hidden" id="new-level" name="level" value="0" />
+		</div>
+		';
+	}
+	
+	function edit_forms2() {
 		$i = 0;
 		
 		foreach ($this->link_types as $id => $type) {
@@ -976,7 +1035,7 @@ class cflk_admin extends cflk_links {
 	 * @return object cflk_message
 	 */
 	function ajax_get_link_view($args) {
-		parse_str($args['form_data'], $data);
+		parse_str(stripslashes($args['form_data']), $data);
 		if (!empty($data['type']) && $this->is_valid_link_type($data['type'])) {
 			$link_view = $this->get_link_type($data['type'])->_admin_view($data);
 			if ($link_view != false) {

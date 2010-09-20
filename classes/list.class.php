@@ -79,7 +79,7 @@ class cflk_list {
 		$ret = '';
 
 		if (is_array($items) && !empty($items)) {
-			$ret = $this->apply_class($wrappers['parent_before'], $this->current_list);
+			$ret = $this->apply_class($wrappers['parent_before'], apply_filters('cflk_build_list_parent_before_class', $this->current_list, $this->current_list));
 			foreach ($items as $key => $item) {
 				$wrapper_class = array(
 					'cflk-item-level-'.$level,					
@@ -94,6 +94,9 @@ class cflk_list {
 				}				
 
 				$item['class'] .= ' a-level-'.$level;
+				if (!empty($item['custom-class'])) {
+					$item['class'] .= ' '.$item['custom-class'];
+				}
 				$item['list_id'] = $this->current_list;
 
 				if (!empty($item['opennew'])) {
@@ -110,10 +113,9 @@ class cflk_list {
 	
 	function build_item_recursive($item, $wrappers, $wrapper_class) {
 		if (empty($this->link_types[$item["type"]])) { return; }
-		// This filter is so we can get in before the display of the item, and mess with its data.  Perhaps changing the type, or something similar
-		$item = apply_filters('cflk_get_links_data', $item);
 		$link_data = $this->link_types[$item['type']]->_display($item);
-		$ret .= $this->apply_class($wrappers['child_before'], implode(' ', $wrapper_class).$item['class'].' '.$link_data['class']).$link_data['link'];
+		$ret .= $this->apply_class($wrappers['child_before'], apply_filters('cflk_build_item_before_class', implode(' ', $wrapper_class).$item['class'].' '.$link_data['class'], $item)).$link_data['link'];
+		
 		if (isset($item['children'])) {
 			$ret .= $this->build_list_recursive($item['children'], $args, $item['level']++);
 		}
@@ -150,7 +152,7 @@ class cflk_list {
 
 				// go deeper or stop
 				if ($links[$i+1]['level'] > $level) {
-					$children = format_hierarchical_list($links, $links[$i+1]['level'], $i+1, $ancestors);
+					$children = $this->format_hierarchical_list($links, $links[$i+1]['level'], $i+1, $ancestors);
 					$ret[$i]['children'] = $children['ret'];
 					$i = $children['i'];
 				}

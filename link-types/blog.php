@@ -1,8 +1,10 @@
 <?php
 
 class cflk_link_blog extends cflk_link_base {
+	private $type_display = '';
 	function __construct() {
-		parent::__construct('blog', __('Blog', 'cf-links'));
+		$this->type_display = __('Blog', 'cf-links');
+		parent::__construct('blog', $this->type_display);
 	}
 	
 	/**
@@ -12,9 +14,17 @@ class cflk_link_blog extends cflk_link_base {
 	 * @return string html
 	 */
 	function display($data) {
-		if (!empty($data['cflk-blog-id'])) {
-			$details = get_blog_details(intval($data['cflk-blog-id']));
-			if (!empty($details)) {
+		if (!empty($data['cflk-blog-id']) || !empty($data['link'])) {
+			$blog_id = '';
+			if (!empty($data['cflk-blog-id'])) {
+				$blog_id = $data['cflk-blog-id'];
+			}
+			else if (!empty($data['link'])) {
+				$blog_id = $data['link'];
+			}
+
+			if (!empty($blog_id)) {
+				$details = get_blog_details(intval($blog_id));
 				$data['link'] = $details->siteurl;
 				$data['title'] = $details->blogname;
 			}
@@ -30,30 +40,31 @@ class cflk_link_blog extends cflk_link_base {
 		return parent::display($data);
 	}
 	
-	/**
-	 * Admin info display
-	 *
-	 * @param array $data 
-	 * @return string html
-	 */
 	function admin_display($data) {
+		$description = $title = $details = '';
+		
 		if (!empty($data['cflk-blog-id'])) {
 			$details = get_blog_details(intval($data['cflk-blog-id']));
-			if (!empty($details)) {
-				$title = $details->blogname;
-			}
-			else {
-				$title = __('Blog Does Not Exist.  Please remove or change blog to be displayed.', 'cf-links');
-			}
+		}
+		else if (!empty($data['link'])) {
+			$details = get_blog_details(intval($data['link']));
+		}
+		
+		if (!empty($details)) {
+			$description = $details->blogname;
+		}
+		
+		if (!empty($data['title'])) {
+			$title = $data['title'];
 		}
 		else {
-			$title = __('Unknown Blog', 'cflk-links');
+			$title = $description;
 		}
-		return '
-			<div>
-				'.__('Blog:', 'cf-links').' <span class="link">'.esc_html($title).'</span>
-			</div>
-			';
+		
+		return array(
+			'title' => $title,
+			'description' => $description
+		);
 	}
 	
 	function admin_form($data) {
@@ -61,14 +72,20 @@ class cflk_link_blog extends cflk_link_base {
 			'echo' => false,
 			'id' => 'cflk-dropdown-blogs',
 			'name' => 'cflk-blog-id',
-			'selected' => (!empty($data['cflk-blog-id']) ? intval($data['cflk-blog-id']) : 0) 
+			'selected' => (!empty($data['cflk-blog-id']) ? intval($data['cflk-blog-id']) : (!empty($data['link']) ? intval($data['link']) : 0)),
+			'class' => 'elm-select'
 		);
-		$blogs = $this->dropdown($args);
+
 		return '
-			<div>
-				'.__('Blogs: ', 'cf-links').$blogs.'
+			<div class="elm-block">
+				<label>'.__('Link', 'cf-links').'</label>
+				'.$this->dropdown($args).'
 			</div>
-			';
+		';
+	}
+
+	function type_display() {
+		return $this->type_display;
 	}
 	
 	function update($data) {
@@ -84,7 +101,7 @@ class cflk_link_blog extends cflk_link_base {
 		$r = wp_parse_args( $args, $defaults );
 		extract( $r, EXTR_SKIP );
 		$bloglist = cf_get_blog_list(0,'all');
-		$html = '<select name="'.$name.'" id="'.$id.'">';
+		$html = '<select name="'.$name.'" id="'.$id.'" class="'.$class.'">';
 		$html .= '<option value="0">'.__('--Select Blog--', 'cf-links').'</option>';
 
 		if (is_array($bloglist) && !empty($bloglist)) {

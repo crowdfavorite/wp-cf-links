@@ -1,8 +1,10 @@
 <?php
 
 class cflk_link_author_rss extends cflk_link_base {
+	private $type_display = '';
 	function __construct() {
-		parent::__construct('author_rss', __('Author RSS', 'cf-links'));
+		$this->type_display = __('Author RSS', 'cf-links');
+		parent::__construct('author_rss', $this->type_display);
 	}
 	
 	/**
@@ -12,9 +14,23 @@ class cflk_link_author_rss extends cflk_link_base {
 	 * @return string html
 	 */
 	function display($data) {
-		if (!empty($data['cflk-author-id'])) {
-			$data['link'] = get_author_rss_link(false, $data['cflk-author-id']);
-			$data['title'] = '<img src="'.CFLK_PLUGIN_URL.'/images/feed-icon-16x16.png" title="rss"> '.get_author_name($data['cflk-author-id']);
+		if (!empty($data['cflk-author-id']) || !empty($data['link'])) {
+			$author_id = '';
+			if (!empty($data['cflk-author-id'])) {
+				$author_id = $data['cflk-author-id'];
+			}
+			else if (!empty($data['link'])) {
+				$author_id = $data['link'];
+			}
+
+			if (!empty($author_id)) {
+				$data['link'] = get_author_rss_link(false, $author_id);
+				$data['title'] = '<img src="'.CFLK_PLUGIN_URL.'/images/feed-icon-16x16.png" title="rss"> '.get_author_name($author_id);
+			}
+			else {
+				$data['link'] = '';
+				$data['title'] = '';
+			}
 		}
 		else {
 			$data['link'] = '';
@@ -23,25 +39,27 @@ class cflk_link_author_rss extends cflk_link_base {
 		return parent::display($data);
 	}
 	
-	/**
-	 * Admin info display
-	 *
-	 * @param array $data 
-	 * @return string html
-	 */
 	function admin_display($data) {
+		$title = $description = '';
+		
 		if (!empty($data['cflk-author-id'])) {
-			$title = get_author_name($data['cflk-author-id']);
+			$description = get_author_name($data['cflk-author-id']);
 		}
-		else {
-			$title = __('Unknown Author', 'cf-links');
+		else if (!empty($data['link'])) {
+			$description = get_author_name($data['link']);
 		}
 		
-		return '
-			<div>
-				'.__('Author:', 'cf-links').' <span class="link">'.esc_html($title).'</span>
-			</div>
-			';
+		if (!empty($data['title'])) {
+			$title = $data['title'];
+		}
+		else {
+			$title = $description;
+		}
+		
+		return array(
+			'title' => $title,
+			'description' => $description
+		);
 	}
 	
 	function admin_form($data) {
@@ -50,15 +68,21 @@ class cflk_link_author_rss extends cflk_link_base {
 			'echo' => false,
 			'id' => 'cflk-dropdown-authors',
 			'name' => 'cflk-author-id',
-			'selected' => (!empty($data['cflk-author-id']) ? intval($data['cflk-author-id']) : 0),
-			'include' => $cflk_links->get_authors()
+			'selected' => (!empty($data['cflk-author-id']) ? intval($data['cflk-author-id']) : (!empty($data['link']) ? intval($data['link']) : 0)),
+			'include' => $cflk_links->get_authors(),
+			'class' => 'elm-select'
 		);
-		$authors = wp_dropdown_users($args);
+
 		return '
-			<div>
-				'.__('Authors: ', 'cf-links').$authors.'
+			<div class="elm-block">
+				<label>'.__('Link', 'cf-links').'</label>
+				'.wp_dropdown_users($args).'
 			</div>
-			';
+		';
+	}
+
+	function type_display() {
+		return $this->type_display;
 	}
 	
 	function update($data) {

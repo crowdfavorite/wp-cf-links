@@ -9,23 +9,13 @@
 	};
 		
 	cflk.editInit = function() {
-		this.links_list = $('#cflk-list-sortable');
-		this.new_link_form = $('#cflk-new-link-form');
-		this.link_item_forms = $('#cflk-edit-forms-wrapper');
-		this.link_item_new_button = $('#cflk-new-list-item');
+		this.links_list = $('#menu-to-edit');
+		this.new_link_form = $('#menu-item-new');
+		this.link_item_forms = $('#new-item-edit');
+		this.link_item_new_button = $('#menu-item-new .menu-item-bar');
 		this.no_items_list_item = $('#cflk-list-sortable .cflk-no-items');
 		this.list_details = $('#cflk-edit-list-details-display');
 		this.list_details_edit = $('#cflk-edit-list-details-edit');
-		
-		$("#cflk-list-sortable").sortable({
-			handle : ".handle",
-			update : function() {
-				$("input#cflk-log").val($("#cflk-list-sortable").sortable("serialize"));
-			},
-			containment: "document",
-			opacity: 0.5
-			// stop: cflk_levels_refactor
-		});
 	};
 
 // Unique Name/Slug check
@@ -124,7 +114,7 @@
 	
 	// send data to server to get display state of link item
 	cflk.processLink = function(link_id) {
-		var form_data = $('.cflk-type-forms li:visible :input', this.link_item_forms).serialize();		
+		var form_data = $(':input:visible', this.link_item_forms).serialize();		
 		var data = {
 			action:'cflk_ajax',
 			func:'get_link_view',
@@ -156,7 +146,7 @@
 		this.link_item_new_button.show();
 
 		if (data.new_link) {
-			this.links_list.append($('<li id="' + data.id + '"/>').html(data.html));
+			wpNavMenu.addMenuItemToBottom($('<li id="' + data.id + '" class="cflk-item menu-item menu-item-depth-0 menu-item-edit-inactive" />').html(data.html));
 		}
 		else {
 			$('#' + data.id).html(data.html);
@@ -172,10 +162,8 @@
 	
 	cflk.selectType = function() {
 		_this = $(this);
-		$('#cflk-type-' + _this.val(), _this.parents('div.cflk-type-type').siblings('.cflk-type-forms'))
-			.css({'display':'block'})
-			.siblings()
-			.css({'display':'none'});
+		$(".cflk-edit-forms li").hide();
+		$("#cflk-type-"+_this.val()).show();
 	};
 
 // Edit Links
@@ -209,7 +197,7 @@
 		_target = $('#' + data.id, this.links_list);
 
 		if (_target.size() > 0) {
-			$('.cflk-link-data-display', _target).hide().after(data.html);
+			$('.menu-item-bar', _target).hide().after(data.html);
 		}
 		else {
 			cflk.error('Invalid link ID in return data');
@@ -358,7 +346,7 @@
 			cflk.editInit();
 			
 			// New Link Actions
-			$('#cflk-new-list-item').click(function() {
+			$('#cflk-new-list-item').live('click', function() {
 				cflk.newLink();
 				return false;
 			});
@@ -367,22 +355,39 @@
 				return false;
 			});
 	
-			$('#cflk-list-items-footer .cflk-link-edit-done').click(function() {
+			// New Edit Item Actions
+			
+			$('#menu-item-new-button').live('click', function() {
+				cflk.newLink();
+				return false;
+			});
+			
+			$("#new-item-edit a.edit-done").live('click', function() {
 				cflk.processLink();
 				return false;
 			});
-	
-			$('#cflk-list-items-footer .cflk-cancel').click(function() {
+			
+			$("#new-item-edit a.edit-remove").live('click', function() {
 				cflk.cancelNewLink();
 				return false;
 			});
+			
+			$('.item-actions a').live('click', function() {
+				cflk.editLink(this);
+				return false;
+			});
 		
+			$('.edit-done').live('click', function() {
+				cflk.processEditLink(this);
+				return false;
+			});
+			
 			// Edit Link Actions
 			$('.cflk-edit-link').live('click', function() {
 				cflk.editLink(this);
 				return false;
 			});
-		
+			
 			$('.cflk-delete-link').live('click', function() {
 				cflk.confirmDeleteLink(this);
 				return false;
@@ -402,7 +407,7 @@
 			$('#cflk_list_name:visible').focus();
 
 			// Item type select
-			$('select[name="cflk-types"]').change(cflk.selectType);
+			$('#new-type-selector').change(cflk.selectType);
 
 			// Unique list slug setting
 			$('.cflk-list-new #cflk_list_name').blur(function() {

@@ -1,8 +1,10 @@
 <?php
 
 class cflk_link_rss extends cflk_link {
+	public $type_display;
 	function __construct() {
-		cflk_link_base::__construct('rss', __('RSS', 'cf-links'));
+		$this->type_display = __('RSS', 'cf-links');
+		cflk_link_base::__construct('rss', $this->type_display);
 	}
 	
 	function display($data) {

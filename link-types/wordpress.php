@@ -1,8 +1,10 @@
 <?php
 
 class cflk_link_wordpress extends cflk_link_base {
+	private $type_display = '';
 	function __construct() {
-		parent::__construct('wordpress', __('WordPress', 'cf-links'));
+		$this->type_display = __('WordPress', 'cf-links');
+		parent::__construct('wordpress', $this->type_display);
 	}
 	
 	/**
@@ -12,10 +14,24 @@ class cflk_link_wordpress extends cflk_link_base {
 	 * @return string html
 	 */
 	function display($data) {
-		if (!empty($data['cflk-wordpress-id'])) {
-			$info = $this->get_info($data['cflk-wordpress-id']);
-			$data['link'] = $info['link'];
-			$data['title'] = $info['title'];
+		if (!empty($data['cflk-wordpress-id']) || !empty($data['link'])) {
+			$id = '';
+			if (!empty($data['cflk-wordpress-id'])) {
+				$id = $data['cflk-wordpress-id'];
+			}
+			else if (!empty($data['link'])) {
+				$id = $data['link'];
+			}
+			
+			if (!empty($id)) {
+				$info = $this->get_info($id);
+				$data['link'] = $info['link'];
+				$data['title'] = $info['title'];
+			}
+			else {
+				$data['link'] = '';
+				$data['title'] = '';
+			}
 		}
 		else {
 			$data['link'] = '';
@@ -24,35 +40,44 @@ class cflk_link_wordpress extends cflk_link_base {
 		return parent::display($data);
 	}
 	
-	/**
-	 * Admin info display
-	 *
-	 * @param array $data 
-	 * @return string html
-	 */
 	function admin_display($data) {
+		$title = $description = $details = '';
+		
 		if (!empty($data['cflk-wordpress-id'])) {
-			$info = $this->get_info($data['cflk-wordpress-id']);
-			$title = $info['description'];
+			$details = $this->get_info($data['cflk-wordpress-id']);
 		}
-		else {
-			$title = __('Unknown WordPress Type', 'cf-links');
+		else if (!empty($data['link'])) {
+			$details = $this->get_info($data['link']);
+		}
+
+		if (is_array($details) && !empty($details['description'])) {
+			$description = $details['description'];
 		}
 		
-		return '
-			<div>
-				'.__('Link:', 'cf-links').' <span class="link">'.esc_html($title).'</span>
-			</div>
-			';
+		if (!empty($data['title'])) {
+			$title = $data['title'];
+		}
+		else {
+			$title = $description;
+		}
+		
+		return array(
+			'title' => $title,
+			'description' => $description
+		);
 	}
 	
 	function admin_form($data) {
-		$wordpress = $this->get_dropdown((!empty($data['cflk-wordpress-id']) ? $data['cflk-wordpress-id'] : 0));
 		return '
-			<div>
-				'.__('Link: ', 'cf-links').$wordpress.'
+			<div class="elm-block">
+				<label>'.__('Link', 'cf-links').'</label>
+				'.$this->get_dropdown((!empty($data['cflk-wordpress-id']) ? $data['cflk-wordpress-id'] : (!empty($data['link']) ? $data['link'] : 0))).'
 			</div>
-			';
+		';
+	}
+	
+	function type_display() {
+		return $this->type_display;
 	}
 	
 	function update($data) {
@@ -69,7 +94,7 @@ class cflk_link_wordpress extends cflk_link_base {
 	}
 	
 	function get_dropdown($selected) {
-		$html = '<select id="cflk-dropdown-wordpress" name="cflk-wordpress-id">';
+		$html = '<select id="cflk-dropdown-wordpress" name="cflk-wordpress-id" class="elm-select">';
 		$types = $this->get_types();
 		if (is_array($types) && !empty($types)) {
 			foreach ($types as $key => $info) {
@@ -109,7 +134,6 @@ class cflk_link_wordpress extends cflk_link_base {
 			)
 		);
 	}
-	
 }
 cflk_register_link('cflk_link_wordpress');
 

@@ -1,8 +1,10 @@
 <?php
 
 class cflk_link_text extends cflk_link_base {
+	private $type_display = '';
 	function __construct() {
-		parent::__construct('text', __('Text Only', 'cf-links'));
+		$this->type_display = __('Text Only', 'cf-links');
+		parent::__construct('text', $this->type_display);
 	}
 	
 	/**
@@ -15,18 +17,25 @@ class cflk_link_text extends cflk_link_base {
 		return parent::display($data);
 	}
 	
-	/**
-	 * Admin info display
-	 *
-	 * @param array $data 
-	 * @return string html
-	 */
 	function admin_display($data) {
-		return;
-	}
-	
+		$description = $title = '';
+		
+		if (!empty($data['title'])) {
+			$description = $title = $data['title'];
+		}
+		
+		return array(
+			'title' => $title,
+			'description' => $description
+		);
+	}	
+
 	function admin_form($data) {
 		return;
+	}
+
+	function type_display() {
+		return $this->type_display;
 	}
 	
 	function update($data) {

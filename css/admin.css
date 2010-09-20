@@ -136,11 +136,11 @@
 	-khtml-border-radius: 5px; /* Konqueror */
 	border-radius: 5px; /* Standard. IE9 */
 	padding: 6px 8px;
-	position: relative;
 	width: 450px;
 }
 .item-view {
 	background: #eee url(../img/drag-handle.gif) right center no-repeat;
+	display:block;
 }
 .item-view:hover,
 .item-edit {
@@ -166,23 +166,26 @@
 	margin: 0 3px;
 }
 .item-view .item-actions {
+	float: right;
 	font-size: 10px;
 	line-height: 1em;
-	position: absolute;
-	right: 30px;
-	top: 15px;
+	margin-top: 10px;
+	margin-right: 25px;
+}
+.item-edit .edit-actions {
+	margin-left: 20%;
+	padding-bottom: 12px;
+	padding-top: 5px;
 }
 
 /* Edit mode */
 .item-edit {
-	position: relative;
 }
 .item-edit .elm-block {
 	margin: 6px 0;
 }
 .item-edit .edit-done,
 .item-edit .edit-remove {
-	position: absolute;
 	right: 12px;
 }
 .item-edit .edit-done {

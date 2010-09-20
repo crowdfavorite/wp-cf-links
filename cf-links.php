@@ -31,11 +31,16 @@ load_plugin_textdomain('cf-links');
 	}
 	
 	// Include the Reference class if we are in the admin and in a multisite environment
-	if (is_admin() && defined('MULTISITE') && MULTISITE) {
+	if (defined('MULTISITE') && MULTISITE) {
 		include('classes/reference.class.php');
 	}
 	
 	wp_enqueue_script('jquery');
+	wp_enqueue_script( 'jquery-ui-draggable' );
+	wp_enqueue_script( 'jquery-ui-droppable' );
+	wp_enqueue_script( 'jquery-ui-sortable' );
+	wp_enqueue_script('postbox');
+	
 	
 ## Testing Includes
 	
@@ -147,11 +152,12 @@ load_plugin_textdomain('cf-links');
 			$class = 'cflk_links';
 		}
 		$cflk_links = new $class();
-		$cflk_links->import_included_link_types();
-		
-		if (is_admin() && defined('MULTISITE') && MULTISITE && class_exists('cflk_reference')) {
+
+		if (defined('MULTISITE') && MULTISITE && class_exists('cflk_reference')) {
 			$cflk_reference = new cflk_reference();
 		}
+
+		$cflk_links->import_included_link_types();
 	}
 	add_action('plugins_loaded','cflk_init',1);
 	

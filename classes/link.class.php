@@ -17,6 +17,7 @@ class cflk_link_base {
 	public $show_new_window_field = true;
 	public $show_title_field = true;
 	public $show_edit_button = true;
+	public $show_custom_class_field = true;
 	public $editable = true;
 	
 	function __construct($id, $name) {
@@ -37,16 +38,6 @@ class cflk_link_base {
 			return '';
 		}
 		return (!empty($data['link']) ? '<a href="'.$data['link'].'">' : '').(!empty($data['title']) ? $data['title'] : $data['link']).(!empty($data['link']) ? '</a>' : '');
-	}
-	
-	/**
-	 * Admin info display
-	 *
-	 * @param array $data
-	 * @return string html
-	 */
-	function admin_display($data) {
-		trigger_error('::admin_display() should be overriden in child class. Do not call this parent method directly.', E_USER_ERROR);
 	}
 	
 	/**
@@ -83,64 +74,6 @@ class cflk_link_base {
 	}
 	
 // Admin
-	/**
-	 * Link admin edit form
-	 *
-	 * @param string $mode 
-	 * @param array $data 
-	 * @return string html
-	 */
-	function _admin_edit_form($data, $include_buttons = true) {
-		global $cflk_links;
-		$html = '
-			<div class="'.$this->id_base.$this->id.' cflk-edit-link-form">
-				<div class="cflk-link-move">
-				';
-				if ($cflk_links->allow_edit) {
-					$html .= '<img src="'.plugins_url('cf-links/images/arrow_up_down.png').'" class="cflk-link-move-img handle" />';
-				}
-				$html .= '
-				</div>
-				<div class="cflk-link-type">
-				';
-				if ($cflk_links->allow_edit) {
-					$html .= $this->admin_display_type();
-				}
-				$html .= '
-				</div>
-				<fieldset class="cflk-link-data '.$this->id_base.$this->id.'-data" style="border:0;">
-					'.$this->admin_form($data);
-					if ($this->show_title_field) {
-						$html .= $this->title_field($data);
-					}
-					$html .= '
-				</fieldset>
-				<div class="cflk-link-opennew" style="width:78px">
-				';
-				if ($this->show_new_window_field) {
-					$html .= $this->new_window_field($data);
-				}
-				$html .= '
-				</div>
-				<div class="cflk-link-edit">
-				';
-				if ($cflk_links->allow_edit) {
-					$html .= '<button class="button cflk-edit-done">'.__('Done', 'cf-links').'</button>';
-				}
-				$html .= '
-				</div>
-				<div class="cflk-link-delete">
-				';
-				if ($cflk_links->allow_edit) {
-					$html .= '<button class="button cflk-edit-cancel">'.__('Cancel', 'cf-links').'</button>';
-				}
-				$html .= '
-				</div>
-				<input type="hidden" name="type" value="'.$this->id.'" />
-				<div class="clear"></div>
-			</div>';
-		return $html;
-	}
 
 	/**
 	 * Link admin view
@@ -148,63 +81,84 @@ class cflk_link_base {
 	 * @param string $data 
 	 * @return void
 	 */
-	function _admin_view($data) {
+	function _admin_view($data, $item_id = '') {
 		global $cflk_links;
+		$custom_class = $opennew = $description = $title = '';
 		
-		$title = '';
-		$opennew = '';
-		$editbutton = '';
+		$info = $this->admin_display($data);
 		
-		// If there is no title to display, don't display the title div.  This keeps the admin interface a little cleaner
-		if (!empty($data['title'])) {
-			$title = '<div>'.__('Title:', 'cf-links').' <span class="title">'.$data['title'].'</span></div>';
+		if (empty($item_id)) {
+			$item_id = $cflk_links->get_random_id(time());
 		}
 		
-		if ($this->show_new_window_field) {
-			$opennew = '<span class="newwin">'.(intval($data['opennew']) == 1 ? 'Yes' : 'No').'</span>';
+		if (is_array($info) && !empty($info)) {
+			$title = $info['title'];
+			$description = $info['description'];
 		}
-
+		
+		if (!empty($data['custom-class'])) {
+			$custom_class = ' &middot; <span class="item-details-custom-class">'.__('Class', 'cf-links').': '.$data['custom-class'].'</span>';
+		}
+	
+		if (intval($data['opennew']) == 1) {
+			$opennew = ' &middot; <span class="item-details-newwin">'.__('New Window', 'cf-links').'</span>';
+		}
+		
+		$level = 0;
+		if (!empty($data['level'])) {
+			$level = $data['level'];
+		}
+		
 		$html = '
-		<div class="'.$this->id_base.$this->id.' cflk-link-data-display">
-			<div class="cflk-link-move">
-			';
-			if ($cflk_links->allow_edit) {
-				$html .= '<img src="'.plugins_url('cf-links/images/arrow_up_down.png').'" class="cflk-link-move-img handle" />';
-			}
-			$html .= '
-			</div>
-			<div class="cflk-link-type">
-				'.$this->admin_display_type().'
-			</div>
-			<div class="cflk-link-data '.$this->id_base.$this->id.'-data">
-				'.$this->admin_display($data).'
-				'.$title.'
-			</div>
-			<div class="cflk-link-opennew">
-				'.$opennew.'
-			</div>
-			<div class="cflk-link-edit">
-			';
-			if ($this->show_edit_button && $cflk_links->allow_edit) {
-				$html .= '<button class="button cflk-edit-link">'.__('Edit', 'cf-links').'</button>';
-			}
-			$html .= '
-			</div>
-			<div class="cflk-link-delete">
-			';
-			if ($cflk_links->allow_edit) {
-				$html .= '<button class="button cflk-delete-link">'.__('Delete', 'cf-links').'</button>';
-			}
-			$html .= '
-				<input type="hidden" class="clfk-link-data" name="cflk_links[]" value="'.(!empty($data) ? esc_attr(cf_json_encode($data)) : null).'" />
-			</div>
-			<div class="clear"></div>
-		</div>
+			<dl class="menu-item-bar">
+				<dt class="menu-item-handle">
+					<span class="item-view">
+						'.($cflk_links->allow_edit ? '<span class="item-actions"><a href="#">Edit</a></span>' : '').'
+						<p class="item-title">'.$title.'</p>
+						<p>'.$this->type_display().': '.$description.$custom_class.$opennew.'</p>
+						<input type="hidden" class="clfk-link-data" name="cflk_links['.$item_id.'][data]" value="'.(!empty($data) ? esc_attr(cf_json_encode($data)) : null).'" />
+						<input class="menu-item-depth" type="hidden" name="cflk_links['.$item_id.'][level]" value="'.$level.'" />
+					</span>
+				</dt>
+			</dl>
 		';
-
+	
 		return $html;
 	}
-	
+
+	/**
+	 * Link admin edit form
+	 *
+	 * @param string $mode 
+	 * @param array $data 
+	 * @return string html
+	 */
+	function _admin_edit_form($data, $include_buttons = true, $new = false) {
+		global $cflk_links;
+		$id = $cflk_links->get_random_id($this->id_base.$this->id);
+		
+		$level = 0;
+		if (!empty($data['level'])) {
+			$level = $data['level'];
+		}
+		
+		$html = '
+			<div id="'.$id.'-item-edit" class="item-edit cflk-edit-link-form">
+				'.$this->admin_form($data, $id).'
+				'.$this->title_field($data, $id).'
+				'.$this->custom_class_field($data, $id).'
+				'.$this->new_window_field($data, $id).'
+				<div class="edit-actions">
+					<a href="#" class="edit-done button">'.__('Done', 'cf-links').'</a>
+					<a href="#" class="edit-remove lnk-remove">'.__('Remove', 'cf-links').'</a>					
+				</div>
+				<input type="hidden" id="'.$id.'-type" name="type" value="'.$this->id.'" />
+				<input type="hidden" id="'.$id.'-level" name="level" value="'.$level.'" />
+			</div>
+		';
+		
+		return $html;
+	}
 	
 	function _update($data) {
 		if (!empty($data['opennew'])) {
@@ -220,22 +174,41 @@ class cflk_link_base {
 		return $data['list_id'].'_'.md5($data['href']);					
 	}
 
-	function title_field($data) {
+	function title_field($data, $item_id = 0) {
+		$title = '';
+		if (is_array($data) && !empty($data['title'])) {
+			$titke = $data['title'];
+		}
 		return '
-			<div>
-				<label>'.__('Title', 'cf-links').'</label>
-				<input type="text" name="title" value="'.esc_html($data['title']).'" />
+			<div class="elm-block elm-width-200">
+				<label for="'.$item_id.'-title">'.__('Title', 'cf-links').'</label>
+				<input type="text" class="elm-text" id="'.$item_id.'-title" name="title" value="'.esc_html($title).'" />
+			</div>
+		';
+	}
+
+	function custom_class_field($data, $item_id = 0) {
+		$custom_class = '';
+		if (is_array($data) && !empty($data['custom-class'])) {
+			$custom_class = $data['custom-class'];
+		}
+		return '
+			<div class="elm-block elm-width-200">
+				<label for="'.$item_id.'-custom-class">'.__('Custom Class', 'cf-links').'</label>
+				<input type="text" class="elm-text" id="'.$item_id.'-custom-class" name="custom-class" value="'.esc_html($custom_class).'" />
 			</div>
 		';
 	}
 	
-	function new_window_field($data) {
+	function new_window_field($data = array(), $item_id = 0) {
+		$opennew = '';
+		if (is_array($data) && !empty($data['opennew']) && $data['opennew']) {
+			$opennew = ' checked="checked"';
+		}
 		return '
-			<div>
-				<label>
-					<input type="checkbox" name="opennew" value="1" '.($data['opennew'] ? ' checked="checked"' : null).' />
-					'.__('New?', 'cf-links').'
-				</label>
+			<div class="elm-block has-checkbox">
+				<input type="checkbox" class="elm-checkbox" id="'.$item_id.'-opennew" name="opennew" value="1" '.$opennew.' />
+				<label for="'.$item_id.'-opennew" class="lbl-checkbox">'.__('Open in new window', 'cf-links').'</label>
 			</div>
 		';
 	}

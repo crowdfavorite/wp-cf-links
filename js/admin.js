@@ -364,11 +364,15 @@
 			
 			$("#new-item-edit a.edit-done").live('click', function() {
 				cflk.processLink();
+				$("#new-title").val('');
+				$("#new-custom-class").val('');
 				return false;
 			});
 			
 			$("#new-item-edit a.edit-remove").live('click', function() {
 				cflk.cancelNewLink();
+				$("#new-title").val('');
+				$("#new-custom-class").val('');
 				return false;
 			});
 			

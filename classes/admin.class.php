@@ -223,6 +223,11 @@ class cflk_admin extends cflk_links {
 					
 		extract($listdata);
 
+		// Cleanup the data for display
+		$nicename = stripslashes($nicename);
+		$key = stripslashes($key);
+		$description = stripslashes($description);
+
 		// list details
 		$html = $this->admin_wrapper_open('Edit List').$this->admin_navigation('edit').'
 			'.(!empty($notice) ? $notice : null).'

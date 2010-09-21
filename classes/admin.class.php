@@ -166,7 +166,7 @@ class cflk_admin extends cflk_links {
 		else {
 			$html .= '
 				<tr>
-					<td colspan="2">
+					<td colspan="5">
 						<p>There are currently no lists to display. Use the "Add New List" button above to get started.</p>
 					</td>
 				</tr>

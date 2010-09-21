@@ -96,9 +96,7 @@ class cflk_admin extends cflk_links {
 					<tr>
 						<th scope="col">'.__('Available Lists', 'cf-links').'</th>
 						<th scope="col" style="text-align:center;" width="80px">'.__('Count', 'cf-links').'</th>
-						<th scope="col" style="text-align:center;" width="80px">'.__('Export', 'cf-links').'</th>
-						<th scope="col" style="text-align:center;" width="80px">'.__('Edit', 'cf-links').'</th>
-						<th scope="col" style="text-align:center;" width="80px">'.__('Delete', 'cf-links').'</th>
+						<th scope="col" style="text-align:center;" width="185px">'.__('Actions', 'cf-links').'</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -139,14 +137,12 @@ class cflk_admin extends cflk_links {
 									'.$list['count'].'
 								</p>
 							</td>
-							<td class="cflk-list-export" style="text-align:center; vertical-align:middle;">
+							<td class="cflk-list-actions" style="text-align:center; vertical-align:middle;">
 								';
 								if ($this->allow_edit) {
 									$html .= '<a  class="button cflk-export-list" id="list-export-'.$id.'" href="#">'.__('Export', 'cf-links').'</a>';
 								}
 								$html .= '
-							</td>
-							<td class="cflk-list-edit" style="text-align:center; vertical-align:middle;">
 								';
 								if ($this->allow_edit) {
 									$html .= '<a class="button" href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'">'.__('Edit', 'cf-links').'</a>';
@@ -155,8 +151,6 @@ class cflk_admin extends cflk_links {
 									$html .= '<a class="button" href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'">'.__('View', 'cf-links').'</a>';
 								}
 								$html .= '
-							</td>
-							<td class="cflk-list-delete" style="text-align:center; vertical-align:middle;">
 								<a class="button cflk-delete-list" id="list-delete-'.$id.'" href="#">'.__('Delete', 'cf-links').'</a>
 							</td>
 						</tr>
@@ -695,7 +689,14 @@ class cflk_admin extends cflk_links {
 					<?php
 					if (!empty($list_key)) {
 						$list = $this->get_list_data($list_key);
-						if (!empty($list)) {
+						if (!empty($list) && is_array($list)) {
+							foreach ($list as $key => $data) {
+								if (is_array($data)) { continue; }
+								$list[$key] = stripslashes($data);
+							}
+							$list = json_encode($list);
+						}
+						else if (!empty($list)) {
 							$list = json_encode($list);
 						}
 						else {

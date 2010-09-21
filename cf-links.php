@@ -44,9 +44,9 @@ load_plugin_textdomain('cf-links');
 	
 ## Testing Includes
 	
-	if (is_admin()) {
-		include('lib/tests.php');
-	}
+	// if (is_admin()) {
+	// 	include('lib/tests.php');
+	// }
 
 ## Retained functions & filters (if in name only)
 	

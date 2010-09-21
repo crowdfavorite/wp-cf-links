@@ -117,20 +117,20 @@ class cflk_admin extends cflk_links {
 				$html .= '
 						<tr id="cflk-list-'.$id.'">
 							<td class="cflk-list-info">
-								<p><a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'" class="cflk-list-title">'.$list['nicename'].'</a> | <span><a class="cflk-toggle" href="#cflk-details-'.$id.'">Details</a></span></p>
+								<p><a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'" class="cflk-list-title">'.stripslashes($list['nicename']).'</a> | <span><a class="cflk-toggle" href="#cflk-details-'.$id.'">Details</a></span></p>
 								<div id="cflk-details-'.$id.'" class="cflk-details" style="display: none">
 									';
 									if (!empty($description)) {
 										$html .= '
 										<div class="cflk-description">
-											'.$description.'
+											'.stripslashes($description).'
 										</div>
 										';
 									}
 									$html .= '
 									<ul class="cflk-description-items">
 										<li><span class="cflk-description-item cflk-description-item-template">Template Tag:</span> <code>&lt;?php if (function_exists(&quot;cflk_links&quot;)) { cflk_links(&quot;'.$id.'&quot;); } ?&gt;</code></li>
-										<li><span class="cflk-description-item cflk-description-item-shortcode">Shortcode:</span> <code>[cflk_links name=&quot;'.$id.'&quot;]</code></li>
+										<li><span class="cflk-description-item cflk-description-item-shortcode">Shortcode:</span> <code>[cflk name=&quot;'.$id.'&quot;]</code></li>
 									</ul>
 								</div>
 							</td>
@@ -525,7 +525,7 @@ class cflk_admin extends cflk_links {
 		if (is_array($lists) && count($lists)) {
 			$html = '<ul id="cflk-list-links">';
 			foreach ($lists as $id => $list) {
-				$html .= '<li><a href="#" class="cflk-list-link" rel="'.esc_attr($id).'">'.esc_attr($list['nicename']).'</a></li>';
+				$html .= '<li><a href="#" class="cflk-list-link" rel="'.esc_attr($id).'">'.stripslashes($list['nicename']).'</a></li>';
 			}
 			$html .= '</ul>';
 		}

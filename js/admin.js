@@ -366,6 +366,7 @@
 				cflk.processLink();
 				$("#new-title").val('');
 				$("#new-custom-class").val('');
+				$("#new-opennew").attr('checked', '');
 				return false;
 			});
 			
@@ -373,6 +374,7 @@
 				cflk.cancelNewLink();
 				$("#new-title").val('');
 				$("#new-custom-class").val('');
+				$("#new-opennew").attr('checked', '');
 				return false;
 			});
 			

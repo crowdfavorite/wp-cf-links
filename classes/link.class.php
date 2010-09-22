@@ -92,12 +92,12 @@ class cflk_link_base {
 		}
 		
 		if (is_array($info) && !empty($info)) {
-			$title = $info['title'];
-			$description = $info['description'];
+			$title = strip_tags(stripslashes($info['title']));
+			$description = strip_tags(stripslashes($info['description']));
 		}
 		
 		if (!empty($data['custom-class'])) {
-			$custom_class = ' &middot; <span class="item-details-custom-class">'.__('Class', 'cf-links').': '.$data['custom-class'].'</span>';
+			$custom_class = ' &middot; <span class="item-details-custom-class">'.__('Class', 'cf-links').': '.strip_tags(stripslashes($data['custom-class'])).'</span>';
 		}
 	
 		if (intval($data['opennew']) == 1) {
@@ -182,7 +182,7 @@ class cflk_link_base {
 		return '
 			<div class="elm-block elm-width-200">
 				<label for="'.$item_id.'-title">'.__('Title', 'cf-links').'</label>
-				<input type="text" class="elm-text" id="'.$item_id.'-title" name="title" value="'.esc_html($title).'" />
+				<input type="text" class="elm-text" id="'.$item_id.'-title" name="title" value="'.strip_tags(stripslashes($title)).'" />
 			</div>
 		';
 	}
@@ -195,7 +195,7 @@ class cflk_link_base {
 		return '
 			<div class="elm-block elm-width-200">
 				<label for="'.$item_id.'-custom-class">'.__('Custom Class', 'cf-links').'</label>
-				<input type="text" class="elm-text" id="'.$item_id.'-custom-class" name="custom-class" value="'.esc_html($custom_class).'" />
+				<input type="text" class="elm-text" id="'.$item_id.'-custom-class" name="custom-class" value="'.strip_tags(stripslashes($custom_class)).'" />
 			</div>
 		';
 	}

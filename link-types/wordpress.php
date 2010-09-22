@@ -71,7 +71,7 @@ class cflk_link_wordpress extends cflk_link_base {
 		return '
 			<div class="elm-block">
 				<label>'.__('Link', 'cf-links').'</label>
-				'.$this->get_dropdown((!empty($data['cflk-wordpress-id']) ? $data['cflk-wordpress-id'] : (!empty($data['link']) ? $data['link'] : 0))).'
+				'.$this->get_dropdown((!empty($data['cflk-wordpress-id']) ? $data['cflk-wordpress-id'] : (!empty($data['link']) ? intval($data['link']) : 0))).'
 			</div>
 		';
 	}

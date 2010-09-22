@@ -30,8 +30,8 @@ class cflk_link_missing extends cflk_link_base {
 			<dl class="menu-item-bar">
 				<dt class="menu-item-handle">
 					<div class="item-view">
-						<p class="item-title">'.__('Missing Link Type', 'cf-links').': '.$data['type'].'</p>
-						<p>'.__('Original Type', 'cf-links').': '.$type.'</p>
+						<p class="item-title">'.__('Missing Link Type', 'cf-links').': '.strip_tags(stripslashes($data['type'])).'</p>
+						<p>'.__('Original Type', 'cf-links').': '.strip_tags(stripslashes($type)).'</p>
 						<span class="item-actions" id="item-actions-'.$item_id.'"><a href="#">Edit</a></span>
 					</div>
 				</dt>
@@ -49,7 +49,7 @@ class cflk_link_missing extends cflk_link_base {
 			<div class="cflk-missing-debug-info" id="cflk-missing-debug-info-'.$id.'">
 			';
 			foreach ($data as $key => $value) {
-				$debug .= '<b>Key:</b> '.esc_html($key).' -- <b>Value:</b> '.esc_html($value).'<br />';
+				$debug .= '<b>Key:</b> '.strip_tags(stripslashes($key)).' -- <b>Value:</b> '.strip_tags(stripslashes($value)).'<br />';
 			}
 			$debug .= '
 			</div>
@@ -59,7 +59,7 @@ class cflk_link_missing extends cflk_link_base {
 		return '
 			<div class="elm-block elm-width-200">
 				<label>'.__('Unknown Link Type', 'cf-links').'</label>
-				<span class="cflk-unknown-link-type">'.esc_html($data['type']).'</span>
+				<span class="cflk-unknown-link-type">'.strip_tags(stripslashes($data['type'])).'</span>
 			</div>
 			'.$debug.'
 		';

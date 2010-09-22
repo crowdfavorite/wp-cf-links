@@ -50,7 +50,7 @@ class cflk_link extends cflk_link_base {
 		return '
 			<div class="elm-block elm-width-200">
 				<label>'.__('Link (include', 'cf-links').' <code>http://</code>)</label>
-				<input type="text" name="link" value="'.$data['link'].'" class="elm-text" />
+				<input type="text" name="link" value="'.strip_tags(stripslashes($data['link'])).'" class="elm-text" />
 			</div>
 		';		
 	}

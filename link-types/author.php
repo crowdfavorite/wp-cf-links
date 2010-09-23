@@ -64,15 +64,20 @@ class cflk_link_author extends cflk_link_base {
 	
 	function admin_form($data) {
 		global $cflk_links;
+		$author_id = (!empty($data['cflk-author-id']) ? intval($data['cflk-author-id']) : (!empty($data['link']) ? intval($data['link']) : 0));
 		$args = array(
 			'echo' => false,
 			'id' => 'cflk-dropdown-authors',
 			'name' => 'cflk-author-id',
-			'selected' => (!empty($data['cflk-author-id']) ? intval($data['cflk-author-id']) : (!empty($data['link']) ? intval($data['link']) : 0)),
+			'selected' => $author_id,
 			'include' => $cflk_links->get_authors(),
 			'class' => 'elm-select'
 		);
 
+		if ($author_id == 0) {
+			$args['show_option_all'] = __('Select an author from the list below', 'cf-links');
+		}
+	
 		return '
 			<div class="elm-block">
 				<label>'.__('Link', 'cf-links').'</label>
@@ -86,8 +91,20 @@ class cflk_link_author extends cflk_link_base {
 	}
 		
 	function update($data) {
-		$data['link'] = $data['cflk-author-id'];
+		if (!empty($data['cflk-author-id'])) {
+			$data['link'] = $data['cflk-author-id'];
+		}
 		return $data;
+	}
+
+	function author_exists($id) {
+		if ($id != 0) {
+			$details = get_author_name($id);
+			if (!empty($details)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
 cflk_register_link('cflk_link_author');

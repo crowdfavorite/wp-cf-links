@@ -46,11 +46,24 @@ class cflk_link_page extends cflk_link_base {
 			$details = get_the_title($data['cflk-page-id']);
 		}
 		else if (!empty($data['link'])) {
-			$details = get_the_title($data['cflk-page-id']);
+			$details = get_the_title($data['link']);
 		}
 
 		if (!empty($details)) {
 			$description = $details;
+		}
+		else {
+			$page_id = 0;
+			if (!empty($data['cflk-page-id'])) {
+				$page_id = $data['cflk-page-id'];
+			}
+			else if (!empty($data['link'])) {
+				$page_id = $data['link'];
+			}
+			return array(
+				'title' => __('Missing Page ID: '.$page_id, 'cf-links'),
+				'description' => __('The Page ID is missing for this link item', 'cf-links')
+			);
 		}
 		
 		if (!empty($data['title'])) {
@@ -67,14 +80,25 @@ class cflk_link_page extends cflk_link_base {
 	}	
 	
 	function admin_form($data) {
+		$page_id = (!empty($data['cflk-page-id']) ? intval($data['cflk-page-id']) : (!empty($data['link']) ? intval($data['link']) : 0));
 		$args = array(
 			'echo' => false,
 			'id' => 'cflk-dropdown-pages',
 			'name' => 'cflk-page-id',
-			'selected' => (!empty($data['cflk-page-id']) ? intval($data['cflk-page-id']) : (!empty($data['link']) ? intval($data['link']) : 0)),
+			'selected' => $page_id,
 			'class' => 'elm-select'
 		);
-
+	
+		if (!$this->page_exists($page_id)) {
+			$args['option_none_value'] = $page_id;
+			if ($page_id != 0) {
+				$args['show_option_none'] = __('Page ID: '.$page_id.' does not exist', 'cf-links');
+			}
+			else {
+				$args['show_option_none'] = __('Select a page from the list below', 'cf-links');
+			}
+		}
+	
 		return '
 			<div class="elm-block">
 				<label>'.__('Link', 'cf-links').'</label>
@@ -88,8 +112,20 @@ class cflk_link_page extends cflk_link_base {
 	}
 	
 	function update($data) {
-		$data['link'] = $data['cflk-page-id'];
+		if (!empty($data['cflk-page-id'])) {
+			$data['link'] = $data['cflk-page-id'];
+		}
 		return $data;
+	}
+	
+	function page_exists($id) {
+		if ($id != 0) {
+			$details = get_the_title($id);
+			if (!empty($details)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
 cflk_register_link('cflk_link_page');

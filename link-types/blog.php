@@ -89,7 +89,9 @@ class cflk_link_blog extends cflk_link_base {
 	}
 	
 	function update($data) {
-		$data['link'] = $data['cflk-blog-id'];
+		if (!empty($data['cflk-blog-id'])) {
+			$data['link'] = $data['cflk-blog-id'];
+		}
 		return $data;
 	}
 	

@@ -81,7 +81,9 @@ class cflk_link_wordpress extends cflk_link_base {
 	}
 	
 	function update($data) {
-		$data['link'] = $data['cflk-wordpress-id'];
+		if (!empty($data['cflk-wordpress-id'])) {
+			$data['link'] = $data['cflk-wordpress-id'];
+		}
 		return $data;
 	}
 	

@@ -25,44 +25,32 @@ class cflk_link_missing extends cflk_link_base {
 	}
 	
 	function _admin_view($data, $item_id) {
+		global $cflk_links;
 		$type = $data['type'];
 		$html = '
 			<dl class="menu-item-bar">
 				<dt class="menu-item-handle">
-					<div class="item-view">
+					<span class="item-view">
 						<p class="item-title">'.__('Missing Link Type', 'cf-links').': '.strip_tags(stripslashes($data['type'])).'</p>
 						<p>'.__('Original Type', 'cf-links').': '.strip_tags(stripslashes($type)).'</p>
-						<span class="item-actions" id="item-actions-'.$item_id.'"><a href="#">Edit</a></span>
-					</div>
+						<p class="cflk-missing-debug-head">'.__('DEBUG Info for Missing Link Type.', 'cf-links').' | <a href="#" class="cflk-missing-debug-show" id="cflk-missing-debug-show-'.$item_id.'">'.__('Show', 'cf-links').'</a><a href="#" class="cflk-missing-debug-hide" id="cflk-missing-debug-hide-'.$item_id.'">'.__('Hide', 'cf-links').'</a></p>
+						<p class="cflk-missing-debug-info" id="cflk-missing-debug-info-'.$item_id.'">
+						';
+						if (is_array($data) && !empty($data)) {
+							foreach ($data as $key => $value) {
+								$html .= '<b>Key:</b> '.strip_tags(stripslashes($key)).' -- <b>Value:</b> '.strip_tags(stripslashes($value)).'<br />';
+							}
+						}
+						$html .= '
+						</p>
+						<input type="hidden" class="clfk-link-data" name="cflk_links['.$item_id.'][data]" value="'.(!empty($data) ? esc_attr(cf_json_encode($data)) : null).'" />
+						<input class="menu-item-depth" type="hidden" name="cflk_links['.$item_id.'][level]" value="'.$level.'" />
+					</span>
 				</dt>
 			</dl>
 		';
 
 		return $html;
-	}
-
-	function admin_form($data) {
-		$id = $data['list_key'].'-'.$data['link'].'-'.$data['type'];
-		$debug .= '
-		<div class="elm-block cflk-missing-debug">
-			'.__('DEBUG Info for Missing Link Type.', 'cf-links').' | <a href="#" class="cflk-missing-debug-show" id="cflk-missing-debug-show-'.$id.'">'.__('Show', 'cf-links').'</a><a href="#" class="cflk-missing-debug-hide" id="cflk-missing-debug-hide-'.$id.'">'.__('Hide', 'cf-links').'</a>
-			<div class="cflk-missing-debug-info" id="cflk-missing-debug-info-'.$id.'">
-			';
-			foreach ($data as $key => $value) {
-				$debug .= '<b>Key:</b> '.strip_tags(stripslashes($key)).' -- <b>Value:</b> '.strip_tags(stripslashes($value)).'<br />';
-			}
-			$debug .= '
-			</div>
-		</div>
-		';
-		
-		return '
-			<div class="elm-block elm-width-200">
-				<label>'.__('Unknown Link Type', 'cf-links').'</label>
-				<span class="cflk-unknown-link-type">'.strip_tags(stripslashes($data['type'])).'</span>
-			</div>
-			'.$debug.'
-		';
 	}
 
 	function type_display() {
@@ -79,15 +67,44 @@ class cflk_link_missing extends cflk_link_base {
 			.cflk-missing {
 				background-color:#DFDFDF;
 			}
-			.cflk-missing-debug {
+			.cflk-missing-debug-head {
 				background-color:#FFFFE0;
 				border:1px solid #E6DB55;
-				-moz-border-radius:10px;
-				-webkit-border-radius:10px;
-				-khtml-border-radius:10px;
-				border-radius:10px;
+				-moz-border-radius:5px;
+				-webkit-border-radius:5px;
+				-khtml-border-radius:5px;
+				border-radius:5px;
 				padding:5px;
 				margin:10px;
+			}
+
+			.cflk-missing-debug-head-open {
+				-moz-border-radius-topleft: 5px;
+				-webkit-border-top-left-radius: 5px;
+				-khtml-border-top-left-radius: 5px;
+				border-top-left-radius: 5px;
+				-moz-border-radius-topright: 5px;
+				-webkit-border-top-right-radius: 5px;
+				-khtml-border-top-right-radius: 5px;
+				border-top-right-radius: 5px;
+				background-color:#FFFFE0;
+				border:1px solid #E6DB55;
+				padding:5px;
+				margin:10px;
+			}
+			
+			.cflk-missing-debug-info {
+				-moz-border-radius-bottomleft: 5px;
+				-webkit-border-bottom-left-radius: 5px;
+				-khtml-border-bottom-left-radius: 5px;
+				border-bottom-left-radius: 5px;
+				-moz-border-radius-bottomright: 5px;
+				-webkit-border-bottom-right-radius: 5px;
+				-khtml-border-bottom-right-radius: 5px;
+				border-bottom-right-radius: 5px;
+				padding:5px 0 5px 10px;
+				border:1px solid #E6DB55;
+				background-color:#DFDFDF;
 			}
 
 			.cflk-missing-debug-hide,
@@ -105,6 +122,7 @@ class cflk_link_missing extends cflk_link_base {
 			$(".cflk-missing-debug-show").click(function() {
 				var _this = $(this);
 				var id = _this.attr("id").replace("cflk-missing-debug-show-", "");
+				_this.parent().removeClass("cflk-missing-debug-head").addClass("cflk-missing-debug-head-open");
 				$("#cflk-missing-debug-info-"+id).slideDown();
 				$("#cflk-missing-debug-hide-"+id).show();
 				_this.hide();
@@ -114,6 +132,7 @@ class cflk_link_missing extends cflk_link_base {
 			$(".cflk-missing-debug-hide").click(function() {
 				var _this = $(this);
 				var id = _this.attr("id").replace("cflk-missing-debug-hide-", "");
+				_this.parent().removeClass("cflk-missing-debug-head-open").addClass("cflk-missing-debug-head");
 				$("#cflk-missing-debug-info-"+id).slideUp();
 				$("#cflk-missing-debug-show-"+id).show();
 				_this.hide();

@@ -89,7 +89,9 @@ class cflk_link_category extends cflk_link_base {
 	}
 
 	function update($data) {
-		$data['link'] = $data['cflk-category-id'];
+		if (!empty($data['cflk-category-id'])) {
+			$data['link'] = $data['cflk-category-id'];
+		}
 		return $data;
 	}
 }

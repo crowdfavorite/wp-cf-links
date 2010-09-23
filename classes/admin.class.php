@@ -616,7 +616,7 @@ class cflk_admin extends cflk_links {
 				else {
 					// If we don't have a valid link type, using the missing link type to keep the data intact until
 					// the link type is valid in the system
-					$linkdata = $this->get_link_type('missing')->_update($link);
+					$linkdata = $this->get_link_type('missing')->_update($data);
 					if (empty($linkdata)) {
 						$this->errors->add('list-data', 'Error processing link type data');
 					}

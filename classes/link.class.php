@@ -177,7 +177,7 @@ class cflk_link_base {
 	function title_field($data, $item_id = 0) {
 		$title = '';
 		if (is_array($data) && !empty($data['title'])) {
-			$titke = $data['title'];
+			$title = $data['title'];
 		}
 		return '
 			<div class="elm-block elm-width-200">

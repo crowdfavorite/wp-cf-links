@@ -200,6 +200,10 @@
 	display:none;
 }
 
+.item-edit select {
+	width:330px;
+}
+
 /* Popup CSS */
 .cflk-popup {
 	background: #FFFFFF;

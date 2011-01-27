@@ -24,10 +24,27 @@ class cflk_reference extends cflk_links {
 		add_filter('cflk_process_reference', array($this, 'process_reference_author_rss'), 10);
 		add_filter('cflk_process_reference', array($this, 'process_reference_category'), 10);
 		add_filter('cflk_process_reference', array($this, 'process_reference_list'), 10);
+		add_filter('cflk_admin_css', array($this, 'admin_css'), 10);
 		
 		// Front end filters
 		add_filter('cflk_build_list_parent_before_class', array($this, 'parent_before_class'), 10, 2);
 		add_filter('cflk_build_item_before_class', array($this, 'child_before_class'), 10, 2);
+	}
+	
+	function admin_css($css = '') {
+		$css .= '
+		.cflk-reference-list-children {
+			margin-left:20%;
+			background-color: #fff;
+			border: 1px solid #ccc;
+			border-radius: 5px; /* Standard. IE9 */
+			padding: 10px 12px 12px 12px;
+			-moz-border-radius: 5px; /* FF1+ */
+			-webkit-border-radius: 5px; /* Saf3+, Chrome */
+			-khtml-border-radius: 5px; /* Konqueror */
+		}
+		';
+		return $css;
 	}
 	
 	/**
@@ -303,7 +320,7 @@ class cflk_reference extends cflk_links {
 					$count++;
 				}
 			}
-			$info .= 'This list has a child on blog'.(count($list['reference_children']) > 1 ? 's' : '').': '.$blogs;
+			$info .= '<div class="cflk-reference-list-children">This list has a child on blog'.(count($list['reference_children']) > 1 ? 's' : '').': '.$blogs.'</div>';
 		}		
 		
 		if ($this->has_children($key)) {

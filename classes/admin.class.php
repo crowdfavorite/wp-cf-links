@@ -1193,6 +1193,9 @@ class cflk_admin extends cflk_links {
 			}
 		}
 		
+		// Filter the Admin CSS so others can add classes as well
+		$css = apply_filters('cflk_admin_css', $css);
+		
 		header('content-type: text/css');
 		echo $css;
 		exit;

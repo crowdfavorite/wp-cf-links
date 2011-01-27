@@ -12,7 +12,7 @@ load_plugin_textdomain('cf-links');
 
 ## Constants
 
-	define('CFLK_PLUGIN_VERS',2.0);
+	define('CFLK_PLUGIN_VERS','2.0');
 	define('CFLK_BASENAME',basename(__FILE__,'.php'));
 	define('CFLK_PLUGIN_DIR',trailingslashit(WP_PLUGIN_DIR).CFLK_BASENAME);
 	define('CFLK_PLUGIN_URL',trailingslashit(WP_PLUGIN_URL).CFLK_BASENAME);

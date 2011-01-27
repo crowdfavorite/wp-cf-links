@@ -350,10 +350,6 @@
 				cflk.newLink();
 				return false;
 			});
-			$(document).bind('keydown','ctrl+n', function() {
-				cflk.newLink();
-				return false;
-			});
 	
 			// New Edit Item Actions
 			
@@ -362,7 +358,7 @@
 				return false;
 			});
 			
-			$("#new-item-edit a.edit-done").live('click', function() {
+			$("#new-item-edit a.new-edit-done").live('click', function() {
 				cflk.processLink();
 				$("#new-title").val('');
 				$("#new-custom-class").val('');
@@ -370,7 +366,7 @@
 				return false;
 			});
 			
-			$("#new-item-edit a.edit-remove").live('click', function() {
+			$("#new-item-edit a.new-edit-remove").live('click', function() {
 				cflk.cancelNewLink();
 				$("#new-title").val('');
 				$("#new-custom-class").val('');
@@ -388,6 +384,11 @@
 				return false;
 			});
 			
+			$('.edit-remove').live('click', function() {
+				cflk.confirmDeleteLink(this);
+				return false;
+			});
+
 			// Edit Link Actions
 			$('.cflk-edit-link').live('click', function() {
 				cflk.editLink(this);
@@ -423,10 +424,6 @@
 			// Page Submit
 			$('#cflk-list-submit').click(function(){
 				cflk.submitListEditForm();
-			});
-			$(document).bind('keydown', 'ctrl+s', function() {
-				cflk.submitListEditForm();
-				return false;
 			});
 
 			// Edit List Details

@@ -114,6 +114,7 @@ class cflk_list {
 	function build_item_recursive($item, $wrappers, $wrapper_class) {
 		if (empty($this->link_types[$item["type"]])) { return; }
 		$link_data = $this->link_types[$item['type']]->_display($item);
+		if (!is_array($link_data) || empty($link_data['link'])) { return ''; }
 		$ret .= $this->apply_class($wrappers['child_before'], apply_filters('cflk_build_item_before_class', implode(' ', $wrapper_class).$item['class'].' '.$link_data['class'], $item)).$link_data['link'];
 		
 		if (isset($item['children'])) {

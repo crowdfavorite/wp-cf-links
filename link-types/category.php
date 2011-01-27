@@ -23,7 +23,7 @@ class cflk_link_category extends cflk_link_base {
 				$category_id = intval($data['link']);
 			}
 			
-			if (!empty($category_id)) {
+			if (!empty($category_id) && $this->category_exists($category_id)) {
 				$category = get_category($category_id);
 				$data['link'] = get_category_link($category_id);
 				$data['title'] = $category->name;
@@ -41,13 +41,23 @@ class cflk_link_category extends cflk_link_base {
 	}
 	
 	function admin_display($data) {
-		$description = $title = $details = '';
+		$description = $title = $details = $id = '';
 		
 		if (!empty($data['cflk-category-id'])) {
-			$details = get_category($data['cflk-category-id']);
+			$id = $data['cflk-category-id'];
 		}
 		else if (!empty($data['link'])) {
-			$details = get_category($data['link']);
+			$id = $data['link'];
+		}
+		
+		if (!empty($id) && $this->category_exists($id)) {
+			$details = get_category($id);
+		}
+		else {
+			return array(
+				'title' => __('Missing Category ID: '.$id, 'cf-links'),
+				'description' => __('The Category ID is missing for this link item', 'cf-links')
+			);
 		}
 		
 		if (!empty($details)) {
@@ -68,18 +78,32 @@ class cflk_link_category extends cflk_link_base {
 	}
 
 	function admin_form($data) {
+		$id = (!empty($data['cflk-category-id']) ? intval($data['cflk-category-id']) : (!empty($data['link']) ? intval($data['link']) : 0));
 		$args = array(
 			'echo' => false,
 			'id' => 'cflk-dropdown-categories',
 			'name' => 'cflk-category-id',
-			'selected' => (!empty($data['cflk-category-id']) ? intval($data['cflk-category-id']) : (!empty($data['link']) ? intval($data['link']) : 0)),
+			'selected' => $id,
 			'class' => 'elm-select'
 		);
+		
+		if ($id == 0) {
+			$args['show_option_all'] = __('Select an author from the list below', 'cf-links');
+		}
+		
+		$dropdown = wp_dropdown_categories($args);
+
+		if (!$this->category_exists($id) && $id != 0) {
+			$dropdown = str_replace('</select>', '', $dropdown);
+			
+			$dropdown .= '<option value="'.$id.'" selected="selected">'.__('Category ID: '.$id.' does not exist', 'cf-links').'</option>';
+			$dropdown .= '</select>';
+		}
 
 		return '
 			<div class="elm-block">
 				<label>'.__('Link', 'cf-links').'</label>
-				'.wp_dropdown_categories($args).'
+				'.$dropdown.'
 			</div>
 		';
 	}
@@ -93,6 +117,13 @@ class cflk_link_category extends cflk_link_base {
 			$data['link'] = $data['cflk-category-id'];
 		}
 		return $data;
+	}
+	
+	function category_exists($id) {
+		if ($id != 0) {
+			
+		}
+		return false;
 	}
 }
 cflk_register_link('cflk_link_category');

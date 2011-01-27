@@ -23,7 +23,7 @@ class cflk_link_page extends cflk_link_base {
 				$page_id = intval($data['link']);
 			}
 			
-			if (!empty($page_id)) {
+			if (!empty($page_id) && $this->page_exists($page_id)) {
 				$data['link'] = get_permalink($page_id);
 				$data['title'] = get_the_title($page_id);
 			}

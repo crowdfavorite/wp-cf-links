@@ -1,7 +1,7 @@
 <?php
 
 class cflk_link_author extends cflk_link_base {
-	private $type_display = '';
+	public $type_display = '';
 	function __construct() {
 		$this->type_display = __('Author', 'cf-links');
 		parent::__construct('author', $this->type_display);
@@ -23,7 +23,7 @@ class cflk_link_author extends cflk_link_base {
 				$author_id = $data['link'];
 			}
 
-			if (!empty($author_id)) {
+			if (!empty($author_id) && $this->author_exists($author_id)) {
 				$data['link'] = get_author_link(false, $author_id);
 				$data['title'] = get_author_name($author_id);
 			}
@@ -40,13 +40,23 @@ class cflk_link_author extends cflk_link_base {
 	}
 
 	function admin_display($data) {
-		$title = $description = '';
+		$title = $description = $details = $id = '';
 		
 		if (!empty($data['cflk-author-id'])) {
-			$description = get_author_name($data['cflk-author-id']);
+			$id = $data['cflk-author-id'];
 		}
 		else if (!empty($data['link'])) {
-			$description = get_author_name($data['link']);
+			$id = $data['link'];
+		}
+		
+		if (!empty($id) && $this->author_exists($id)) {
+			$description = get_author_name($id);
+		}
+		else {
+			return array(
+				'title' => __('Missing Author ID: '.$id, 'cf-links'),
+				'description' => __('The Author ID is missing for this link item', 'cf-links')
+			);
 		}
 		
 		if (!empty($data['title'])) {
@@ -77,11 +87,20 @@ class cflk_link_author extends cflk_link_base {
 		if ($author_id == 0) {
 			$args['show_option_all'] = __('Select an author from the list below', 'cf-links');
 		}
+		
+		$dropdown = wp_dropdown_users($args);
+		
+		if (!$this->author_exists($author_id) && $author_id != 0) {
+			$dropdown = str_replace('</select>', '', $dropdown);
+			
+			$dropdown .= '<option value="'.$author_id.'" selected="selected">'.__('Author ID: '.$author_id.' does not exist', 'cf-links').'</option>';
+			$dropdown .= '</select>';
+		}
 	
 		return '
 			<div class="elm-block">
 				<label>'.__('Link', 'cf-links').'</label>
-				'.wp_dropdown_users($args).'
+				'.$dropdown.'
 			</div>
 		';
 	}

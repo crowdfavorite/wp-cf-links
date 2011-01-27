@@ -368,8 +368,8 @@ class cflk_admin extends cflk_links {
 			'.$custom_class_field.'
 			'.$new_window_field.'
 			<div class="edit-actions">
-				<a href="#" class="edit-done button">'.__('Done', 'cf-links').'</a>
-				<a href="#" class="edit-remove lnk-remove">'.__('Cancel', 'cf-links').'</a>				
+				<a href="#" class="new-edit-done button">'.__('Done', 'cf-links').'</a>
+				<a href="#" class="new-edit-remove lnk-remove">'.__('Cancel', 'cf-links').'</a>				
 			</div>
 			<input type="hidden" id="new-level" name="level" value="0" />
 		</div>
@@ -1143,7 +1143,7 @@ class cflk_admin extends cflk_links {
 		$js = file_get_contents(CFLK_PLUGIN_DIR.'/js/admin.js').PHP_EOL.PHP_EOL;
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/nav-menu.js').PHP_EOL.PHP_EOL;
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/lib/cf-json/js/json2.js');
-		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.hotkeys-0.7.9.js');
+		// $js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.hotkeys-0.7.9.js');
 		$js .= file_get_contents(CFLK_PLUGIN_DIR.'/js/jquery.DOMWindow.js');
 		
 		// Get the Link Types Admin JS

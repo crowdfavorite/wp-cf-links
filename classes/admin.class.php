@@ -345,6 +345,8 @@ class cflk_admin extends cflk_links {
 		$new_window_fields = '';
 		$i = 0;
 		if (is_array($this->link_types) && !empty($this->link_types)) {
+			// Sort the list by key, so they are in a reasonable order
+			ksort($this->link_types);
 			foreach ($this->link_types as $id => $type) {
 				if ($id == 'missing') { continue; }
 				$options .= '<option value="'.esc_attr($id).'">'.esc_html($type->name).'</option>';

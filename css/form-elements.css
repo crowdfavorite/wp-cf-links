@@ -36,6 +36,17 @@ form .no-hover .elm-block:hover {
 	background-color: #eee;
 }
 
+.elm-item-not-editable {
+	margin-left:20%;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	border-radius: 5px; /* Standard. IE9 */
+	padding: 10px 12px 12px 12px;
+	-moz-border-radius: 5px; /* FF1+ */
+	-webkit-border-radius: 5px; /* Saf3+, Chrome */
+	-khtml-border-radius: 5px; /* Konqueror */
+}
+
 .elm-date,
 .elm-readonly,
 .elm-hidden,
@@ -127,7 +138,7 @@ label.lbl-radio {
 .lbl-pos-left .elm-radio {
 	margin-left: 20%; /* needs to match .lbl-left .lbl-* width */
 }
-/* remainging labels left for view only */
+/* remaining labels left for view only */
 .lbl-pos-left .view label.lbl-checkbox,
 .lbl-pos-left .view label.lbl-flag,
 .lbl-pos-left .view label.lbl-radio {
@@ -141,6 +152,11 @@ label.lbl-radio {
 .elm-width-300 .elm-password,
 .elm-width-300 .elm-textarea {
 	width: 300px;
+}
+.elm-width-330 .elm-text,
+.elm-width-330 .elm-password,
+.elm-width-330 .elm-textarea {
+	width: 330px;
 }
 .elm-width-500 .elm-text,
 .elm-width-500 .elm-password,
@@ -209,7 +225,7 @@ label.lbl-radio {
 li .elm-checkbox,
 li .elm-radio {
 	float: left;
-	margin: 1px;
+	margin: 1px 10px 1px 1px;
 	vertical-align: middle;
 }
 li .lbl-checkbox,

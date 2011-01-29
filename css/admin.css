@@ -45,6 +45,12 @@
 	width:120px;
 }
 
+.cflk-list-count,
+.cflk-list-actions {
+	text-align:center;
+	vertical-align:middle;
+}
+
 /* NOTICE */
 #cflk-notice code {
 	background: none;
@@ -142,13 +148,28 @@
 	background: #eee url(../img/drag-handle.gif) right center no-repeat;
 	display:block;
 }
-.item-view:hover,
-.item-edit {
-	background-color: #f9f9f9;
+.item-view:hover {
+	background-color: #F9F9F9;
 }
 .item-edit {
-	padding: 2px 8px;
+	padding: 8px 0;
+	background-color:#EEEEEE;
 }
+
+.item-edit .edit-inputs {
+	border:1px solid #CCCCCC;
+	background-color:#F9F9F9;
+	-moz-border-radius: 5px; /* FF1+ */
+	-webkit-border-radius: 5px; /* Saf3+, Chrome */
+	-khtml-border-radius: 5px; /* Konqueror */
+	border-radius: 5px; /* Standard. IE9 */
+	margin:0 10px;
+}
+
+.item-edit .edit-actions {
+	margin: 10px 10px 0;
+}
+
 
 /* View mode */
 .item-view p {
@@ -171,11 +192,6 @@
 	line-height: 1em;
 	margin-top: 10px;
 	margin-right: 25px;
-}
-.item-edit .edit-actions {
-	margin-left: 20%;
-	padding-bottom: 12px;
-	padding-top: 5px;
 }
 
 /* Edit mode */

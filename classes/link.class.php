@@ -144,10 +144,12 @@ class cflk_link_base {
 		
 		$html = '
 			<div id="'.$id.'-item-edit" class="item-edit cflk-edit-link-form">
-				'.$this->admin_form($data, $id).'
-				'.$this->title_field($data, $id).'
-				'.$this->custom_class_field($data, $id).'
-				'.$this->new_window_field($data, $id).'
+				<div class="edit-inputs">
+					'.$this->admin_form($data, $id).'
+					'.$this->title_field($data, $id).'
+					'.$this->custom_class_field($data, $id).'
+					'.$this->new_window_field($data, $id).'
+				</div>
 				<div class="edit-actions">
 					<a href="#" class="edit-done button">'.__('Done', 'cf-links').'</a>
 					<a href="#" class="edit-remove lnk-remove">'.__('Remove', 'cf-links').'</a>					
@@ -180,7 +182,7 @@ class cflk_link_base {
 			$title = $data['title'];
 		}
 		return '
-			<div class="elm-block elm-width-200">
+			<div class="elm-block elm-width-330">
 				<label for="'.$item_id.'-title">'.__('Title', 'cf-links').'</label>
 				<input type="text" class="elm-text" id="'.$item_id.'-title" name="title" value="'.strip_tags(stripslashes($title)).'" />
 			</div>
@@ -193,7 +195,7 @@ class cflk_link_base {
 			$custom_class = $data['custom-class'];
 		}
 		return '
-			<div class="elm-block elm-width-200">
+			<div class="elm-block elm-width-330">
 				<label for="'.$item_id.'-custom-class">'.__('Custom Class', 'cf-links').'</label>
 				<input type="text" class="elm-text" id="'.$item_id.'-custom-class" name="custom-class" value="'.strip_tags(stripslashes($custom_class)).'" />
 			</div>

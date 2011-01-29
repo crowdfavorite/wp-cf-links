@@ -132,12 +132,12 @@ class cflk_admin extends cflk_links {
 									</ul>
 								</div>
 							</td>
-							<td class="cflk-list-count" style="text-align:center; vertical-align:middle;">
+							<td class="cflk-list-count">
 								<p>
 									'.$list['count'].'
 								</p>
 							</td>
-							<td class="cflk-list-actions" style="text-align:center; vertical-align:middle;">
+							<td class="cflk-list-actions">
 								';
 								if ($this->allow_edit) {
 									$html .= '<a  class="button cflk-export-list" id="list-export-'.$id.'" href="#">'.__('Export', 'cf-links').'</a>';
@@ -227,9 +227,14 @@ class cflk_admin extends cflk_links {
 		$nicename = strip_tags(stripslashes($nicename));
 		$key = strip_tags(stripslashes($key));
 		$description = strip_tags(stripslashes($description));
-
+		
+		$page_title = __('Edit List', 'cf-links');
+		if (empty($_GET['list'])) {
+			$page_title = __('Add New List', 'cf-links');
+		}
+		
 		// list details
-		$html = $this->admin_wrapper_open('Edit List').$this->admin_navigation('edit').'
+		$html = $this->admin_wrapper_open($page_title).$this->admin_navigation('edit').'
 			'.(!empty($notice) ? $notice : null).'
 			'.$this->admin_messages().'
 			';
@@ -239,15 +244,15 @@ class cflk_admin extends cflk_links {
 				<fieldset class="lbl-pos-left">
 					<div class="elm-block elm-width-300">
 						<label class="lbl-text">'.__('Title', 'cf-links').'</label>
-						'.($this->allow_edit ? '<input type="text" name="nicename" id="cflk_list_name" value="'.$nicename.'" class="elm-text" />' : $nicename).'
+						'.($this->allow_edit ? '<input type="text" name="nicename" id="cflk_list_name" value="'.$nicename.'" class="elm-text" />' : '<div class="elm-list-name elm-item-not-editable">'.$nicename.'</div>').'
 					</div>
 					<div class="elm-block elm-width-300">
 						<label class="lbl-text">'.__('List ID', 'cf-links').'</label>
-						'.($this->allow_edit ? '<input type="text" name="key" id="cflk_list_key" value="'.$key.'" class="elm-text" readonly="readonly" />' : $key).'
+						'.($this->allow_edit ? '<input type="text" name="key" id="cflk_list_key" value="'.$key.'" class="elm-text" readonly="readonly" />' : '<div class="elm-list-key elm-item-not-editable">'.$key.'</div>').'
 					</div>
 					<div class="elm-block elm-width-500">
 						<label class="lbl-textarea">'.__('Description (optional)', 'cf-links').'</label>
-						'.($this->allow_edit ? '<textarea name="description" id="cflk_list_description" rows="3" cols="40" class="elm-textarea">'.$description.'</textarea>' : $description).'
+						'.($this->allow_edit ? '<textarea name="description" id="cflk_list_description" rows="3" cols="40" class="elm-textarea">'.$description.'</textarea>' : '<div class="elm-list-description elm-item-not-editable">'.(!empty($description) ? $description : '<i>'.__('No description set', 'cf-links').'</i>').'</div>').'
 					</div>
 					'.apply_filters('cflk_edit_list_details_edit', '', $key).'
 					<div class="elm-block no-hover">
@@ -357,16 +362,18 @@ class cflk_admin extends cflk_links {
 		
 		return '
 		<div id="new-item-edit" class="item-edit cflk-edit-link-form cflk-new-edit-form">
-			<div class="elm-block elm-width-200">
-				<label for="new-type-selector">'.__('Link Type', 'cf-links').'</label>
-				<select class="elm-select" id="new-type-selector" name="type">'.$options.'</option></select>
+			<div class="edit-inputs">
+				<div class="elm-block elm-width-200">
+					<label for="new-type-selector">'.__('Link Type', 'cf-links').'</label>
+					<select class="elm-select" id="new-type-selector" name="type">'.$options.'</option></select>
+				</div>
+				<ul class="cflk-edit-forms" style="margin-left:0;">
+					'.$forms.'
+				</ul>
+				'.$title_field.'
+				'.$custom_class_field.'
+				'.$new_window_field.'
 			</div>
-			<ul class="cflk-edit-forms" style="margin-left:0;">
-				'.$forms.'
-			</ul>
-			'.$title_field.'
-			'.$custom_class_field.'
-			'.$new_window_field.'
 			<div class="edit-actions">
 				<a href="#" class="new-edit-done button">'.__('Done', 'cf-links').'</a>
 				<a href="#" class="new-edit-remove lnk-remove">'.__('Cancel', 'cf-links').'</a>				
@@ -484,7 +491,7 @@ class cflk_admin extends cflk_links {
 	 */
 	function _import() {
 		// import a list
-		$html = $this->admin_wrapper_open('Import List').$this->admin_navigation('import').'
+		$html = $this->admin_wrapper_open(__('Import List', 'cf-links')).$this->admin_navigation('import').'
 			<form method="post" id="cflk-import-form" name="cflk_import_form" class="cflk-import" action="'.$_SERVER['REQUEST_URI'].'">
 				<table id="cflk-import" class="widefat">
 					<thead>
@@ -796,12 +803,12 @@ class cflk_admin extends cflk_links {
 		if (is_array($cflk_list)) {
 			foreach ($cflk_list as $cflk) {
 				$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
-				$return[$cflk->option_name] = array(
+				$return[$cflk->option_name] = apply_filters('cflk_get_all_lists_for_blog_list', array(
 					'nicename' => $options['nicename'], 
 					'description' => $options['description'],
 					'count' => count($options['data']),
 					'data' => $options['data']
-				);
+				), $cflk->option_name, $options, $blog);
 			}
 		}
 		return apply_filters('cflk_get_all_lists_for_blog', (count($return) > 0 ? $return : false));
@@ -865,7 +872,7 @@ class cflk_admin extends cflk_links {
 
 	function admin_wrapper_open($title="") {
 		if (!empty($title)) {
-			$title = ' || '.$title;
+			$title = '<span class="admin-wrapper-title"> - '.$title.'</span>';
 		}
 		return '
 			<div class="wrap">
@@ -888,6 +895,9 @@ class cflk_admin extends cflk_links {
 				$import_list_class = ' current';
 				break;
 			case 'edit':
+				if (empty($_GET['list'])) {
+					$new_list_class = ' current';
+				}
 				break;
 			case 'main':
 			default:

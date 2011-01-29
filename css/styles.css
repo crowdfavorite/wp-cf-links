@@ -5,20 +5,6 @@
 	position: relative;
 	width: 100%;
 }
-.wphc-support-btn {
-	display: block;
-	background: url('../wp-content/plugins/cf-links/images/support-btn.gif') 0 0 no-repeat;
-	height: 18px;
-	overflow: hidden;
-	position: absolute;
-	text-indent: -999em;
-	top: 0;
-	right: 0;
-	width: 70px;
-}
-.wphc-support-btn:hover {
-	background-position: -70px 0;
-}
 #cf-nav {
 	list-style-type: none;
 	margin: 5px 10px 0 10px;
@@ -62,41 +48,15 @@
 	padding-bottom: 6px;
 }
 
-/* cf-wphc-widget */
-#wphc-widget {
-	background-position: 0 100%;
-	margin-bottom: 18px;
-	padding: 0;
-	position: relative;
+#cf form {
+	margin-bottom:20px;
 }
-#wphc-widget .wphc-content {
-	background: url('../wp-content/plugins/cf-links/images/lifering.png') 16px 2px no-repeat;
-	padding: 4px 15px 3px 130px;
+
+h2 .admin-wrapper-title {
+	font-size:0.75em;
+	font-style:normal;
 }
-#wphc-widget strong {
-	font-size: 16px;
-	margin-right: 1em;
-}
-#wphc-widget strong a {
-	color: #8b2828;
-	text-decoration: none;
-}
-#wphc-widget strong a:hover {
-	text-decoration: underline;
-}
-#wphc-widget #wphc-close {
-	background: url('../wp-content/plugins/cf-links/images/close-x.gif') 0 0 no-repeat;
-	height: 9px;
-	position: absolute;
-	overflow: hidden;
-	text-indent: -999px;
-	top: 10px;
-	right: 10px;
-	width: 8px;
-}
-#wphc-widget #wphc-close:hover {
-	background-position: -8px 0;
-}
+
 /* Developed by and Support by callouts */
 #cf-callouts {
 	background: url('../wp-content/plugins/cf-links/images/border-fade-sprite.gif') 0 0 repeat-x;

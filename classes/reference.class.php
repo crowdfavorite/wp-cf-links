@@ -25,6 +25,7 @@ class cflk_reference extends cflk_links {
 		add_filter('cflk_process_reference', array($this, 'process_reference_category'), 10);
 		add_filter('cflk_process_reference', array($this, 'process_reference_list'), 10);
 		add_filter('cflk_admin_css', array($this, 'admin_css'), 10);
+		add_filter('cflk_get_all_lists_for_blog_list', array($this, 'filter_all_lists_for_blog'), 10, 4);
 		
 		// Front end filters
 		add_filter('cflk_build_list_parent_before_class', array($this, 'parent_before_class'), 10, 2);
@@ -229,6 +230,51 @@ class cflk_reference extends cflk_links {
 	}
 	
 	/**
+	 * Check to see if the list has a parent, then update the parent as needed with the new data sent from 
+	 * the child
+	 *
+	 * @param string $list_key 
+	 * @param string $action 
+	 * @return void
+	 */
+	function update_parent($list_key, $action = 'delete') {
+		// Get the list data
+		global $cflk_links, $blog_id;
+		$list = $cflk_links->get_list_data(esc_attr($list_key));
+		// Check to make sure we have a proper list and children to update
+		if (!is_array($list) || empty($list) || empty($list['reference_parent_blog']) || empty($list['reference_parent_list'])) { return; }
+		
+		$child_blog_id = $blog_id;
+		$child_key = $blog_id.'-'.$list_key;
+		
+		// Allow anybody to filter the content of this list
+		$list = apply_filters("cflk_process_reference_update_parent", $list, $action);
+		
+		switch_to_blog($list['reference_parent_blog']);
+		$parent_list = get_option($list['reference_parent_list']);
+		switch ($action) {
+			case 'delete':
+				if (!empty($parent_list['reference_children']) && is_array($parent_list['reference_children'])) {
+					$keys = array();
+					foreach ($parent_list['reference_children'] as $key => $value) {
+						if ($value == $child_key) {
+							$keys[] = $key;
+						}
+					}
+
+					if (is_array($keys) && !empty($keys)) {
+						foreach ($keys as $key) {
+							unset($parent_list['reference_children'][$key]);
+						}
+						update_option($list['reference_parent_list'], $parent_list);
+					}
+				}
+				break;
+		}
+		restore_current_blog();
+	}
+	
+	/**
 	 * Run a filter on save list, if we have a list with children, update those children with the latest data
 	 *
 	 * @param string $key 
@@ -250,6 +296,9 @@ class cflk_reference extends cflk_links {
 	function delete_list($key) {
 		if ($this->has_children($key)) {
 			$this->update_children($key, 'delete');
+		}
+		else if ($this->is_reference($key)) {
+			$this->update_parent($key, 'delete');
 		}
 	}
 	
@@ -292,7 +341,7 @@ class cflk_reference extends cflk_links {
 				$name = get_bloginfo('name');
 				restore_current_blog();
 				
-				$info .= __('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">here</a>.';
+				$info .= '<div class="elm-list-reference-link elm-item-not-editable">'.__('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">here</a>.</div>';
 			}
 			// If we don't, we're in trouble
 			else {
@@ -367,7 +416,7 @@ class cflk_reference extends cflk_links {
 				$name = get_bloginfo('name');
 				restore_current_blog();
 				
-				$description .= __('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">here</a>.';
+				$description .= '<div class="elm-list-description elm-item-not-editable">'.__('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">here</a>.</div>';
 			}
 			// If we don't, we're in trouble
 			else {
@@ -453,6 +502,7 @@ class cflk_reference extends cflk_links {
 				$blogname = $blog['blogname'];
 				if (is_array($lists) && !empty($lists)) {
 					foreach ($lists as $key => $list) {
+						if ($list['reference']) { continue; }
 						$options .= '<option value="'.esc_attr($blog['blog_id']).'-'.esc_attr($key).'">'.esc_attr($list['nicename'].' -- '.$blogname).'</option>';
 					}
 				}
@@ -468,6 +518,25 @@ class cflk_reference extends cflk_links {
 			';
 		}
 		return '';
+	}
+	
+	/**
+	 * Filter all of the lists being retrieved for a blog, so we can add in the information about this being a reference list
+	 *
+	 * @param array $list 
+	 * @param string $list_id 
+	 * @param array $options 
+	 * @param string $blog 
+	 * @return array
+	 */
+	function filter_all_lists_for_blog($list = array(), $list_id = '', $options = array(), $blog = 0) {
+		if (empty($list) || !is_array($list) || empty($options) || !is_array($options)) { return $list; }
+		if (!empty($options['reference']) && $options['reference']) {
+			$list['reference'] = true;
+			$list['reference_parent_blog'] = $options['reference_parent_blog'];
+			$list['reference_parent_list'] = $options['reference_parent_list'];
+		}
+		return $list;
 	}
 	
 	/**

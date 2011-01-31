@@ -5,11 +5,11 @@ class cflk_admin extends cflk_links {
 	private $in_ajax = false;
 	private $editing_list = false;
 	private $messages = array(
-		'1' => __('List Created', 'cf-links'),
-		'2' => __('List Saved', 'cf-links'),
-		'3' => __('List Deleted', 'cf-links'),
-		'4' => __('List Imported', 'cf-links'),
-		'5' => __('List Import Error', 'cf-links')
+		'1' => 'List Created',
+		'2' => 'List Saved',
+		'3' => 'List Deleted',
+		'4' => 'List Imported',
+		'5' => 'List Import Error'
 	);
 	public $allow_edit = true;
 	

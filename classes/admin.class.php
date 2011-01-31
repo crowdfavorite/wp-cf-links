@@ -233,6 +233,11 @@ class cflk_admin extends cflk_links {
 			$page_title = __('Add New List', 'cf-links');
 		}
 		
+		$list_key_edit = ' readonly="readonly"';
+		if (empty($key)) {
+			$list_key_edit = '';
+		}
+		
 		// list details
 		$html = $this->admin_wrapper_open($page_title).$this->admin_navigation('edit').'
 			'.(!empty($notice) ? $notice : null).'
@@ -248,7 +253,7 @@ class cflk_admin extends cflk_links {
 					</div>
 					<div class="elm-block elm-width-300">
 						<label class="lbl-text">'.__('List ID', 'cf-links').'</label>
-						'.($this->allow_edit ? '<input type="text" name="key" id="cflk_list_key" value="'.$key.'" class="elm-text" readonly="readonly" />' : '<div class="elm-list-key elm-item-not-editable">'.$key.'</div>').'
+						'.($this->allow_edit ? '<input type="text" name="key" id="cflk_list_key" value="'.$key.'" class="elm-text"'.$list_key_edit.' />' : '<div class="elm-list-key elm-item-not-editable">'.$key.'</div>').'
 					</div>
 					<div class="elm-block elm-width-500">
 						<label class="lbl-textarea">'.__('Description (optional)', 'cf-links').'</label>
@@ -590,12 +595,14 @@ class cflk_admin extends cflk_links {
 		}
 		$list['nicename'] = esc_html($_POST['nicename']);
 		
-		// Key - This shouldn't happen, but handle it just in case
+		// Check to see if the posted key is empty, if so create a key for it
 		if (empty($_POST['key'])) {
-			$key = check_unique_list_id($_POST['key']);
+			$key = $this->check_unique_list_id($_POST['key']);
 			$_POST['key'] = $key['list_id'];
 		}
-		$list['key'] = esc_attr($_POST['key']);
+		// Check to see if the posted key is unique, and create a unique key if not
+		$key = $this->check_unique_list_id($_POST['key']);
+		$list['key'] = $key['list_id'];
 		
 		// Description
 		if (!empty($_POST['description'])) {

@@ -35,7 +35,7 @@ class cflk_link_category extends cflk_link_base {
 		}
 		else {
 			$data['link'] = '';
-			$data['title'] = __('Unknown Category', 'cflk-links');
+			$data['title'] = __('Unknown Category', 'cf-links');
 		}
 		return parent::display($data);
 	}
@@ -55,7 +55,7 @@ class cflk_link_category extends cflk_link_base {
 		}
 		else {
 			return array(
-				'title' => __('Missing Category ID: '.$id, 'cf-links'),
+				'title' => __('Missing Category ID: ', 'cf-links').$id,
 				'description' => __('The Category ID is missing for this link item', 'cf-links')
 			);
 		}
@@ -96,7 +96,7 @@ class cflk_link_category extends cflk_link_base {
 		if (!$this->category_exists($id) && $id != 0) {
 			$dropdown = str_replace('</select>', '', $dropdown);
 			
-			$dropdown .= '<option value="'.$id.'" selected="selected">'.__('Category ID: '.$id.' does not exist', 'cf-links').'</option>';
+			$dropdown .= '<option value="'.$id.'" selected="selected">'.__('Category ID: ', 'cf-links').$id.__(' does not exist', 'cf-links').'</option>';
 			$dropdown .= '</select>';
 		}
 

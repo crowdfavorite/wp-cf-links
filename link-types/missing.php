@@ -38,7 +38,7 @@ class cflk_link_missing extends cflk_link_base {
 						';
 						if (is_array($data) && !empty($data)) {
 							foreach ($data as $key => $value) {
-								$html .= '<b>Key:</b> '.strip_tags(stripslashes($key)).' -- <b>Value:</b> '.strip_tags(stripslashes($value)).'<br />';
+								$html .= '<b>'.__('Key:', 'cf-links').'</b> '.strip_tags(stripslashes($key)).' -- <b>'.__('Value:', 'cf-links').'</b> '.strip_tags(stripslashes($value)).'<br />';
 							}
 						}
 						$html .= '

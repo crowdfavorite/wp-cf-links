@@ -28,7 +28,7 @@ class cflk_link_author_rss extends cflk_link_author {
 		}
 		else {
 			$data['link'] = '';
-			$data['title'] = __('Unknown Author', 'cflk-links');
+			$data['title'] = __('Unknown Author', 'cf-links');
 		}
 		return cflk_link_base::display($data);
 	}

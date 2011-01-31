@@ -35,7 +35,7 @@ class cflk_link_wordpress extends cflk_link_base {
 		}
 		else {
 			$data['link'] = '';
-			$data['title'] = __('Unknown WordPress Type', 'cflk-links');
+			$data['title'] = __('Unknown WordPress Type', 'cf-links');
 		}
 		return parent::display($data);
 	}

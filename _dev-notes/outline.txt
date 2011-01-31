@@ -4,51 +4,79 @@
 /******************************
 	
 	@TODO: do single list item object per list output
+		@DONE: Per SK
 	@TODO: per above, make central list type registration object
+		@DONE: Per SK
 	@TODO: add list
 		- name, description editable, add key/slug like creating wordpress post, don't save yet
+			@DONE: Per SK
 		- allow editing of slug if user wants to
 		- do single save
+			@DONE: Per SK
 	@TODO: move "new window" option to advanced section of list item edit
+		@DONE: Per SK
 		- add "class" attribute as well
+			@DONE: Per SK
 	@TODO: move list_wrapper call to be done later
+		@DONE: Per SK
 		- pass in class and populate
+			@DONE: Per SK
 	
 ## Default (home)
 
 - show list of available lists
+@DONE: Per SK
 - actions:
 	- new list (new page)
+		@DONE: Per SK
 	- import list (new page)
+		@DONE: Per SK
 - actions on individual lists
 	- export list (ajax)
+		@DONE: Per SK
 	- delete list (ajax)
+		@DONE: Per SK
 	- edit (new page)
+		@DONE: Per SK
 	- show template-tag and/or shortcode
+		@DONE: Per SK
 
 ## Import
 
 - show import textarea
+	@DONE: Per SK
 - actions
 	- import
 		- redirect to list edit on success
+			@DONE: Per SK
 		- show errors on failure
+			@DONE: Per SK
 
 ## Edit
 
 - show title (click to edit)
+	@DONE: Per SK
 - show desc (click to edit)
+	@DONE: Per SK
 - show list items
+	@DONE: Per SK
 - actions
 	- save
+		@DONE: Per SK
 	- add list item
+		@DONE: Per SK
 	- edit list item
+		@DONE: Per SK
 	- reorder list items
+		@DONE: Per SK
 	- delete list item
+		@DONE: Per SK
 	- set nesting level
+		@DONE: Per SK
 	- export list (ajax)
+		@DONE: Per SK
 - do_action after list display for appending items to page
-
+	
 ### Edit Item
 
 Each also contains 'title' & 'new window' options
@@ -57,9 +85,12 @@ For legacy compatability, we need link types of: url, rss, page, post, category,
 Link options: 
 - url:
 	- href
+	@DONE: Per SK
 - rss:
 	- href
+	@DONE: Per SK
 	- appends rss icon for display
+	@DONE: Per SK
 - category:
 	- select or type-ahead-search (based on number of cats)
 - page/post:
@@ -67,8 +98,10 @@ Link options:
 	- select or type-ahead-search (based on number of pages/posts)
 - author
 	- select by nicename
+	@DONE: Per SK
 - author RSS
 	- select by nicename
+	@DONE: Per SK
 - wordpress
 	- select type
 		- loginout: Login/Logout
@@ -76,6 +109,7 @@ Link options:
 		- profile: Profile
 		- main_rss: Site RSS
 		- home: Home
+	@DONE: Per SK
 
 
 ******************************/

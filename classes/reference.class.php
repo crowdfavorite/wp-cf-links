@@ -87,8 +87,8 @@ class cflk_reference extends cflk_links {
 	 * @return array
 	 */
 	function admin_messages($messages) {
-		$messages[70] = 'Reference List Created';
-		$messages[71] = 'Reference List Creation Error';
+		$messages[70] = __('Reference List Created', 'cf-links');
+		$messages[71] = __('Reference List Creation Error', 'cf-links');
 		
 		return $messages;
 	}
@@ -341,7 +341,7 @@ class cflk_reference extends cflk_links {
 				$name = get_bloginfo('name');
 				restore_current_blog();
 				
-				$info .= '<div class="elm-list-reference-link elm-item-not-editable">'.__('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">here</a>.</div>';
+				$info .= '<div class="elm-list-reference-link elm-item-not-editable">'.__('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">'.__('here', 'cf-links').'</a>.</div>';
 			}
 			// If we don't, we're in trouble
 			else {
@@ -369,7 +369,7 @@ class cflk_reference extends cflk_links {
 					$count++;
 				}
 			}
-			$info .= '<div class="cflk-reference-list-children">This list has a child on blog'.(count($list['reference_children']) > 1 ? 's' : '').': '.$blogs.'</div>';
+			$info .= '<div class="cflk-reference-list-children">'.__('This list has a child on blog', 'cf-links').(count($list['reference_children']) > 1 ? 's' : '').': '.$blogs.'</div>';
 		}		
 		
 		if ($this->has_children($key)) {
@@ -416,7 +416,7 @@ class cflk_reference extends cflk_links {
 				$name = get_bloginfo('name');
 				restore_current_blog();
 				
-				$description .= '<div class="elm-list-description elm-item-not-editable">'.__('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">here</a>.</div>';
+				$description .= '<div class="elm-list-description elm-item-not-editable">'.__('This list is a reference to <i>', 'cf-links').$parent_list['nicename'].__('</i> on <i>', 'cf-links').$name.__('</i>. Edit this list', 'cf-links').' <a href="'.$edit_url.'">'.__('here', 'cf-links').'</a>.</div>';
 			}
 			// If we don't, we're in trouble
 			else {
@@ -446,7 +446,7 @@ class cflk_reference extends cflk_links {
 					$count++;
 				}
 			}
-			$description .= 'This list has children on blog'.(count($list['reference_children']) > 1 ? 's' : '').': '.$blogs;
+			$description .= __('This list has children on blog', 'cf-links').(count($list['reference_children']) > 1 ? 's' : '').': '.$blogs;
 			$description .= '</p>';
 		}
 		return $description;

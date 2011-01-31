@@ -34,7 +34,7 @@ class cflk_link_page extends cflk_link_base {
 		}
 		else {
 			$data['link'] = '';
-			$data['title'] = __('Unknown Page', 'cflk-links');
+			$data['title'] = __('Unknown Page', 'cf-links');
 		}
 		return parent::display($data);
 	}
@@ -61,7 +61,7 @@ class cflk_link_page extends cflk_link_base {
 				$page_id = $data['link'];
 			}
 			return array(
-				'title' => __('Missing Page ID: '.$page_id, 'cf-links'),
+				'title' => __('Missing Page ID: ', 'cf-links').$page_id,
 				'description' => __('The Page ID is missing for this link item', 'cf-links')
 			);
 		}
@@ -92,7 +92,7 @@ class cflk_link_page extends cflk_link_base {
 		if (!$this->page_exists($page_id)) {
 			$args['option_none_value'] = $page_id;
 			if ($page_id != 0) {
-				$args['show_option_none'] = __('Page ID: '.$page_id.' does not exist', 'cf-links');
+				$args['show_option_none'] = __('Page ID: ', 'cf-links').$page_id.__(' does not exist', 'cf-links');
 			}
 			else {
 				$args['show_option_none'] = __('Select a page from the list below', 'cf-links');

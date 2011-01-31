@@ -35,7 +35,7 @@ class cflk_link_blog extends cflk_link_base {
 		}
 		else {
 			$data['link'] = '';
-			$data['title'] = __('Unknown Blog', 'cflk-links');
+			$data['title'] = __('Unknown Blog', 'cf-links');
 		}
 		return parent::display($data);
 	}

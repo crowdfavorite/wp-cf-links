@@ -34,7 +34,7 @@ class cflk_link_author extends cflk_link_base {
 		}
 		else {
 			$data['link'] = '';
-			$data['title'] = __('Unknown Author', 'cflk-links');
+			$data['title'] = __('Unknown Author', 'cf-links');
 		}
 		return parent::display($data);
 	}
@@ -54,7 +54,7 @@ class cflk_link_author extends cflk_link_base {
 		}
 		else {
 			return array(
-				'title' => __('Missing Author ID: '.$id, 'cf-links'),
+				'title' => __('Missing Author ID: ', 'cf-links').$id,
 				'description' => __('The Author ID is missing for this link item', 'cf-links')
 			);
 		}
@@ -93,7 +93,7 @@ class cflk_link_author extends cflk_link_base {
 		if (!$this->author_exists($author_id) && $author_id != 0) {
 			$dropdown = str_replace('</select>', '', $dropdown);
 			
-			$dropdown .= '<option value="'.$author_id.'" selected="selected">'.__('Author ID: '.$author_id.' does not exist', 'cf-links').'</option>';
+			$dropdown .= '<option value="'.$author_id.'" selected="selected">'.__('Author ID: ', 'cf-links').$author_id.__(' does not exist', 'cf-links').'</option>';
 			$dropdown .= '</select>';
 		}
 	

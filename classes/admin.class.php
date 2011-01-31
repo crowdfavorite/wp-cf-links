@@ -5,11 +5,11 @@ class cflk_admin extends cflk_links {
 	private $in_ajax = false;
 	private $editing_list = false;
 	private $messages = array(
-		'1' => 'List Created',
-		'2' => 'List Saved',
-		'3' => 'List Deleted',
-		'4' => 'List Imported',
-		'5' => 'List Import Error'
+		'1' => __('List Created', 'cf-links'),
+		'2' => __('List Saved', 'cf-links'),
+		'3' => __('List Deleted', 'cf-links'),
+		'4' => __('List Imported', 'cf-links'),
+		'5' => __('List Import Error', 'cf-links')
 	);
 	public $allow_edit = true;
 	
@@ -115,7 +115,7 @@ class cflk_admin extends cflk_links {
 				$html .= '
 						<tr id="cflk-list-'.$id.'">
 							<td class="cflk-list-info">
-								<p><a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'" class="cflk-list-title">'.stripslashes($list['nicename']).'</a> | <span><a class="cflk-toggle" href="#cflk-details-'.$id.'">Details</a></span></p>
+								<p><a href="'.admin_url('options-general.php?page='.CFLK_BASENAME.'&cflk_page=edit&list='.$id).'" class="cflk-list-title">'.stripslashes($list['nicename']).'</a> | <span><a class="cflk-toggle" href="#cflk-details-'.$id.'">'.__('Details', 'cf-links').'</a></span></p>
 								<div id="cflk-details-'.$id.'" class="cflk-details" style="display: none">
 									';
 									if (!empty($description)) {
@@ -127,8 +127,8 @@ class cflk_admin extends cflk_links {
 									}
 									$html .= '
 									<ul class="cflk-description-items">
-										<li><span class="cflk-description-item cflk-description-item-template">Template Tag:</span> <code>&lt;?php if (function_exists(&quot;cflk_links&quot;)) { cflk_links(&quot;'.$id.'&quot;); } ?&gt;</code></li>
-										<li><span class="cflk-description-item cflk-description-item-shortcode">Shortcode:</span> <code>[cflk name=&quot;'.$id.'&quot;]</code></li>
+										<li><span class="cflk-description-item cflk-description-item-template">'.__('Template Tag:', 'cf-links').'</span> <code>&lt;?php if (function_exists(&quot;cflk_links&quot;)) { cflk_links(&quot;'.$id.'&quot;); } ?&gt;</code></li>
+										<li><span class="cflk-description-item cflk-description-item-shortcode">'.__('Shortcode:', 'cf-links').'</span> <code>[cflk name=&quot;'.$id.'&quot;]</code></li>
 									</ul>
 								</div>
 							</td>
@@ -161,7 +161,7 @@ class cflk_admin extends cflk_links {
 			$html .= '
 				<tr>
 					<td colspan="5">
-						<p>There are currently no lists to display. Use the "Add New List" button above to get started.</p>
+						<p>'.__('There are currently no lists to display. Use the "Add New List" button above to get started.', 'cf-links').'</p>
 					</td>
 				</tr>
 			';
@@ -199,7 +199,7 @@ class cflk_admin extends cflk_links {
 				$new = true;
 				$notice = '
 					<div id="cflk-notice" class="error below-h2">
-						<p>List ID <code>'.esc_attr($list_id).'</code> not found.</p>
+						<p>'.__('List ID ', 'cf-links').'<code>'.esc_attr($list_id).'</code>'.__(' not found.', 'cf-links').'</p>
 					</div>
 					';
 			}
@@ -296,7 +296,7 @@ class cflk_admin extends cflk_links {
 									<dl class="menu-item-bar">
 										<dt class="menu-item-handle">
 											<div class="item-view" style="text-align:center;">
-												<a id="menu-item-new-button" class="button" href="#">Add New</a>
+												<a id="menu-item-new-button" class="button" href="#">'.__('Add New', 'cf-links').'</a>
 											</div>
 										</dt>
 									</dl>
@@ -561,7 +561,7 @@ class cflk_admin extends cflk_links {
 		}
 		else {
 			$return = false;
-			$this->errors->add('invalid-list-id', __('Invalid List ID supplied for Delete List'));
+			$this->errors->add('invalid-list-id', __('Invalid List ID supplied for Delete List', 'cf-links'));
 		}
 		return $return;
 	}
@@ -586,7 +586,7 @@ class cflk_admin extends cflk_links {
 
 		// Nicename
 		if (empty($_POST['nicename'])) {
-			$this->errors->add('list-data', 'List Name is a Required Field');
+			$this->errors->add('list-data', __('List Name is a Required Field', 'cf-links'));
 		}
 		$list['nicename'] = esc_html($_POST['nicename']);
 		
@@ -616,7 +616,7 @@ class cflk_admin extends cflk_links {
 				if ($this->is_valid_link_type($data['type'])) {
 					$linkdata = $this->get_link_type($data['type'])->_update($data);
 					if (empty($linkdata)) {
-						$this->errors->add('list-data', 'Error processing link type data');
+						$this->errors->add('list-data', __('Error processing link type data', 'cf-links'));
 					}
 					else {
 						$list['data'][] = $linkdata;
@@ -627,7 +627,7 @@ class cflk_admin extends cflk_links {
 					// the link type is valid in the system
 					$linkdata = $this->get_link_type('missing')->_update($data);
 					if (empty($linkdata)) {
-						$this->errors->add('list-data', 'Error processing link type data');
+						$this->errors->add('list-data', __('Error processing link type data', 'cf-links'));
 					}
 					else {
 						$list['data'][] = $linkdata;
@@ -645,7 +645,7 @@ class cflk_admin extends cflk_links {
 				exit;
 			}
 			else {
-				$this->errors->add('list-save', 'There was an error saving the list');
+				$this->errors->add('list-save', __('There was an error saving the list', 'cf-links'));
 			}
 		}
 	}
@@ -699,7 +699,7 @@ class cflk_admin extends cflk_links {
 			</div>
 			<div class="cflk-popup-content">
 				<div class="cflk-popup-body">
-					<p><?php _e('Copy the data in the text area below.  Then paste this data into the <i>CF Links Import page</i> of the destination site.', 'cf-links')?></p>
+					<p><?php _e('Copy the data in the text area below.  Then paste this data into the <i>CF Links Import page</i> of the destination site.', 'cf-links'); ?></p>
 					<?php
 					if (!empty($list_key)) {
 						$list = $this->get_list_data($list_key);

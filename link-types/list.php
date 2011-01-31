@@ -17,7 +17,7 @@ class cflk_link_list extends cflk_link_base {
 		if (empty($data['cflk-list-id']) || !$cflk_links->is_valid_list($data['cflk-list-id'])) {
 			$data['link'] = '';
 			$data['type'] = 'blank';
-			$data['title'] = __('Unknown List', 'cflk-links');
+			$data['title'] = __('Unknown List', 'cf-links');
 		}
 		
 		return parent::display($data);

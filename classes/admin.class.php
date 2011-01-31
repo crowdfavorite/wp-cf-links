@@ -676,7 +676,7 @@ class cflk_admin extends cflk_links {
 	
 	function get_list_data($list_key) {
 		if ($list = get_option($list_key)) {
-			return $list;
+			return apply_filters('cflk_admin_class_get_list_data', $list, $list_key);
 		}
 		return false;
 	}

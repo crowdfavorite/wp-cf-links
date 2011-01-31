@@ -26,6 +26,7 @@ class cflk_reference extends cflk_links {
 		add_filter('cflk_process_reference', array($this, 'process_reference_list'), 10);
 		add_filter('cflk_admin_css', array($this, 'admin_css'), 10);
 		add_filter('cflk_get_all_lists_for_blog_list', array($this, 'filter_all_lists_for_blog'), 10, 4);
+		add_filter('cflk_admin_class_get_list_data', array($this, 'filter_admin_list_data'), 10, 2);
 		
 		// Front end filters
 		add_filter('cflk_build_list_parent_before_class', array($this, 'parent_before_class'), 10, 2);
@@ -536,6 +537,13 @@ class cflk_reference extends cflk_links {
 			$list['reference_parent_blog'] = $options['reference_parent_blog'];
 			$list['reference_parent_list'] = $options['reference_parent_list'];
 		}
+		return $list;
+	}
+	
+	function filter_admin_list_data($list = array(), $list_key = '') {
+		if (empty($list) || empty($list_key) || !is_array($list['reference_children']) || empty($list['reference_children'])) { return $list; }
+		// If we have a parent list, remove the child data as that probably won't be relevant to the destination
+		unset($list['reference_children']);
 		return $list;
 	}
 	

@@ -50,208 +50,208 @@ load_plugin_textdomain('cf-links');
 
 ## Retained functions & filters (if in name only)
 	
-	/**
-	 * Template Tag
-	 *
-	 * $args is an array of parameters that can effect the list output
-	 * - 'context': supply a helper context name for sensitive filtering. ie: header, footer, sidebar, etc...
-	 * - 'before': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
-	 * - 'after': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
-	 * - 'child_before': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
-	 * - 'child_after': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
-	 *
-	 * @param string $list_id 
-	 * @param array $args 
-	 * @return void
-	 */
-	function cflk_links($list_id, $args = array()) {
-		echo apply_filters('cflk_links', cflk_get_links($list_id, $args));
-	} 
-		
-	/**
-	 * Template tag - returns
-	 *
-	 * @see cflk_links for full documentation
-	 *
-	 * @param string $list_id 
-	 * @param array $args 
-	 * @return string html
-	 */
-	function cflk_get_links($list_id, $args = array()) {
-		global $cflk_links;
-
-		$list = $cflk_links->get_list($list_id, $args);
-
-		if ($list != false) {
-			return apply_filters('cflk_get_links', $list->display());
-		}
-		else {
-			return '';
-		}
-	} 
-		
-	// retain as accessor function? Not needed
-	// function cflk_get_list_links($list) {} 
+/**
+ * Template Tag
+ *
+ * $args is an array of parameters that can effect the list output
+ * - 'context': supply a helper context name for sensitive filtering. ie: header, footer, sidebar, etc...
+ * - 'before': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
+ * - 'after': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
+ * - 'child_before': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
+ * - 'child_after': @deprecated kept for legacy reasons. Use filter on `cflk_wrappers` instead.
+ *
+ * @param string $list_id 
+ * @param array $args 
+ * @return void
+ */
+function cflk_links($list_id, $args = array()) {
+	echo apply_filters('cflk_links', cflk_get_links($list_id, $args));
+} 
 	
-	// retain as accessor function? Not needed
-	// function cflk_get_links_data($list_id) {} 
+/**
+ * Template tag - returns
+ *
+ * @see cflk_links for full documentation
+ *
+ * @param string $list_id 
+ * @param array $args 
+ * @return string html
+ */
+function cflk_get_links($list_id, $args = array()) {
+	global $cflk_links;
+
+	$list = $cflk_links->get_list($list_id, $args);
+
+	if ($list != false) {
+		return apply_filters('cflk_get_links', $list->display());
+	}
+	else {
+		return '';
+	}
+} 
 	
-	function cflk_menu_items() {
-		if (current_user_can('manage_options')) {
-			add_options_page(
-				__('CF Links', 'cf-links')
-				, __('CF Links', 'cf-links')
-				, 10
-				, CFLK_BASENAME
-				, 'cflk_admin'
-			);
+// retain as accessor function? Not needed
+// function cflk_get_list_links($list) {} 
+
+// retain as accessor function? Not needed
+// function cflk_get_links_data($list_id) {} 
+
+function cflk_menu_items() {
+	if (current_user_can('manage_options')) {
+		add_options_page(
+			__('CF Links', 'cf-links')
+			, __('CF Links', 'cf-links')
+			, 10
+			, CFLK_BASENAME
+			, 'cflk_admin'
+		);
+	}
+}
+add_action('admin_menu','cflk_menu_items');
+
+
+function cflk_handle_shortcode($attrs, $content=null) {
+	// Check to make sure we have something to filter
+	if (is_array($attrs)) {
+		$key = '';
+		// Find the legacy value for the key
+		if (!empty($attrs['name'])) {
+			$key = stripslashes($attrs['name']);
+		}
+		// Find the key using the new method
+		else if (!empty($attrs['key'])) {
+			$key = stripslashes($attrs['key']);
+		}
+		
+		// Check to see if we have a key to search for and display
+		if (!empty($key)) {
+			return cflk_get_links($key);
 		}
 	}
-	add_action('admin_menu','cflk_menu_items');
-	
-	
-	function cflk_handle_shortcode($attrs, $content=null) {
-		// Check to make sure we have something to filter
-		if (is_array($attrs)) {
-			$key = '';
-			// Find the legacy value for the key
-			if (!empty($attrs['name'])) {
-				$key = stripslashes($attrs['name']);
-			}
-			// Find the key using the new method
-			else if (!empty($attrs['key'])) {
-				$key = stripslashes($attrs['key']);
-			}
-			
-			// Check to see if we have a key to search for and display
-			if (!empty($key)) {
-				return cflk_get_links($key);
-			}
-		}
-		return false;
-	}
-	add_shortcode('cflk', 'cflk_handle_shortcode');
-	// Legacy Shortcodes
-	add_shortcode('cflk_links', 'cflk_handle_shortcode');
-	add_shortcode('cfl_links', 'cflk_handle_shortcode');
+	return false;
+}
+add_shortcode('cflk', 'cflk_handle_shortcode');
+// Legacy Shortcodes
+add_shortcode('cflk_links', 'cflk_handle_shortcode');
+add_shortcode('cfl_links', 'cflk_handle_shortcode');
 	
 ## Functions
 
-	/**
-	 * Init the links object
-	 * Start an admin object when in the admin
-	 *
-	 * @return void
-	 */
-	function cflk_init() {
-		global $cflk_links;
-		if (is_admin()) {
-			$class = 'cflk_admin';
-		}
-		else {
-			$class = 'cflk_links';
-		}
-		$cflk_links = new $class();
+/**
+ * Init the links object
+ * Start an admin object when in the admin
+ *
+ * @return void
+ */
+function cflk_init() {
+	global $cflk_links;
+	if (is_admin()) {
+		$class = 'cflk_admin';
+	}
+	else {
+		$class = 'cflk_links';
+	}
+	$cflk_links = new $class();
 
-		if (defined('MULTISITE') && MULTISITE && class_exists('cflk_reference')) {
-			$cflk_reference = new cflk_reference();
-		}
+	if (defined('MULTISITE') && MULTISITE && class_exists('cflk_reference')) {
+		$cflk_reference = new cflk_reference();
+	}
 
-		$cflk_links->import_included_link_types();
-	}
-	add_action('plugins_loaded','cflk_init',1);
-	
-	/**
-	 * Show the admin page
-	 * All page delegation done within the object
-	 */
-	function cflk_admin() {
-		global $cflk_links;
-		echo $cflk_links->admin();
-	}
-	
-	function cflk_register_link($classname) {
-		global $cflk_links;
-		return $cflk_links->register_link_type($classname);
-	}
+	$cflk_links->import_included_link_types();
+}
+add_action('plugins_loaded','cflk_init',1);
+
+/**
+ * Show the admin page
+ * All page delegation done within the object
+ */
+function cflk_admin() {
+	global $cflk_links;
+	echo $cflk_links->admin();
+}
+
+function cflk_register_link($classname) {
+	global $cflk_links;
+	return $cflk_links->register_link_type($classname);
+}
 	
 ## TinyMCE Functionality
 
-	function cflk_tinymce_dialog() {
-		global $cflk_links;
-		$lists = $cflk_links->_tinymce();
-		?>
-		<html>
-			<head>
-				<title><?php _e('Select CF Links List', 'cf-links'); ?></title>
-				<script type="text/javascript" src="<?php echo includes_url('js/jquery/jquery.js'); ?>"></script>
-				<script type="text/javascript" src="<?php echo includes_url('js/tinymce/tiny_mce_popup.js'); ?>"></script>
-				<script type="text/javascript" src="<?php echo includes_url('js/quicktags.js'); ?>"></script>
-				<script type="text/javascript">
-					;(function($) {
-						$(function() {
-							$(".cflk-list-link").live('click', function() {
-								var key = $(this).attr('rel');
-								cflk_insert(key);
-							});
+function cflk_tinymce_dialog() {
+	global $cflk_links;
+	$lists = $cflk_links->_tinymce();
+	?>
+	<html>
+		<head>
+			<title><?php _e('Select CF Links List', 'cf-links'); ?></title>
+			<script type="text/javascript" src="<?php echo includes_url('js/jquery/jquery.js'); ?>"></script>
+			<script type="text/javascript" src="<?php echo includes_url('js/tinymce/tiny_mce_popup.js'); ?>"></script>
+			<script type="text/javascript" src="<?php echo includes_url('js/quicktags.js'); ?>"></script>
+			<script type="text/javascript">
+				;(function($) {
+					$(function() {
+						$(".cflk-list-link").live('click', function() {
+							var key = $(this).attr('rel');
+							cflk_insert(key);
 						});
-						
-						function cflk_insert(key) {
-							tinyMCEPopup.execCommand("mceBeginUndoLevel");
-							tinyMCEPopup.execCommand("mceInsertContent", false, '<p>[cflk key="'+key+'"]</p>');
-							tinyMCEPopup.execCommand("mceEndUndoLevel");
-							tinyMCEPopup.close();
-							return false;
-						}
-					})(jQuery);
-				</script>
-			</head>
-			<body id="cflink">
-				<?php
-				if (!empty($lists)) {
-					echo '<p>'.__('Click on the Links List title below to add the shortcode to the content of the post.', 'cf-links').'</p>';
-					echo '<p>'.$lists.'</p>';
-				}
-				else {
-					echo '<p>'.__('No Links Lists have been setup.  Please create a Links List before proceeding.', 'cf-links').'</p>';
-				}
-				?>
-			</body>
-		</html>
-		<?php
-	}
-	
-	function cflk_tinymce_register_button($buttons) {
-		array_push($buttons, '|', "cfLinksBtn");
-		return $buttons;
-	}
-	
-	function cflk_tinymce_add_plugin($plugin_array) {
-		$plugin_array['cflinks'] = CFLK_PLUGIN_URL.'/js/editor_plugin.js';
-		return $plugin_array;
-	}
-	
-	function cflk_tinymce_add() {
-		// Don't bother doing this stuff if the current user lacks permissions
-		if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) { return; }
-
-		// Add only in Rich Editor mode
-		if (get_user_option('rich_editing') == 'true') {
-			add_filter("mce_external_plugins", "cflk_tinymce_add_plugin");
-			add_filter('mce_buttons', 'cflk_tinymce_register_button');
-		}
-		
-		// Get the Dialog Box Content based on $_GET var
-		if (!empty($_GET['cf_action'])) {
-			switch ($_GET['cf_action']) {
-				case 'cflk-dialog':
-					cflk_tinymce_dialog();
-					die();
-					break;
+					});
+					
+					function cflk_insert(key) {
+						tinyMCEPopup.execCommand("mceBeginUndoLevel");
+						tinyMCEPopup.execCommand("mceInsertContent", false, '<p>[cflk key="'+key+'"]</p>');
+						tinyMCEPopup.execCommand("mceEndUndoLevel");
+						tinyMCEPopup.close();
+						return false;
+					}
+				})(jQuery);
+			</script>
+		</head>
+		<body id="cflink">
+			<?php
+			if (!empty($lists)) {
+				echo '<p>'.__('Click on the Links List title below to add the shortcode to the content of the post.', 'cf-links').'</p>';
+				echo '<p>'.$lists.'</p>';
 			}
+			else {
+				echo '<p>'.__('No Links Lists have been setup.  Please create a Links List before proceeding.', 'cf-links').'</p>';
+			}
+			?>
+		</body>
+	</html>
+	<?php
+}
+
+function cflk_tinymce_register_button($buttons) {
+	array_push($buttons, '|', "cfLinksBtn");
+	return $buttons;
+}
+
+function cflk_tinymce_add_plugin($plugin_array) {
+	$plugin_array['cflinks'] = CFLK_PLUGIN_URL.'/js/editor_plugin.js';
+	return $plugin_array;
+}
+
+function cflk_tinymce_add() {
+	// Don't bother doing this stuff if the current user lacks permissions
+	if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) { return; }
+
+	// Add only in Rich Editor mode
+	if (get_user_option('rich_editing') == 'true') {
+		add_filter("mce_external_plugins", "cflk_tinymce_add_plugin");
+		add_filter('mce_buttons', 'cflk_tinymce_register_button');
+	}
+	
+	// Get the Dialog Box Content based on $_GET var
+	if (!empty($_GET['cf_action'])) {
+		switch ($_GET['cf_action']) {
+			case 'cflk-dialog':
+				cflk_tinymce_dialog();
+				die();
+				break;
 		}
 	}
-	add_action('init', 'cflk_tinymce_add');
+}
+add_action('init', 'cflk_tinymce_add');
 	
 ## Auxiliary
 

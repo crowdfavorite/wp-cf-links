@@ -117,11 +117,8 @@ class cflk_link_author extends cflk_link_base {
 	}
 
 	function author_exists($id) {
-		if ($id != 0) {
-			$details = get_author_name($id);
-			if (!empty($details)) {
-				return true;
-			}
+		if ($id != 0 && $details = get_author_meta('display_name', $id)) {
+			return true;
 		}
 		return false;
 	}

@@ -120,8 +120,8 @@ class cflk_link_category extends cflk_link_base {
 	}
 	
 	function category_exists($id) {
-		if ($id != 0) {
-			
+		if ($id != 0 && $category = get_category($id)) {
+			return true;
 		}
 		return false;
 	}

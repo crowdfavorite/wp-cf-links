@@ -119,11 +119,8 @@ class cflk_link_page extends cflk_link_base {
 	}
 	
 	function page_exists($id) {
-		if ($id != 0) {
-			$details = get_the_title($id);
-			if (!empty($details)) {
-				return true;
-			}
+		if ($id != 0 && $details = get_the_title($id)) {
+			return true;
 		}
 		return false;
 	}

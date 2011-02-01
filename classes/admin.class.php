@@ -331,6 +331,9 @@ class cflk_admin extends cflk_links {
 			</script>
 			';
 		}
+
+		//  Provide the ability to filter in options from other plugins and themes
+		$html .= apply_filters('cflk_edit', '', $list_id);
 		
 		$html .= $this->admin_wrapper_close();
 		return $html;
@@ -1181,6 +1184,9 @@ class cflk_admin extends cflk_links {
 })(jQuery);
 ';
 		}
+		
+		// Filter the Admin JS so others can add functionality as well
+		$js .= apply_filters('cflk_admin_js', '');
 		
 		header('content-type: application/javascript');
 		echo $js;

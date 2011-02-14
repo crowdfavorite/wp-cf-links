@@ -37,7 +37,21 @@ class cflk_link_base {
 		if (empty($data['link']) && empty($data['title'])) {
 			return '';
 		}
-		return (!empty($data['link']) ? '<a href="'.$data['link'].'">' : '').(!empty($data['title']) ? $data['title'] : $data['link']).(!empty($data['link']) ? '</a>' : '');
+		$link = '';
+		if (!empty($data['link'])) {
+			$link .= '<a href="'.$data['link'].'">';
+			if (!empty($data['title'])) {
+				$link .= $data['title'];
+			}
+			else {
+				$link .= $data['link'];
+			}
+			$link .= '</a>';
+		}
+		else if (!empty($data['title'])) {
+			$link .= $data['title'];
+		}
+		return $link;
 	}
 	
 	/**

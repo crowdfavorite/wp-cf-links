@@ -8,7 +8,7 @@ class cflk_link_rss extends cflk_link {
 	}
 	
 	function display($data) {
-		$data['title'] = '<img src="'.CFLK_PLUGIN_URL.'/images/feed-icon-16x16.png" title="rss"> '.$data['title'];
+		$data['title'] = '<img src="'.CFLK_PLUGIN_URL.'/images/feed-icon-16x16.png" title="rss" /> '.$data['title'];
 		return parent::display($data);
 	}
 }

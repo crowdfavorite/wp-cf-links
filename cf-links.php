@@ -12,34 +12,34 @@ load_plugin_textdomain('cf-links');
 
 ## Constants
 
-	define('CFLK_PLUGIN_VERS','2.0');
-	define('CFLK_BASENAME',basename(__FILE__,'.php'));
-	define('CFLK_PLUGIN_DIR',trailingslashit(WP_PLUGIN_DIR).CFLK_BASENAME);
-	define('CFLK_PLUGIN_URL',trailingslashit(WP_PLUGIN_URL).CFLK_BASENAME);
+define('CFLK_PLUGIN_VERS','2.0');
+define('CFLK_BASENAME',basename(__FILE__,'.php'));
+define('CFLK_PLUGIN_DIR',trailingslashit(WP_PLUGIN_DIR).CFLK_BASENAME);
+define('CFLK_PLUGIN_URL',trailingslashit(WP_PLUGIN_URL).CFLK_BASENAME);
 	
 ## Includes
 
-	include('lib/cf-json/cf-json.php');
-	include('classes/message.class.php');
-	include('classes/list.class.php');
-	include('classes/cf-links.class.php');
-	include('classes/link.class.php');
-	include('classes/widget.class.php');
-	if (is_admin()) {
-		include('classes/error.class.php');
-		include('classes/admin.class.php');
-	}
+include('lib/cf-json/cf-json.php');
+include('classes/message.class.php');
+include('classes/list.class.php');
+include('classes/cf-links.class.php');
+include('classes/link.class.php');
+include('classes/widget.class.php');
+if (is_admin()) {
+	include('classes/error.class.php');
+	include('classes/admin.class.php');
+}
 	
-	// Include the Reference class if we are in the admin and in a multisite environment
-	if (defined('MULTISITE') && MULTISITE) {
-		include('classes/reference.class.php');
-	}
-	
-	wp_enqueue_script('jquery');
-	wp_enqueue_script('jquery-ui-draggable');
-	wp_enqueue_script('jquery-ui-droppable');
-	wp_enqueue_script('jquery-ui-sortable');
-	wp_enqueue_script('postbox');
+// Include the Reference class if we are in the admin and in a multisite environment
+if (defined('MULTISITE') && MULTISITE) {
+	include('classes/reference.class.php');
+}
+
+wp_enqueue_script('jquery');
+wp_enqueue_script('jquery-ui-draggable');
+wp_enqueue_script('jquery-ui-droppable');
+wp_enqueue_script('jquery-ui-sortable');
+wp_enqueue_script('postbox');
 	
 	
 ## Testing Includes

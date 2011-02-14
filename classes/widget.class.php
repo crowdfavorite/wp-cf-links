@@ -6,8 +6,8 @@
  */
 class cflk_widget extends WP_Widget {
 	function cflk_widget() {
-		$widget_ops = array('classname' => 'cflk-wiget', 'description' => __('Widget for displaying CF Links lists.', 'cf-links'));
-		$this->WP_Widget('cflk-wiget', __('CF Links', 'cf-links'), $widget_ops);
+		$widget_ops = array('classname' => 'cflk-widget', 'description' => __('Widget for displaying CF Links lists.', 'cf-links'));
+		$this->WP_Widget('cflk-widget', __('CF Links', 'cf-links'), $widget_ops);
 	}
 
 	function widget($args, $instance) {

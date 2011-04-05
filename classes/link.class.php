@@ -37,6 +37,11 @@ class cflk_link_base {
 		if (empty($data['link']) && empty($data['title'])) {
 			return '';
 		}
+		if ($data['type'] == 'link' || $data['type'] == 'rss') {
+			
+			error_log(__FUNCTION__.'-top || data');
+			error_log(print_r($data, true));
+		}
 		$link = '';
 		if (!empty($data['link'])) {
 			$link .= '<a href="'.$data['link'].'">';
@@ -79,6 +84,10 @@ class cflk_link_base {
 
 	function _display($data) {
 		$data['class'] = $this->id_base.$this->id.' '.$this->get_unique_class($data);
+if ($data['type'] == 'rss') {
+	error_log(__FUNCTION__.'-top | data');
+	error_log(print_r($data, true));
+}
 		$link = apply_filters('cflk-link-'.$this->id.'-item', $this->display($data), $data);
 		$link_data = array(
 			'link' => $link,

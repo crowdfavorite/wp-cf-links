@@ -48,7 +48,7 @@ class cflk_link extends cflk_link_base {
 	
 	function admin_form($data) {
 		return '
-			<div class="elm-block elm-width-200">
+			<div class="elm-block elm-width-330">
 				<label>'.__('Link (include', 'cf-links').' <code>http://</code>)</label>
 				<input type="text" name="link" value="'.strip_tags(stripslashes($data['link'])).'" class="elm-text" />
 			</div>

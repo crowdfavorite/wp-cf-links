@@ -13,14 +13,14 @@
 			return false;
 		});
 		jQuery('tr.tr_holder').each(function() {
-			jQuery('#message_import_problem').attr('style','');
+			jQuery('#message_import_problem').show();
 		});
 	});
 	function deleteLink(cflk_key,linkID) {
 		if (confirm('Are you sure you want to delete this?')) {
 			if (cflkAJAXDeleteLink(cflk_key,linkID)) {
 				jQuery('#listitem_'+linkID).remove();
-				jQuery("#message_delete").attr("style","");
+				jQuery("#message_delete").show();
 				cflk_levels_refactor();
 			}
 			return false;
@@ -36,22 +36,22 @@
 		if (confirm('Are you sure you want to delete this?')) {
 			if (cflkAJAXDeleteMain(cflk_key)) {
 				jQuery('#link_main_'+cflk_key).remove();
-				jQuery("#message_delete").attr("style","");
+				jQuery("#message_delete").show();
 			}
 			return false;
 		}
 	}
 	function editNicename() {
-		jQuery('#cflk_nicename_h3').attr('style','display: none;');
-		jQuery('#cflk_nicename_input').attr('style','');
+		jQuery('#cflk_nicename_h3').hide();
+		jQuery('#cflk_nicename_input').show();
 	}
 	function cancelNicename() {
-		jQuery('#cflk_nicename_input').attr('style','display: none;');
-		jQuery('#cflk_nicename_h3').attr('style','');
+		jQuery('#cflk_nicename_input').hide();
+		jQuery('#cflk_nicename_h3').show();
 	}
 	function saveNicename(cflk_key) {
 		if (cflkAJAXSaveNicename(cflk_key, jQuery("#cflk_nicename_new").val())) {
-			jQuery("#message").attr("style","");
+			jQuery("#message").show();
 			jQuery("#cflk_nicename_text").text(jQuery("#cflk_nicename_new").val());
 			jQuery("#cflk_nicename").text(jQuery("#cflk_nicename_new").val());
 			jQuery("#cflk_nicename_h2").text(jQuery("#cflk_nicename_new").val());
@@ -59,29 +59,29 @@
 		}
 	}
 	function editTitle(key) {
-		jQuery('#cflk_'+key+'_title_edit').attr('style','display: none;');
-		jQuery('#cflk_'+key+'_title_input').attr('style','');
+		jQuery('#cflk_'+key+'_title_edit').hide();
+		jQuery('#cflk_'+key+'_title_input').show();
 	}
 	function clearTitle(key) {
-		jQuery('#cflk_'+key+'_title_input').attr('style','display: none;');
-		jQuery('#cflk_'+key+'_title_edit').attr('style','');
+		jQuery('#cflk_'+key+'_title_input').hide();
+		jQuery('#cflk_'+key+'_title_edit').show();
 		jQuery('#cflk_'+key+'_title').val('');
 	}
 	function editDescription() {
-		jQuery('#description_text').attr('style', 'display:none;');
-		jQuery('#description_edit').attr('style', '');
-		jQuery('#description_edit_btn').attr('style', 'display:none;');
-		jQuery('#description_cancel_btn').attr('style', '');
+		jQuery('#description_text').hide();
+		jQuery('#description_edit').show();
+		jQuery('#description_edit_btn').hide();
+		jQuery('#description_cancel_btn').show();
 	}
 	function cancelDescription() {
-		jQuery('#description_text').attr('style', '');
-		jQuery('#description_edit').attr('style', 'display:none;');
-		jQuery('#description_edit_btn').attr('style', '');
-		jQuery('#description_cancel_btn').attr('style', 'display:none;');
+		jQuery('#description_text').show();
+		jQuery('#description_edit').hide();
+		jQuery('#description_edit_btn').show();
+		jQuery('#description_cancel_btn').hide();
 	}
 	function showLinkType(key) {
 		var type = jQuery('#cflk_'+key+'_type option:selected').val();
-		jQuery('#'+type+'_'+key).attr('style','').siblings().attr('style','display: none;');
+		jQuery('#'+type+'_'+key).show().siblings().hide();
 	}
 	function showLinkCode(key) {
 		jQuery('#'+key).slideToggle();
@@ -92,7 +92,8 @@
 		
 		var html = jQuery('#newitem_SECTION').html().replace(/###SECTION###/g, section);
 		jQuery('#cflk-list').append(html);
-		jQuery('#listitem_'+section).attr('style','').find('td.link-value span:first-child').attr('style','');
+
+		jQuery('#listitem_'+section).show().find('td.link-value span:first-child').show();
 
 		// activates level indent buttons
 		cflk_set_level_buttons('listitem_'+section); 
@@ -236,4 +237,37 @@
 				select_container = null; // possibly feeble attempt at keeping memory use low
 				container.show();
 			});
+	}
+	
+	
+	// AJAX Functions
+	
+	function cflkAJAXDeleteLink(cflk_key, key) {
+		var url = jQuery("#cflk-form").attr('action');
+        
+		jQuery.post(url, {
+			cf_action: 'cflk_delete_key',
+			key: key,
+			cflk_key: cflk_key
+		});
+		return true;
+	}
+	function cflkAJAXDeleteMain(cflk_key) {
+		var url = jQuery("#cflk-form").attr('action');
+        
+		jQuery.post(url, {
+			cf_action: 'cflk_delete',
+			cflk_key: cflk_key
+		});
+		return true;
+	}
+	function cflkAJAXSaveNicename(cflk_key, cflk_nicename) {
+		var url = jQuery("#cflk-form").attr('action');
+        
+		jQuery.post(url, {
+			cf_action: 'cflk_edit_nicename',
+			cflk_key: cflk_key,
+			cflk_nicename: cflk_nicename
+		});
+		return true;
 	}

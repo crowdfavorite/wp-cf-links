@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced tool for adding collections of links, including pages, posts, and external URLs.
-Version: 1.3.4
+Version: 1.3.5
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -267,15 +267,13 @@ function cflk_get_authors() {
 }
 
 function cflk_menu_items() {
-	if (current_user_can('manage_options')) {
-		add_options_page(
-			__('CF Links', 'cf-links')
-			, __('CF Links', 'cf-links')
-			, 'administrator'
-			, basename(__FILE__)
-			, 'cflk_check_page'
-		);
-	}
+	add_options_page(
+		__('CF Links', 'cf-links')
+		, __('CF Links', 'cf-links')
+		, 10
+		, basename(__FILE__)
+		, 'cflk_check_page'
+	);
 }
 add_action('admin_menu', 'cflk_menu_items');
 
@@ -392,59 +390,6 @@ function cflk_request_handler() {
 add_action('init', 'cflk_request_handler');
 add_action('wp_ajax_cflk_update_settings', 'cflk_request_handler');
 
-function cflk_ajax() {
-	wp_print_scripts(array('sack'));
-	$blogurl = '';
-	if (is_ssl()) {
-		$blogurl = str_replace('http://','https://',get_bloginfo('wpurl'));
-	}
-	else {
-		$blogurl = get_bloginfo('wpurl');
-	}		
-	?>
-	<script type="text/javascript">
-		//<![CDATA[
-		// @TODO keep the unique functions for unique functionality, but take repeated code and move it to a separate function that each of these functions then pass config variables to
-		function cflkAJAXDeleteLink(cflk_key,key) {
-			var cflk_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
-			cflk_sack.execute = 1;
-			cflk_sack.method = 'POST';
-			cflk_sack.setVar('cf_action', 'cflk_delete_key');
-			cflk_sack.setVar('key', key);
-			cflk_sack.setVar('cflk_key', cflk_key);
-			cflk_sack.encVar('cookie', document.cookie, false);
-			cflk_sack.onError = function() {alert('AJAX error in updating settings.  Please click update button below to save your settings.');};
-			cflk_sack.runAJAX();
-			return true;
-		}
-		function cflkAJAXDeleteMain(cflk_key) {
-			var cflk_main_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
-			cflk_main_sack.execute = 1;
-			cflk_main_sack.method = 'POST';
-			cflk_main_sack.setVar('cf_action', 'cflk_delete');
-			cflk_main_sack.setVar('cflk_key', cflk_key);
-			cflk_main_sack.encVar('cookie', document.cookie, false);
-			cflk_main_sack.onError = function() {alert('AJAX error in updating settings.  Please click update button below to save your settings.');};
-			cflk_main_sack.runAJAX();
-			return true;
-		}
-		function cflkAJAXSaveNicename(cflk_key, cflk_nicename) {
-			var cflk_nicename_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
-			cflk_nicename_sack.execute = 1
-			cflk_nicename_sack.method = 'POST';
-			cflk_nicename_sack.setVar('cf_action', 'cflk_edit_nicename');
-			cflk_nicename_sack.setVar('cflk_key', cflk_key);
-			cflk_nicename_sack.setVar('cflk_nicename', cflk_nicename);
-			cflk_nicename_sack.encVar('cookie', document.cookie, false);
-			cflk_nicename_sack.onError = function() {alert('AJAX error in updating settings.  Please click update button below to save your settings.');};
-			cflk_nicename_sack.runAJAX();
-			return true;
-		}
-		//]]>
-	</script>
-	<?php
-}
-
 function cflk_admin_css() {
 	header('Content-type: text/css');
 	echo file_get_contents(CFLK_DIR.'css/admin.css');
@@ -498,7 +443,6 @@ if (isset($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	    add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );
 	}	
 	add_action('admin_head', 'cflk_admin_head');
-	add_action('admin_print_scripts', 'cflk_ajax');
 }
 
 /**
@@ -538,7 +482,7 @@ function cflk_options_form() {
 	print ('
 		<div class="wrap">
 			'.cflk_nav('main').'
-			<form action="" method="post" id="cflk-form">
+			<form action="'.admin_url().'" method="post" id="cflk-form">
 				<table class="widefat">
 					<thead>
 						<tr>
@@ -698,7 +642,7 @@ function cflk_edit() {
 				<p>'.__('A problem has been detected while using the import.  Please see highlighted items below to fix.', 'cf-links').'</p>
 			</div>			
 			<div class="wrap">
-				<form action="" method="post" id="cflk-form">
+				<form action="'.admin_url().'" method="post" id="cflk-form">
 					'.cflk_nav('edit', htmlspecialchars($cflk['nicename'])).'
 					<table class="widefat" style="margin-bottom: 10px;">
 						<thead>

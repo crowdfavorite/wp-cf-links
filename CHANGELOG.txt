@@ -2,7 +2,7 @@
 
 ## 1.3.5
 
-- Fixing JS Issues
+- Bug fixes with JS and PHP
 
 ## 1.3.4
 

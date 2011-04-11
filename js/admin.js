@@ -15,6 +15,18 @@
 		jQuery('tr.tr_holder').each(function() {
 			jQuery('#message_import_problem').show();
 		});
+		
+		jQuery('.cflk_edit_link').live('click', function(e) {
+			editNicename();
+			e.preventDefault();
+		});
+		
+		jQuery("#cflk-nicename-submit").live('click', function() {
+			var cflk_key = jQuery("input[name=cflk_key]").val();
+			var cflk_nicename_value = jQuery("input[name=cflk_nicename]").val();
+			cflkAJAXSaveNicename(cflk_key, cflk_nicename_value);
+			return false;
+		});
 	});
 	function deleteLink(cflk_key,linkID) {
 		if (confirm('Are you sure you want to delete this?')) {
@@ -43,20 +55,15 @@
 	}
 	function editNicename() {
 		jQuery('#cflk_nicename_h3').hide();
+		jQuery(".cflk_edit_link").hide();
 		jQuery('#cflk_nicename_input').show();
+		jQuery("#cflk_nicename").focus().select();
+		return false;
 	}
 	function cancelNicename() {
 		jQuery('#cflk_nicename_input').hide();
 		jQuery('#cflk_nicename_h3').show();
-	}
-	function saveNicename(cflk_key) {
-		if (cflkAJAXSaveNicename(cflk_key, jQuery("#cflk_nicename_new").val())) {
-			jQuery("#message").show();
-			jQuery("#cflk_nicename_text").text(jQuery("#cflk_nicename_new").val());
-			jQuery("#cflk_nicename").text(jQuery("#cflk_nicename_new").val());
-			jQuery("#cflk_nicename_h2").text(jQuery("#cflk_nicename_new").val());
-			cancelNicename();
-		}
+		jQuery(".cflk_edit_link").show();
 	}
 	function editTitle(key) {
 		jQuery('#cflk_'+key+'_title_edit').hide();
@@ -263,11 +270,15 @@
 	}
 	function cflkAJAXSaveNicename(cflk_key, cflk_nicename) {
 		var url = jQuery("#cflk-form").attr('action');
-        
 		jQuery.post(url, {
 			cf_action: 'cflk_edit_nicename',
 			cflk_key: cflk_key,
 			cflk_nicename: cflk_nicename
 		});
-		return true;
+		jQuery("#cflk_nicename_text").text(cflk_nicename);
+		jQuery("#cflk_nicename").val(cflk_nicename);
+		jQuery("#cflk_nicename_h3").text(cflk_nicename);
+		jQuery("#message").show();
+		cancelNicename();
+		return false;
 	}

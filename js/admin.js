@@ -77,6 +77,7 @@
 	function editDescription() {
 		jQuery('#description_text').hide();
 		jQuery('#description_edit').show();
+		jQuery("textarea[name=cflk_description]").focus().select();
 		jQuery('#description_edit_btn').hide();
 		jQuery('#description_cancel_btn').show();
 	}

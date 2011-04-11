@@ -303,33 +303,29 @@ function cflk_check_page() {
 
 function cflk_request_handler() {
 	if (current_user_can('manage_options')) {
-		$blogurl = '';
-		if (is_ssl()) {
-			$blogurl = str_replace('http://','https://',get_bloginfo('wpurl'));
-		}
-		else {
-			$blogurl = get_bloginfo('wpurl');
-		}		
-		if (isset($_POST['cf_action']) && $_POST['cf_action'] != '') {
+		if (!empty($_POST['cf_action'])) {
 			switch ($_POST['cf_action']) {
 				case 'cflk_update_settings':
-					if (isset($_POST['cflk'])) {
+					if (!empty($_POST['cflk'])) {
 						$link_data = stripslashes_deep($_POST['cflk']);
 						if (isset($_POST['cflk_key']) && $_POST['cflk_key'] != '' && isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
 							cflk_process($link_data, $_POST['cflk_key'], $_POST['cflk_nicename'], $_POST['cflk_description'], $_POST['cflk_reference_children']);
 						}
-						wp_redirect($blogurl.'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$_POST['cflk_key'].'&cflk_message=updated');
 					}
+					wp_redirect(admin_url('options-general.php?page=cf-links.php&cflk_page=edit&link='.urlencode($_POST['cflk_key']).'&cflk_message=updated'));
+					die();
 					break;
 				case 'cflk_delete':
 					if (isset($_POST['cflk_key']) && $_POST['cflk_key'] != '') {
 						cflk_delete($_POST['cflk_key']);
 					}
+					die();
 					break;
 				case 'cflk_delete_key':
 					if (isset($_POST['cflk_key']) && isset($_POST['key']) && $_POST['cflk_key'] != '' && $_POST['key'] != '') {
 						cflk_delete_key($_POST['cflk_key'], $_POST['key']);
 					}
+					die();
 					break;
 				case 'cflk_insert_new':
 					$nicename = '';
@@ -353,12 +349,14 @@ function cflk_request_handler() {
 					if ($nicename != '' && is_array($data)) {
 						$cflk_key = cflk_insert_new($nicename, $description, $data);
 					}
-					wp_redirect($blogurl.'/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link='.$cflk_key);
+					wp_redirect(admin_url('options-general.php?page=cf-links.php&cflk_page=edit&link='.$cflk_key));
+					die();
 					break;
 				case 'cflk_edit_nicename':
-					if (isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '' && isset($_POST['cflk_key']) && $_POST['cflk_key'] != '') {
+					if (!empty($_POST['cflk_nicename']) && !empty($_POST['cflk_key'])) {
 						cflk_edit_nicename($_POST['cflk_key'], $_POST['cflk_nicename']);
 					}
+					die();
 					break;
 				case 'cflk_insert_reference':
 					if (isset($_POST['cflk_reference_list']) && $_POST['cflk_reference_list'] != '') {
@@ -715,14 +713,10 @@ function cflk_edit() {
 			$cflk['reference'] = false;
 		}
 		
-		if ( isset($_GET['cflk_message']) && $_GET['cflk_message'] = 'updated' ) {
-			print ('
-				<div id="message" class="updated fade">
-					<p>'.__('Settings updated.', 'cf-links').'</p>
-				</div>
-			');
-		}
 		print ('
+			<div id="message" class="updated fade"'.(!empty($_GET['cflk_message']) ? '' : ' style="display:none;"').'>
+				<p>'.__('Settings updated.', 'cf-links').'</p>
+			</div>
 			<div id="message_delete" class="updated fade" style="display: none;">
 				<p>'.__('Link deleted.', 'cf-links').'</p>
 			</div>			
@@ -1083,12 +1077,12 @@ function cflk_nav($page = '', $list = '', $reference = '') {
 		$cflk_nav .= '<h3 style="clear:both;">'.__('Links Options', 'cf-links');
 		$cflk_nav .= ' '.__('for: ','cf-links').'<span id="cflk_nicename_h3">'.$list.' ';
 		if (!$reference) {
-			$cflk_nav .= '<a href="#" class="cflk_edit_link" onClick="editNicename()">Edit</a></span>';
+			$cflk_nav .= '</span>&nbsp;<a href="#" class="cflk_edit_link">Edit</a>';
 			$cflk_nav .= '<span id="cflk_nicename_input" style="display: none;">
-								<input type="text" name="cflk_nicename" id="cflk_nicename" value="'.attribute_escape($list).'" />
-								<input type="submit" name="submit" id="cflk-submit" class="button" value="'.__('Save', 'cf-links').'" />
-								<input type="button" name="link_nicename_cancel" id="link_nicename_cancel" class="button" value="'.__('Cancel', 'cf-links').'" onClick="cancelNicename()" />					
-							</span>';
+				<input type="text" name="cflk_nicename" id="cflk_nicename" value="'.attribute_escape($list).'" />
+				<input type="button" name="cflk-nicename-submit" id="cflk-nicename-submit" class="button" value="'.__('Save', 'cf-links').'" />
+				<input type="button" name="link_nicename_cancel" id="link_nicename_cancel" class="button" value="'.__('Cancel', 'cf-links').'" onClick="cancelNicename()" />					
+			</span>';
 		}
 		else {
 			$cflk_nav .= '</span>';

@@ -306,11 +306,12 @@ function cflk_request_handler() {
 		if (!empty($_POST['cf_action'])) {
 			switch ($_POST['cf_action']) {
 				case 'cflk_update_settings':
-					if (!empty($_POST['cflk'])) {
+					$link_data = array(); 
+					if (!empty($_POST['cflk']) && is_array($_POST['cflk'])) {
 						$link_data = stripslashes_deep($_POST['cflk']);
-						if (isset($_POST['cflk_key']) && $_POST['cflk_key'] != '' && isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
-							cflk_process($link_data, $_POST['cflk_key'], $_POST['cflk_nicename'], $_POST['cflk_description']);
-						}
+					}
+					if (isset($_POST['cflk_key']) && $_POST['cflk_key'] != '' && isset($_POST['cflk_nicename']) && $_POST['cflk_nicename'] != '') {
+						cflk_process($link_data, $_POST['cflk_key'], $_POST['cflk_nicename'], $_POST['cflk_description']);
 					}
 					wp_redirect(admin_url('options-general.php?page=cf-links.php&cflk_page=edit&link='.urlencode($_POST['cflk_key']).'&cflk_message=updated'));
 					die();

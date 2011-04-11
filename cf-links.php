@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced options for adding links
-Version: 1.2.1 (Reference)
+Version: 1.3 (Reference)
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -149,7 +149,7 @@ function cflk_link_types() {
 		if (is_array($sites) && count($sites)) {
 			foreach ($sites as $site) {
 				$site_id = $site['id'];
-				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '$site_id' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);
+				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '".$wpdb->escape($site_id)."' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);
 				
 				if (is_array($blogs)) {
 					foreach ($blogs as $blog) {
@@ -267,15 +267,13 @@ function cflk_get_authors() {
 }
 
 function cflk_menu_items() {
-	if (current_user_can('manage_options')) {
-		add_options_page(
-			__('CF Links', 'cf-links')
-			, __('CF Links', 'cf-links')
-			, 10
-			, basename(__FILE__)
-			, 'cflk_check_page'
-		);
-	}
+	add_options_page(
+		__('CF Links', 'cf-links')
+		, __('CF Links', 'cf-links')
+		, 10
+		, basename(__FILE__)
+		, 'cflk_check_page'
+	);
 }
 add_action('admin_menu', 'cflk_menu_items');
 
@@ -403,151 +401,10 @@ function cflk_request_handler() {
 add_action('init', 'cflk_request_handler');
 add_action('wp_ajax_cflk_update_settings', 'cflk_request_handler');
 
-function cflk_ajax() {
-	wp_print_scripts(array('sack'));
-	$blogurl = '';
-	if (is_ssl()) {
-		$blogurl = str_replace('http://','https://',get_bloginfo('wpurl'));
-	}
-	else {
-		$blogurl = get_bloginfo('wpurl');
-	}		
-	?>
-	<script type="text/javascript">
-		//<![CDATA[
-		// @TODO keep the unique functions for unique functionality, but take repeated code and move it to a separate function that each of these functions then pass config variables to
-		function cflkAJAXDeleteLink(cflk_key,key) {
-			var cflk_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
-			cflk_sack.execute = 1;
-			cflk_sack.method = 'POST';
-			cflk_sack.setVar('cf_action', 'cflk_delete_key');
-			cflk_sack.setVar('key', key);
-			cflk_sack.setVar('cflk_key', cflk_key);
-			cflk_sack.encVar('cookie', document.cookie, false);
-			cflk_sack.onError = function() {alert('AJAX error in updating settings.  Please click update button below to save your settings.');};
-			cflk_sack.runAJAX();
-			return true;
-		}
-		function cflkAJAXDeleteMain(cflk_key) {
-			var cflk_main_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
-			cflk_main_sack.execute = 1;
-			cflk_main_sack.method = 'POST';
-			cflk_main_sack.setVar('cf_action', 'cflk_delete');
-			cflk_main_sack.setVar('cflk_key', cflk_key);
-			cflk_main_sack.encVar('cookie', document.cookie, false);
-			cflk_main_sack.onError = function() {alert('AJAX error in updating settings.  Please click update button below to save your settings.');};
-			cflk_main_sack.runAJAX();
-			return true;
-		}
-		function cflkAJAXSaveNicename(cflk_key, cflk_nicename) {
-			var cflk_nicename_sack = new sack("<?php echo $blogurl; ?>/wp-admin/admin-ajax.php");
-			cflk_nicename_sack.execute = 1
-			cflk_nicename_sack.method = 'POST';
-			cflk_nicename_sack.setVar('cf_action', 'cflk_edit_nicename');
-			cflk_nicename_sack.setVar('cflk_key', cflk_key);
-			cflk_nicename_sack.setVar('cflk_nicename', cflk_nicename);
-			cflk_nicename_sack.encVar('cookie', document.cookie, false);
-			cflk_nicename_sack.onError = function() {alert('AJAX error in updating settings.  Please click update button below to save your settings.');};
-			cflk_nicename_sack.runAJAX();
-			return true;
-		}
-		//]]>
-	</script>
-	<?php
-}
-add_action('admin_print_scripts', 'cflk_ajax');
-
 function cflk_admin_css() {
 	header('Content-type: text/css');
-	?>
-	#cflk-list { list-style: none; padding: 0; margin: 0; }
-	#cflk-list li { margin: 0; padding: 0; }
-	#cflk-list .handle { cursor: move; }
-	#cflk-log { padding: 5px; border: 1px solid #ccc; }
-	.cflk-info { list-style: none; }
-	.cflk_edit_link {
-		font-size: 10px;
-		font-weight: normal;
-	}
-	.cflk-codebox {
-		padding: 10px;
-		background-color: #E4F2FD;
-		border: 1px solid #C6D9E9;
-	}
-	.tr_holder {
-		background-color: #FFF07E;
-	}
-	/* a little nicity for browsers that understand it */
-	#cflk-list li table.widefat tr:hover td {
-		background-color: #eee;
-	}
-/* Link levels */
-	#cflk-form th,
-	#cflk-form td {
-
-	}
-	th.link-order,
-	td.link-order {
-		width: 40px;
-	}
-	th.link-type,
-	td.link-type {
-		width: 100px;
-		text-align: center;
-	}
-	th.link-level,
-	td.link-level {
-		width: 25px;
-		text-align: center;
-	}
-	td.link-level div {
-		margin: 0;
-		padding: 0;
-	}
-	th.link-value,
-	td.link-value {
-		
-	}
-	th.link-text,
-	td.link-text {
-		width: 200px;
-	}
-	th.link-open-new,
-	td.link-open-new {
-		width: 85px;
-	}
-	th.link-delete,
-	td.link-delete {
-		width: 70px;
-		text-align: center;
-	}
-	#cflk-list button.level-decrement,
-	#cflk-list button.level-increment {
-		float: left;
-		border: 1px solid gray;
-		background: #f1f1f1 url(/wp-admin/images/gray-grad.png) 0 0 repeat-x;
-		cursor: pointer;
-		-moz-border-radius: 4px;
-		-khtml-border-radius: 4px;
-		-webkit-border-radius: 4px;
-		border-radius: 4px;
-	}
-	#cflk-list button.disabled {
-		cursor: default;
-	}
-	#cflk-list { background-color: #f1f1f1; }
-	#cflk-list button.level-increment { clear: left; }
-	#cflk-list li.level-0 { margin-left: 0; }
-	#cflk-list li.level-1 { margin-left: 1em; }
-	#cflk-list li.level-2 { margin-left: 2em; }
-	#cflk-list li.level-3 { margin-left: 3em; }
-	#cflk-list li.level-4 { margin-left: 4em; }
-	#cflk-list li.level-5 { margin-left: 5em; }
-	#cflk-list li.level-6 { margin-left: 6em; }
-	#cflk-list li.level-7 { margin-left: 7em; }
-	#cflk-list li.level-8 { margin-left: 8em; }
-	#cflk-list li.level-9 { margin-left: 9em; }
-	<?php
+	echo file_get_contents(CFLK_DIR.'css/admin.css');
+	echo apply_filters('cflk_admin_css', '');
 	exit();
 }
 
@@ -567,213 +424,8 @@ function cflk_front_js() {
 
 function cflk_admin_js() {
 	header('Content-type: text/javascript');
-?>
-// When the document is ready set up our sortable with its inherant function(s)
-	jQuery(document).ready(function() {
-		jQuery("#cflk-list").sortable({
-			handle : ".handle",
-			update : function () {
-				jQuery("input#cflk-log").val(jQuery("#cflk-list").sortable("serialize"));
-			},
-			containment: 'window',
-			opacity: 0.5,
-			stop: cflk_levels_refactor
-		});
-		jQuery('input[name="link_edit"]').click(function() {
-			location.href = "<?php echo get_bloginfo('wpurl'); ?>/wp-admin/options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
-			return false;
-		});
-		jQuery('tr.tr_holder').each(function() {
-			jQuery('#message_import_problem').attr('style','');
-		});
-	});
-	function deleteLink(cflk_key,linkID) {
-		if (confirm('Are you sure you want to delete this?')) {
-			if (cflkAJAXDeleteLink(cflk_key,linkID)) {
-				jQuery('#listitem_'+linkID).remove();
-				jQuery("#message_delete").attr("style","");
-				cflk_levels_refactor();
-			}
-			return false;
-		}
-	}
-	function deleteCreated(linkID) {
-		if (confirm('Are you sure you want to delete this?')) {
-			jQuery('#listitem_'+linkID).remove();
-			return false;
-		}
-	}
-	function deleteMain(cflk_key) {
-		if (confirm('Are you sure you want to delete this?')) {
-			if (cflkAJAXDeleteMain(cflk_key)) {
-				jQuery('#link_main_'+cflk_key).remove();
-				jQuery("#message_delete").attr("style","");
-			}
-			return false;
-		}
-	}
-	function editNicename() {
-		jQuery('#cflk_nicename_h3').attr('style','display: none;');
-		jQuery('#cflk_nicename_input').attr('style','');
-	}
-	function cancelNicename() {
-		jQuery('#cflk_nicename_input').attr('style','display: none;');
-		jQuery('#cflk_nicename_h3').attr('style','');
-	}
-	function saveNicename(cflk_key) {
-		if (cflkAJAXSaveNicename(cflk_key, jQuery("#cflk_nicename_new").val())) {
-			jQuery("#message").attr("style","");
-			jQuery("#cflk_nicename_text").text(jQuery("#cflk_nicename_new").val());
-			jQuery("#cflk_nicename").text(jQuery("#cflk_nicename_new").val());
-			jQuery("#cflk_nicename_h2").text(jQuery("#cflk_nicename_new").val());
-			cancelNicename();
-		}
-	}
-	function editTitle(key) {
-		jQuery('#cflk_'+key+'_title_edit').attr('style','display: none;');
-		jQuery('#cflk_'+key+'_title_input').attr('style','');
-	}
-	function clearTitle(key) {
-		jQuery('#cflk_'+key+'_title_input').attr('style','display: none;');
-		jQuery('#cflk_'+key+'_title_edit').attr('style','');
-		jQuery('#cflk_'+key+'_title').val('');
-	}
-	function editDescription() {
-		jQuery('#description_text').attr('style', 'display:none;');
-		jQuery('#description_edit').attr('style', '');
-		jQuery('#description_edit_btn').attr('style', 'display:none;');
-		jQuery('#description_cancel_btn').attr('style', '');
-	}
-	function cancelDescription() {
-		jQuery('#description_text').attr('style', '');
-		jQuery('#description_edit').attr('style', 'display:none;');
-		jQuery('#description_edit_btn').attr('style', '');
-		jQuery('#description_cancel_btn').attr('style', 'display:none;');
-	}
-	function showLinkType(key) {
-		var type = jQuery('#cflk_'+key+'_type option:selected').val();
-		jQuery('#'+type+'_'+key).attr('style','').siblings().attr('style','display: none;');
-	}
-	function showLinkCode(key) {
-		jQuery('#'+key).slideToggle();
-	}
-	function addLink() {
-		var id = new Date().valueOf();
-		var section = id.toString();
-		
-		var html = jQuery('#newitem_SECTION').html().replace(/###SECTION###/g, section);
-		jQuery('#cflk-list').append(html);
-		jQuery('#listitem_'+section).attr('style','').find('td.link-value span:first-child').attr('style','');
-
-		// activates level indent buttons
-		cflk_set_level_buttons('listitem_'+section); 
-		cflk_levels_refactor();
-	}
-	function changeExportList() {
-		var list = jQuery('#list-export').val();
-		var btn = jQuery('#cflk-export-btn');
-		btn.attr('alt', 'index.php?cflk_page=export&height=400&width=600&link='+list);	
-	}
-	
-// Link Level Functionality
-
-	// initialize the list for multiple levels
-	jQuery(function(){
-		// prep
-		cflk_set_level_buttons();
-		cflk_levels_refactor();
-	});
-
-	// initialize the level buttons
-	function cflk_set_level_buttons(parent_id) {
-		// add actions to the rest of the list-level modifiers
-		if(parent_id == undefined) {
-			parent_id = 'cflk-list';
-		}
-		jQuery('#' + parent_id + ' button.level-decrement, #' + parent_id + ' button.level-increment').click(function() {
-			clicked = jQuery(this);
-			target = clicked.parents('div').children('input');
-			item_id = clicked.parents('li').attr('id').replace('listitem_','');
-		
-			if (clicked.hasClass('level-increment') && cflk_can_increment_level(target)) {
-				cflk_update_link_level(target,+1);
-			}
-			else if (clicked.hasClass('level-decrement') && cflk_can_decrement_level(target)) {
-				cflk_update_link_level(target,-1);
-			}
-			cflk_levels_refactor();
-			return false;
-		});
-	}
-	
-	// toggle the buttons visible state for wether it can be used or not
-	function cflk_toggle_button_usability(current,blank_button) {
-		jQuery(current).find('td.link-level button').each(function(i){
-			_this = jQuery(this);
-			if(blank_button) {
-				_this.css('opacity',0).addClass('disabled');
-			}
-			else if(_this.hasClass('level-decrement') && !cflk_can_decrement_level(_this.parents('div').children('input'))) {
-				_this.css('opacity',0.25).addClass('disabled');
-			}
-			else if(_this.hasClass('level-increment') && !cflk_can_increment_level(_this.parents('div').children('input'))) {
-				_this.css('opacity',0.25).addClass('disabled');
-			}	
-			else {
-				_this.css('opacity',1).removeClass('disabled');
-			}	
-		});
-	}
-
-	// move the link
-	function cflk_update_link_level(obj,amount) {
-		obj.val(parseInt(obj.val())+amount);
-		obj.parents('li').attr('class','level-'+obj.val());
-	}
-
-	// figure out if the item is allowed to go indent
-	function cflk_can_increment_level(target) {
-		// make sure we are no more than 1 more than the previous sibling						
-		prev_value = parseInt(target.parents('li').prev().find('td.link-level input.link-level-input').val());
-		if(parseInt(target.val())+1 > prev_value+1) { return false; }
-		return true;
-	}
-
-	// figure out if the item is allowed to outdent
-	function cflk_can_decrement_level(target) {
-		if(target.val() == 0) { return false; }
-		return true;
-	}
-
-	// refactor the list levels so that nobody is more than 1 level deeper than its parent
-	function cflk_levels_refactor() {
-		jQuery('#cflk-list li').each(function(i){
-			current = jQuery(this);
-			var current_val = parseInt(current.find('td.link-level input.link-level-input').val());
-			// handle first row
-			if(i == 0) {
-				if(current_val > 0) {
-					cflk_update_link_level(current.find('td.link-level input.link-level-input'),'-' + parseInt(current_val)+1);
-					current.find('td.link-level input.link-level-input').val(0);
-				}
-				cflk_toggle_button_usability(current,true);
-				prev = current;
-				return; 
-			}
-			
-			// handle not first rows
-			var prev_val = parseInt(prev.find('td.link-level input.link-level-input').val());
-			if(current_val > prev_val+1) {
-				diff = current_val - (prev_val+1);
-				cflk_update_link_level(current.find('td.link-level input.link-level-input'),parseInt('-'+diff));
-			}
-			
-			cflk_toggle_button_usability(current);
-						
-			prev = current;
-		});
-	}
-<?php
+	echo file_get_contents(CFLK_DIR.'js/admin.js');
+	echo apply_filters('cflk_admin_js', '');
 	exit();
 }
 
@@ -841,7 +493,7 @@ function cflk_options_form() {
 	print ('
 		<div class="wrap">
 			'.cflk_nav('main').'
-			<form action="" method="post" id="cflk-form">
+			<form action="'.admin_url().'" method="post" id="cflk-form">
 				<table class="widefat">
 					<thead>
 						<tr>
@@ -1078,8 +730,8 @@ function cflk_edit() {
 				<p>'.__('A problem has been detected while using the import.  Please see highlighted items below to fix.', 'cf-links').'</p>
 			</div>			
 			<div class="wrap">
-				<form action="" method="post" id="cflk-form">
-					'.cflk_nav('edit', htmlspecialchars($cflk['nicename']), $cflk['reference']).'
+				<form action="'.admin_url().'" method="post" id="cflk-form">
+					'.cflk_nav('edit', htmlspecialchars($cflk['nicename'])).'
 					<table class="widefat" style="margin-bottom: 10px;">
 						<thead>
 							<tr>
@@ -1334,7 +986,7 @@ function cflk_edit() {
 							</td>
 							<td class="link-order" style="text-align: center;"><img src="'.get_bloginfo('wpurl').'/wp-content/plugins/cf-links/images/arrow_up_down.png" class="handle" alt="move" /></td>
 							<td class="link-type">
-								<select name="cflk[###SECTION###][type]" id="cflk_###SECTION###_type" onChange="showLinkType(###SECTION###)">');
+								<select name="cflk[###SECTION###][type]" id="cflk_###SECTION###_type" onChange="showLinkType(\'###SECTION###\')">');
 									foreach ($cflk_types as $type) {
 										$select_settings[$type['type'].'_select'] = '';
 										if ($type['type'] == 'url') {
@@ -1379,6 +1031,7 @@ function cflk_edit() {
 			</div>');
 			print ('</div>
 		');
+		echo apply_filters('cflk_edit', '', $cflk_key);
 	} else {
 		print ('
 			<div id="message" class="updated fade">
@@ -1595,7 +1248,7 @@ function cflk_dialog() {
 	<p>
 		<ul>
 		<?php
-		$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
+		$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE %s",'cfl-%'));
 		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
 			?>
@@ -1802,7 +1455,7 @@ function cflk_name_check($name) {
 	$title = $name;
 	$original_option = $option_name;
 	$original_title = $title;
-	while(count($wpdb->get_results("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '".$option_name."'")) > 0) {
+	while(count($wpdb->get_results($wpdb->prepare("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '".$wpdb->escape($option_name)."'"))) > 0) {
 		$option_name = $original_option.$i;
 		$title = $original_title.$i;
 		$i++;
@@ -1825,13 +1478,13 @@ function cflk_get_list_links($blog = 0) {
 	
 	// if we're on MU and another blog's details have been requested, change the options table assignment
 	if (!is_null($blog_id) && $blog != 0) {
-		$options = 'wp_'.$blog.'_options';
+		$options = 'wp_'.$wpdb->escape($blog).'_options';
 	}
 	else {
 		$options = $wpdb->options;
 	}
 	
-	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE 'cfl-%'");
+	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM {$options} WHERE option_name LIKE %s", 'cfl-%'));
 	$return = array();
 
 	if (is_array($cflk_list)) {
@@ -2283,7 +1936,7 @@ function cflk_widget_control( $widget_args = 1 ) {
 		$select = $options[$number]['select'];
 	}
 
-	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE 'cfl-%'");
+	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE %s",'cfl-%'));
 	$form_data = array();
 	foreach ($cflk_list as $cflk) {
 		$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
@@ -2362,6 +2015,20 @@ add_shortcode('cflk_links','cflk_handle_shortcode',11);
 add_shortcode('cfl_links', 'cflk_handle_shortcode',11);
 
 /**
+ * Check if a givet links list exists
+ * @param string $key - id of the list being targeted
+ * @return bool
+ */
+function cflk_links_list_exists($key) {
+	$list = cflk_get_links_data($key);
+	if (is_array($list)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
  * Return all relevant data about a list
  *
  * @param string $key - id of the list being targeted
@@ -2370,8 +2037,7 @@ add_shortcode('cfl_links', 'cflk_handle_shortcode',11);
 function cflk_get_links_data($key) {
 	$links = get_option($key);
 	if (empty($links)) {
-		echo 'Could not find link list: '.htmlspecialchars($key);
-		return;
+		return false;
 	}
 	$links = maybe_unserialize($links);
 	$links['key'] = $key;
@@ -2563,7 +2229,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 				case 'post':
 				case 'page':
 					$postinfo = get_post(htmlspecialchars($link['link']));
-					if (is_a($postinfo, 'stdClass')) {
+					if (is_a($postinfo, 'stdClass') && in_array($postinfo->post_status, array('publish', 'inherit'))) {
 						$type_text = $postinfo->post_title;
 						$href = get_permalink(htmlspecialchars($link['link']));
 					}
@@ -2721,7 +2387,7 @@ function cflk_get_wp_type($type) {
 
 function cflk_export_list($key) {
 	global $wpdb;
-	$cflk_list = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE '$key'");
+	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE '".$wpdb->escape($key)."'"));
 	foreach ($cflk_list as $key => $value) {
 		$export = urlencode(serialize($value->option_value));
 		?>

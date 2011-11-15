@@ -1,0 +1,27 @@
+# CF Links Filter Example
+
+This is an example of how to filter in different content for CF Links.  This example overrides the Title content for the Login/Logout links based on logged in status:
+
+	function my_login_cflinks_filter($links = array()) {
+		$user = wp_get_current_user();
+		
+		if (is_array($links) && !empty($links)) {
+			foreach ($links['data'] as $key => $link) {
+				if ($link['type'] == 'wordpress' && $link['link'] == 'loginout') {
+					if ($user->ID == 0) {
+						// user not logged in, make sure they go to the auth login page instead of wordpress'
+						$links['data'][$key]['title'] = 'Log In Here';
+					}
+					else {
+						// user logged in, make sure the logout redirect doesn't go to wp-login or wp-admin
+						$links['data'][$key]['title'] = 'Log Out Here';
+					}
+				}
+			}
+		}
+		return $links;
+	}
+	add_filter('cflk_get_links_data', 'my_login_cflinks_filter');
+	
+
+

@@ -51,7 +51,9 @@ td.link-text {
 	width: 200px;
 }
 th.link-open-new,
-td.link-open-new {
+td.link-open-new,
+th.link-nofollow,
+td.link-nofollow {
 	width: 85px;
 }
 th.link-delete,

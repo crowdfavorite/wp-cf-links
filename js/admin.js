@@ -27,6 +27,20 @@
 			cflkAJAXSaveNicename(cflk_key, cflk_nicename_value);
 			return false;
 		});
+		
+		jQuery(".cflk-show").click(function(e) {
+			var _this = jQuery(this);
+			var id = _this.attr('id').replace('cflk-show-', '');
+			jQuery("#"+id+"-TemplateTag").slideToggle();
+			e.preventDefault();
+		});
+
+		jQuery(".cflk-hide").click(function(e) {
+			var _this = jQuery(this);
+			var id = _this.attr('id').replace('cflk-hide-', '');
+			jQuery("#"+id+"-TemplateTag").slideUp();
+			e.preventDefault();
+		});
 	});
 	function deleteLink(cflk_key,linkID) {
 		if (confirm('Are you sure you want to delete this?')) {
@@ -90,9 +104,6 @@
 	function showLinkType(key) {
 		var type = jQuery('#cflk_'+key+'_type option:selected').val();
 		jQuery('#'+type+'_'+key).show().siblings().hide();
-	}
-	function showLinkCode(key) {
-		jQuery('#'+key).slideToggle();
 	}
 	function addLink() {
 		var id = new Date().valueOf();

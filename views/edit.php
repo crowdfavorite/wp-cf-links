@@ -1,0 +1,244 @@
+<div class="wrap">
+	<?php
+	include('message-updated.php');
+	include('message-link-delete.php');
+	include('message-import-problem.php');
+	?>
+	<form action="<?php echo admin_url(); ?>" method="post" id="cflk-form">
+		<?php echo cflk_nav('edit', htmlspecialchars($cflk['nicename'])); ?>
+		<table class="widefat" style="margin-bottom: 10px;">
+			<thead>
+				<tr>
+					<th scope="col" colspan="2">
+						<?php _e('Description', 'cf-links'); ?>
+					</th>
+				</tr>
+			</thead>
+			<tr>
+				<td>
+					<div id="description_text">
+						<p>
+							<?php
+							if (!empty($cflk['description'])) {
+								echo esc_html($cflk['description']);
+							}
+							else {
+								echo '<span style="color: #999999;">'.__('No Description has been set for this list. Click the edit button to enter a description. &rarr;', 'cf-links').'</span>';
+							}
+							?>
+						</p>
+					</div>
+					<div id="description_edit" style="display:none;">
+						<textarea name="cflk_description" rows="5" style="width:100%;"><?php echo esc_textarea($cflk['description']); ?></textarea>
+					</div>
+				</td>
+				<td width="150px" style="text-align:right; vertical-align:middle;">
+					<div id="description_edit_btn">
+						<input type="button" class="button" id="link_description_btn" value="<?php _e('Edit', 'cf-links'); ?>" onClick="editDescription()" />
+					</div>
+					<div id="description_cancel_btn" style="display:none;">
+						<input type="button" class="button" id="link_description_cancel" value="<?php _e('Cancel', 'cf-links'); ?>" onClick="cancelDescription()" />
+					</div>
+				</td>
+			</tr>
+		</table>
+		<table class="widefat">
+			<thead>
+				<tr>
+					<th scope="col" class="link-level"><?php _e('Level','cf-links'); ?></th>
+					<th scope="col" class="link-order" style="text-align: center;"><?php _e('Order', 'cf-links'); ?></th>
+					<th scope="col" class="link-type"><?php _e('Type', 'cf-links'); ?></th>
+					<th scope="col" class="link-value"><?php _e('Link', 'cf-links'); ?></th>
+					<th scope="col" class="link-text"><?php _e('Link Text (Optional)', 'cf-links'); ?></th>
+					<th scope="col" class="link-open-new"><?php _e('New Window', 'cf-links'); ?></th>
+					<th scope="col" class="link-nofollow"><?php _e('No Follow', 'cf-links'); ?></th>
+					<th scope="col" class="link-delete"><?php _e('Delete', 'cf-links'); ?></th>
+				</tr>
+			</thead>
+		</table>
+		<ul id="cflk-list">
+			<?php
+			if ($cflk_count > 0 && is_array($cflk['data']) && !empty($cflk['data'])) {
+				foreach ($cflk['data'] as $key => $setting) {
+					$tr_class = '';
+					if($setting['link'] == 'HOLDER') {
+						$tr_class = ' class="tr_holder"';
+					}
+					?>
+					<li id="listitem_<?php echo $key; ?>" class="level-<?php echo $setting['level']; ?>">
+						<table class="widefat">
+							<tr<?php echo $tr_class; ?>>
+								<td class="link-level">
+									<div>
+										<input type="hidden" class="link-level-input" name="cflk[<?php echo $key; ?>][level]" value="<?php echo $setting['level']; ?>" />
+										<button class="level-decrement decrement-<?php echo $key; ?>">&laquo;</button>
+										<button class="level-increment increment-<?php echo $key; ?>">&raquo;</button>
+									</div>
+								</td>
+								<td class="link-order" style="text-align: center; vertical-align:middle;">
+									<img src="<?php echo CFLK_DIR_URL; ?>images/arrow_up_down.png" class="handle" alt="move" />
+								</td>
+								<td class="link-type" style="vertical-align:middle;">
+									<select name="cflk[<?php echo $key; ?>][type]" id="cflk_<?php echo $key; ?>_type" onChange="showLinkType(<?php echo $key; ?>)">
+										<?php
+										$type_selected = '';
+										foreach ($cflk_types as $type) {
+											$selected = '';
+											if($type['type'] == $setting['type']) {
+												$selected = ' selected="selected"';
+												$type_selected = $type['nicename'];
+											}
+											echo '<option value="'.$type['type'].'"'.$selected.'>'.$type['nicename'].'</option>';
+										}
+										?>
+									</select>
+								</td>
+								<td class="link-value" style="vertical-align:middle;">
+									<?php
+									foreach ($cflk_types as $type) {
+										echo cflk_get_type_input($type, $type_selected, $key, $setting['cat_posts'], $setting['link']);
+									}
+									?>
+								</td>
+								<td class="link-text" style="vertical-align:middle;">
+									<?php
+									if (strip_tags($setting['title']) == '') {
+										$edit_show = '';
+										$input_show = ' style="display:none;"';
+									}
+									else {
+										$edit_show = ' style="display:none;"';
+										$input_show = '';
+									}
+									?>
+									<span id="cflk_<?php echo $key; ?>_title_edit"<?php echo $edit_show; ?>>
+										<input type="button" class="button" id="link_edit_title_<?php echo $key; ?>" value="<?php _e('Edit Text', 'cf-links'); ?>" onClick="editTitle('<?php echo $key; ?>')" />
+									</span>
+									<span id="cflk_<?php echo $key; ?>_title_input"<?php echo $input_show; ?>>
+										<input type="text" id="cflk_<?php echo $key; ?>_title" name="cflk[<?php echo $key; ?>][title]" value="<?php echo esc_attr($setting['title']); ?>" style="max-width: 150px;" />
+										<input type="button" class="button" id="link_clear_title_<?php echo $key; ?>" value="<?php _e('&times;', 'cf-links'); ?>" onClick="clearTitle('<?php echo $key; ?>')" />
+									</span>
+								</td>
+								<td class="link-open-new" style="text-align: center; vertical-align:middle;">
+									<?php
+									$opennew = '';
+									if ($setting['opennew']) {
+										$opennew = ' checked="checked"';
+									}
+									?>
+									<input type="checkbox" id="link_opennew_<?php echo $key; ?>" name="cflk[<?php echo $key; ?>][opennew]"<?php echo $opennew; ?> />
+								</td>
+								<td class="link-nofollow" style="text-align: center; vertical-align:middle;">
+									<?php
+									$nofollow = '';
+									if ($setting['nofollow']) {
+										$nofollow = ' checked="checked"';
+									}
+									?>
+									<input type="checkbox" id="link_nofollow_<?php echo $key; ?>" name="cflk[<?php echo $key; ?>][nofollow]"<?php echo $nofollow; ?> />
+								</td>
+								<td class="link-delete" style="text-align: center; vertical-align:middle;">
+									<input type="button" class="button" id="link_delete_<?php echo $key; ?>" value="<?php _e('Delete', 'cf-links'); ?>" onClick="deleteLink('<?php echo $cflk_key; ?>','<?php echo $key; ?>')" />
+								</td>
+							</tr>
+						</table>
+					</li>
+					<?php
+				}
+			}
+			?>
+		</ul>	
+		<table class="widefat">
+			<tr>
+				<td style="text-align:left;">
+					<input type="button" class="button" name="link_add" id="link_add" value="<?php _e('Add New Link', 'cf-links'); ?>" onClick="addLink()" />
+				</td>
+			</tr>
+		</table>
+		<p class="submit" style="border-top: none;">
+			<input type="hidden" name="cf_action" value="cflk_update_settings" />
+			<input type="hidden" name="cflk_key" value="<?php echo esc_attr($cflk_key); ?>" />
+			<input type="submit" name="submit" id="cflk-submit" value="<?php _e('Update Settings', 'cf-links'); ?>" class="button-primary button" />
+		</p>
+	</form>			
+	<div id="newitem_SECTION">
+		<li id="listitem_###SECTION###" class="level-0" style="display:none;">
+			<table class="widefat">
+				<tr>
+					<td class="link-level">
+						<div>
+							<input type="hidden" class="link-level-input" name="cflk[###SECTION###][level]" value="0" />
+							<button class="level-decrement">&laquo;</button>
+							<button class="level-increment">&raquo;</button>
+						</div>
+					</td>
+					<td class="link-order" style="text-align: center;"><img src="<?php echo CFLK_DIR_URL; ?>images/arrow_up_down.png" class="handle" alt="move" /></td>
+					<td class="link-type">
+						<select name="cflk[###SECTION###][type]" id="cflk_###SECTION###_type" onChange="showLinkType('###SECTION###')">
+							<?php
+							foreach ($cflk_types as $type) {
+								$select_settings[$type['type'].'_select'] = '';
+								if ($type['type'] == 'url') {
+									$select_settings[$type['type'].'_select'] = ' selected="selected"';
+								}
+								echo '<option value="'.$type['type'].'"'.$select_settings[$type['type'].'_select'].'>'.$type['nicename'].'</option>';
+							}
+							?>
+						</select>
+					</td>
+					<td class="link-value">
+						<?php
+						$key = '###SECTION###';
+						foreach ($cflk_types as $type) {
+							$select_settings[$type['type'].'_show'] = 'style="display: none;"';
+							if ($type['type'] == 'url') {
+								$select_settings[$type['type'].'_show'] = 'style=""';
+							}
+							echo cflk_get_type_input($type, $select_settings[$type['type'].'_show'], $key, '', '');
+						}
+						?>
+					</td>
+					<td class="link-text">
+						<span id="cflk_###SECTION###_title_edit" style="display: none">
+							<input type="button" class="button" id="link_edit_title_###SECTION###" value="<?php _e('Edit Text', 'cf-links'); ?>" onClick="editTitle('###SECTION###')" />
+						</span>
+						<span id="cflk_###SECTION###_title_input">
+							<input type="text" id="cflk_###SECTION###_title" name="cflk[###SECTION###][title]" value="" style="max-width: 150px;" />
+							<input type="button" class="button" id="link_clear_title_###SECTION###" value="<?php _e('&times;', 'cf-links'); ?>" onClick="clearTitle('###SECTION###')" />
+							<br />
+							<?php _e('ex: Click Here','cf-links'); ?>
+						</span>
+					</td>
+					<td class="link-open-new" style="text-align: center; vertical-align:middle;">
+							<input type="checkbox" id="link_opennew_###SECTION###" name="cflk[###SECTION###][opennew]" />
+					</td>
+					<td class="link-nofollow" style="text-align: center; vertical-align:middle;">
+							<input type="checkbox" id="link_nofollow_###SECTION###" name="cflk[###SECTION###][nofollow]" />
+					</td>
+					<td class="link-delete" style="text-align: center;">
+						<input type="button" class="button" id="link_delete_###SECTION###" value="<?php _e('Delete', 'cf-links'); ?>" onClick="deleteLink('<?php echo $cflk_key; ?>', '###SECTION###')" />
+					</td>
+				</tr>
+			</table>
+		</li>
+	</div>
+	<?php
+	// select-modal placeholder
+	//dp($cflk_types);
+	foreach ($cflk_types as $type) {
+		if($type['input'] == 'select-modal') {
+			$select_settings[$type['type'].'_show'] = 'style="display: none;"';
+			// fool cflk_get_type_input in to giving us a select list
+			$type['input'] = 'select';
+			echo '
+				<div id="'.$type['type'].'-modal" class="'.$type['type'].'-modal" style="display: none;">
+					'.cflk_get_type_input($type, $select_settings[$type['type'].'_show'], 'list', '', '').'
+					<input type="button" name="'.$type['type'].'-set" value="Done" class="modal-done button"/> 
+				</div>
+				';
+		}
+	}
+	// Allow other plugins the ability to display info on this page
+	echo apply_filters('cflk_edit', '', $cflk_key);
+	?>
+</div><!--.wrap-->

@@ -1,5 +1,11 @@
 # CF Links Changelog
 
+## 1.4
+
+- Moving all HTML to views
+- Adding No Follow options for links (for SEO purposes)
+- Cleanup of some JS/HTML code
+
 ## 1.3.5
 
 - Bug fixes with JS and PHP

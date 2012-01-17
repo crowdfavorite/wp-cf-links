@@ -1388,9 +1388,9 @@ function cflk_insert_new($nicename = '', $description = '', $data = array(), $in
 	foreach ($category_object as $category) {
 		array_push ($categories, $category->term_id);
 	}
-	$author_object = get_users_of_blog($wpdb->blog_id);
+	$author_object = get_users(array('fields' => 'ID'));
 	foreach ($author_object as $author) {
-		array_push ($authors, $author->user_id);
+		array_push ($authors, $author);
 	}
 	if (function_exists ('get_blog_list')) {
 		$blog_object = get_blog_list();

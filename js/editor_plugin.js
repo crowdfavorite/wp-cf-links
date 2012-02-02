@@ -2,13 +2,14 @@
     tinymce.create('tinymce.plugins.cflinks', {
         init: function(ed, url) {
 			pluginUrl = url.replace('js', '');
+			imageUrl = pluginUrl+'images/link-list.gif';
             this.editor = ed;
             ed.addCommand('cfLinks',
             function() {
                 var se = ed.selection;
                 ed.windowManager.open({
-					title: 'Select Links List',
-                    file: 'options-general.php?page=cf-links.php&cflk_page=dialog',
+					title: 'Select CF Links List',
+                    file: 'options-general.php?page=cf-links&cflk_page=dialog',
                     width: 350 + parseInt(ed.getLang('cflinks.delta_width', 0)),
                     height: 450 + parseInt(ed.getLang('cflinks.delta_height', 0)),
                     inline: 1
@@ -18,9 +19,9 @@
                 });
             });
             ed.addButton('cfLinksBtn', {
-                title: 'Select Link List Below',
+                title: 'CF Links',
                 cmd: 'cfLinks',
-				image : pluginUrl + 'images/brick_add.png'
+				image : imageUrl
             });
             ed.onNodeChange.add(function(ed, cm, n, co) {
                 cm.setDisabled('cfLinks', co && n.nodeName != 'A');

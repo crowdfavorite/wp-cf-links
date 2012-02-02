@@ -9,7 +9,7 @@
 			stop: cflk_levels_refactor
 		});
 		jQuery('input[name="link_edit"]').click(function() {
-			location.href = "options-general.php?page=cf-links.php&cflk_page=edit&link=" + jQuery(this).attr('rel');
+			location.href = "options-general.php?page=cf-links&cflk_page=edit&link=" + jQuery(this).attr('rel');
 			return false;
 		});
 		jQuery('tr.tr_holder').each(function() {
@@ -26,6 +26,20 @@
 			var cflk_nicename_value = jQuery("input[name=cflk_nicename]").val();
 			cflkAJAXSaveNicename(cflk_key, cflk_nicename_value);
 			return false;
+		});
+		
+		jQuery(".cflk-show").click(function(e) {
+			var _this = jQuery(this);
+			var id = _this.attr('id').replace('cflk-show-', '');
+			jQuery("#"+id+"-TemplateTag").slideToggle();
+			e.preventDefault();
+		});
+
+		jQuery(".cflk-hide").click(function(e) {
+			var _this = jQuery(this);
+			var id = _this.attr('id').replace('cflk-hide-', '');
+			jQuery("#"+id+"-TemplateTag").slideUp();
+			e.preventDefault();
 		});
 	});
 	function deleteLink(cflk_key,linkID) {
@@ -77,6 +91,7 @@
 	function editDescription() {
 		jQuery('#description_text').hide();
 		jQuery('#description_edit').show();
+		jQuery("textarea[name=cflk_description]").focus().select();
 		jQuery('#description_edit_btn').hide();
 		jQuery('#description_cancel_btn').show();
 	}
@@ -89,9 +104,6 @@
 	function showLinkType(key) {
 		var type = jQuery('#cflk_'+key+'_type option:selected').val();
 		jQuery('#'+type+'_'+key).show().siblings().hide();
-	}
-	function showLinkCode(key) {
-		jQuery('#'+key).slideToggle();
 	}
 	function addLink() {
 		var id = new Date().valueOf();

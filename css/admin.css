@@ -35,7 +35,7 @@ td.link-type {
 }
 th.link-level,
 td.link-level {
-	width: 25px;
+	width: 40px;
 	text-align: center;
 }
 td.link-level div {
@@ -51,7 +51,9 @@ td.link-text {
 	width: 200px;
 }
 th.link-open-new,
-td.link-open-new {
+td.link-open-new,
+th.link-nofollow,
+td.link-nofollow {
 	width: 85px;
 }
 th.link-delete,
@@ -85,3 +87,7 @@ td.link-delete {
 #cflk-list li.level-7 { margin-left: 7em; }
 #cflk-list li.level-8 { margin-left: 8em; }
 #cflk-list li.level-9 { margin-left: 9em; }
+
+.cflk-reference-info {
+	color: #999999;
+}

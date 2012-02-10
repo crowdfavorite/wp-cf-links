@@ -121,7 +121,6 @@
 									}
 									
 									if (!$cflk['reference']) { ?>
-									?>
 									<select name="cflk[<?php echo $key; ?>][type]" id="cflk_<?php echo $key; ?>_type" onChange="showLinkType(<?php echo $key; ?>)">
 										<?php echo $type_options; ?>
 									</select>

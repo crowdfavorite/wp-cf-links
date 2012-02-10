@@ -1295,6 +1295,11 @@ function cflk_get_link_info($link_list,$merge=true) {
 						$other = 'rss';
 						$href = get_author_feed_link($link['link']);
 					}
+					else if (is_a($userdata, 'WP_User')) {
+						$type_text = $userdata->data->display_name;
+						$other = 'rss';
+						$href = get_author_feed_link($userdata->data->ID);
+					}
 					break;
 				case 'blog':
 				case 'site':

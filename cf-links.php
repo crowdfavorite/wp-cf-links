@@ -1281,7 +1281,11 @@ function cflk_get_link_info($link_list,$merge=true) {
 					$userdata = get_userdata($link['link']);
 					if (is_a($userdata, 'stdClass')) {
 						$type_text = $userdata->display_name;
-						$href = get_author_posts_url($link['link']);
+						$href = get_author_posts_url($link['link'], $userdata->user_nicename);
+					}
+					else if (is_a($userdata, 'WP_User')) {
+						$type_text = $userdata->data->display_name;
+						$href = get_author_posts_url($userdata->data->ID, $userdata->data->user_nicename);
 					}
 					break;
 				case 'author_rss':

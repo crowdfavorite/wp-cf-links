@@ -1,5 +1,10 @@
 # CF Links Changelog
 
+## 1.4.1
+
+- Fixing the Author URL to check for a WP_User object used in WP 3.3+
+- Also fixing the Author RSS URL for the same issue
+
 ## 1.4
 
 - Moving all HTML to views

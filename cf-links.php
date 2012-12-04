@@ -95,12 +95,12 @@ function cflk_link_types() {
 		),
 	);
 	if (function_exists('get_blog_list')) {
-		$sites = $wpdb->get_results($wpdb->prepare("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC"), ARRAY_A);
+		$sites = $wpdb->get_results("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC", ARRAY_A);
 		
 		if (is_array($sites) && count($sites)) {
 			foreach ($sites as $site) {
 				$site_id = $site['id'];
-				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '".$wpdb->escape($site_id)."' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC"), ARRAY_A);
+				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '%s' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC", $site_id), ARRAY_A);
 				
 				if (is_array($blogs)) {
 					foreach ($blogs as $blog) {
@@ -829,7 +829,7 @@ function cflk_name_check($name) {
 	$title = $name;
 	$original_option = $option_name;
 	$original_title = $title;
-	while(count($wpdb->get_results($wpdb->prepare("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '".$wpdb->escape($option_name)."'"))) > 0) {
+	while(count($wpdb->get_results($wpdb->prepare("SELECT option_name FROM $wpdb->options WHERE option_name LIKE '%s'", $option_name))) > 0) {
 		$option_name = $original_option.$i;
 		$title = $original_title.$i;
 		$i++;
@@ -1252,7 +1252,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 				case 'post':
 				case 'page':
 					$postinfo = get_post(htmlspecialchars($link['link']));
-					if (is_a($postinfo, 'stdClass') && in_array($postinfo->post_status, array('publish', 'inherit'))) {
+					if (isset($postinfo->post_status) && in_array($postinfo->post_status, array('publish', 'inherit'))) {
 						$type_text = $postinfo->post_title;
 						$href = get_permalink(htmlspecialchars($link['link']));
 					}

@@ -1,5 +1,9 @@
 # CF Links Changelog
 
+## 1.4.2
+
+- Bug fixes related to changes in WordPress 3.5. These changes are backward-compatible with 3.4 installs.
+
 ## 1.4.1
 
 - Fixing the Author URL to check for a WP_User object used in WP 3.3+

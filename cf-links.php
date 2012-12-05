@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced tool for adding collections of links, including pages, posts, and external URLs.
-Version: 1.4.1
+Version: 1.4.2
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -18,7 +18,7 @@ Author URI: http://crowdfavorite.com
  */
 
 // Constants
-define('CFLK_VERSION', '1.4');
+define('CFLK_VERSION', '1.4.2');
 define('CFLK_DIR', trailingslashit(plugin_dir_path(__FILE__)));
 //plugin_dir_url seems to be broken for including in theme files
 if (file_exists(trailingslashit(get_template_directory()).'plugins/'.basename(dirname(__FILE__)))) {

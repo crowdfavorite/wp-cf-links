@@ -1,5 +1,9 @@
 # CF Links Changelog
 
+## 1.4.3
+
+- Bug fix related to roles and capabilities to prevent PHP notice on add_options_page
+
 ## 1.4.2
 
 - Bug fixes related to changes in WordPress 3.5. These changes are backward-compatible with 3.4 installs.

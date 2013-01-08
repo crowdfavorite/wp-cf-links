@@ -223,7 +223,7 @@ function cflk_menu_items() {
 	add_options_page(
 		__('CF Links', 'cf-links')
 		, __('CF Links', 'cf-links')
-		, 10
+		, 'manage_options' 
 		, basename(__FILE__)
 		, 'cflk_check_page'
 	);

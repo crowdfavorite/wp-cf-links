@@ -3,7 +3,7 @@
 Plugin Name: CF Links
 Plugin URI: http://crowdfavorite.com
 Description: Advanced tool for adding collections of links, including pages, posts, and external URLs.
-Version: 1.4.2
+Version: 1.4.4
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com
 */
@@ -12,20 +12,20 @@ Author URI: http://crowdfavorite.com
 
 
 /**
- * 
+ *
  * WP Admin Handling Functions
- * 
+ *
  */
 
 // Constants
-define('CFLK_VERSION', '1.4.2');
+define('CFLK_VERSION', '1.4.4');
 define('CFLK_DIR', trailingslashit(plugin_dir_path(__FILE__)));
 //plugin_dir_url seems to be broken for including in theme files
 if (file_exists(trailingslashit(get_template_directory()).'plugins/'.basename(dirname(__FILE__)))) {
 	define('CFLK_DIR_URL', trailingslashit(trailingslashit(get_bloginfo('template_url')).'plugins/'.basename(dirname(__FILE__))));
 }
 else {
-	define('CFLK_DIR_URL', trailingslashit(plugins_url(basename(dirname(__FILE__)))));	
+	define('CFLK_DIR_URL', trailingslashit(plugins_url(basename(dirname(__FILE__)))));
 }
 
 load_plugin_textdomain('cf-links');
@@ -40,7 +40,7 @@ $cflk_inside_widget = false;
  */
 function cflk_link_types() {
 	global $wpdb, $cflk_types, $blog_id;
-	
+
 	$pages = get_pages(array('hierarchical' => 1));
 	$categories = get_categories('get=all');
 	$authors = cflk_get_authors();
@@ -51,27 +51,27 @@ function cflk_link_types() {
 	$wordpress_data = array();
 	$blog_data = array();
 	$site_data = array();
-	
+
 	foreach ($pages as $page) {
 		$page_data[$page->ID] = array(
-			'link' => $page->ID, 
+			'link' => $page->ID,
 			'description' => $page->post_title,
 			'ancestors' => get_post_ancestors($page)
 		);
 	}
 	foreach ($categories as $category) {
 		$category_data[$category->slug] = array(
-				'link' => $category->term_id, 
-				'description' => $category->name, 
+				'link' => $category->term_id,
+				'description' => $category->name,
 				'count' => $category->count
 		);
 	}
 	foreach ($authors as $author) {
 		$author_data[$author['login']] = array(
-				'link' => $author['id'], 
+				'link' => $author['id'],
 				'description' => $author['display_name']
 		);
-	}	
+	}
 	$wordpress_data = array(
 		'home' => array(
 			'link' => 'home',
@@ -96,18 +96,18 @@ function cflk_link_types() {
 	);
 	if (function_exists('get_blog_list')) {
 		$sites = $wpdb->get_results("SELECT id, domain FROM $wpdb->site ORDER BY ID ASC", ARRAY_A);
-		
+
 		if (is_array($sites) && count($sites)) {
 			foreach ($sites as $site) {
 				$site_id = $site['id'];
 				$blogs = $wpdb->get_results($wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '%s' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY blog_id ASC", $site_id), ARRAY_A);
-				
+
 				if (is_array($blogs)) {
 					foreach ($blogs as $blog) {
 						$details = get_blog_details($blog['blog_id']);
 						$description = '';
 						if ($details->blog_id != $site['id']) {
-							$description = '&mdash; '.$details->blogname; 
+							$description = '&mdash; '.$details->blogname;
 						}
 						else {
 							$description = $details->blogname;
@@ -121,7 +121,7 @@ function cflk_link_types() {
 			}
 		}
 	}
-	
+
 	$cflk_types = array(
 		'url' => array(
 			'type' => 'url',
@@ -136,42 +136,42 @@ function cflk_link_types() {
 			'data' => __('ex: http://example.com/feed', 'cf-links'),
 		),
 		'page' => array(
-			'type' => 'page', 
+			'type' => 'page',
 			'nicename' => __('Page','cf-links'),
-			'input' => 'select', 
+			'input' => 'select',
 			'data' => $page_data
 		),
 		'category' => array(
-			'type' => 'category', 
+			'type' => 'category',
 			'nicename' => __('Category', 'cf-links'),
-			'input' => 'select', 
+			'input' => 'select',
 			'data' => $category_data
 		),
 		'author' => array(
 			'type' => 'author',
 			'nicename' => __('Author', 'cf-links'),
-			'input' => 'select', 
+			'input' => 'select',
 			'data' => $author_data
 		),
 		'author_rss' => array(
 			'type' => 'author_rss',
 			'nicename' => __('Author RSS', 'cf-links'),
-			'input' => 'select', 
+			'input' => 'select',
 			'data' => $author_data
 		),
 		'wordpress' => array(
-			'type' => 'wordpress', 
+			'type' => 'wordpress',
 			'nicename' => __('Wordpress', 'cf-links'),
-			'input' => 'select', 
+			'input' => 'select',
 			'data' => $wordpress_data
 		),
 	);
 	if (function_exists('get_blog_list')) {
 		$blog_type = array(
 			'blog' => array(
-				'type' => 'blog', 
+				'type' => 'blog',
 				'nicename' => __('Blog','cf-links'),
-				'input' => 'select', 
+				'input' => 'select',
 				'data' => $blog_data
 			),
 		);
@@ -199,7 +199,7 @@ function cflk_get_authors() {
 			u.user_nicename,
 			u.display_name,
 			u.user_login
-		from {$wpdb->users} AS u, 
+		from {$wpdb->users} AS u,
 			{$wpdb->usermeta} AS um
 		WHERE u.user_login <> 'admin'
 		AND u.ID = um.user_id
@@ -223,7 +223,7 @@ function cflk_menu_items() {
 	add_options_page(
 		__('CF Links', 'cf-links')
 		, __('CF Links', 'cf-links')
-		, 'manage_options' 
+		, 'manage_options'
 		, basename(__FILE__)
 		, 'cflk_check_page'
 	);
@@ -256,7 +256,7 @@ function cflk_request_handler() {
 	if (current_user_can('manage_options') && !empty($_POST['cf_action'])) {
 		switch ($_POST['cf_action']) {
 			case 'cflk_update_settings':
-				$link_data = array(); 
+				$link_data = array();
 				if (!empty($_POST['cflk']) && is_array($_POST['cflk'])) {
 					$link_data = stripslashes_deep($_POST['cflk']);
 				}
@@ -282,7 +282,7 @@ function cflk_request_handler() {
 				$nicename = '';
 				$description = '';
 				$data = '';
-				
+
 				if (!empty($_POST['cflk_create']) && $_POST['cflk_create'] == 'new_list') {
 					if (!empty($_POST['cflk_nicename'])) {
 						$nicename = $_POST['cflk_nicename'];
@@ -378,9 +378,9 @@ function cflk_admin_js() {
 }
 
 /**
- * 
+ *
  * Enqueue the CSS/JS in the proper place
- * 
+ *
  */
 if (is_admin() && !empty($_GET['page']) && $_GET['page'] == basename(__FILE__)) {
 	wp_enqueue_script('jquery');
@@ -388,7 +388,7 @@ if (is_admin() && !empty($_GET['page']) && $_GET['page'] == basename(__FILE__)) 
 	wp_enqueue_script('jquery-ui-sortable');
 	wp_enqueue_script('cflk-admin-js', site_url('index.php?cf_action=cflk_admin_js'), array('jquery', 'jquery-ui-core', 'jquery-ui-sortable'), CFLK_VERSION);
 	wp_enqueue_style('cflk-admin-css', site_url('index.php?cf_action=cflk_admin_css'), array(), CFLK_VERSION);
-	
+
 	if (!empty($_GET['cflk_page']) && $_GET['cflk_page'] == 'import') {
 		wp_enqueue_script('thickbox');
 		wp_enqueue_style('thickbox', site_url('wp-includes/js/thickbox/thickbox.css'), array());
@@ -397,9 +397,9 @@ if (is_admin() && !empty($_GET['page']) && $_GET['page'] == basename(__FILE__)) 
 
 
 /**
- * 
+ *
  * CF Links Admin Interface Functions
- * 
+ *
  */
 
 /**
@@ -410,13 +410,13 @@ if (is_admin() && !empty($_GET['page']) && $_GET['page'] == basename(__FILE__)) 
 function cflk_options_form() {
 	$cflk_list = cflk_get_list_links();
 	$form_data = array();
-	
+
 	if (is_array($cflk_list) && !empty($cflk_list)) {
 		foreach ($cflk_list as $key => $cflk) {
 			$form_data[$key] = array('nicename' => $cflk['nicename'], 'count' => $cflk['count']);
 		}
 	}
-	
+
 	if (!empty($_GET['cflk_message'])) {
 		switch ($_GET['cflk_message']) {
 			case 'create':
@@ -460,7 +460,7 @@ function cflk_edit() {
 		return;
 	}
 	global $wpdb, $cflk_types;
-	
+
 	$cflk_key = $_GET['link'];
 	$cflk = maybe_unserialize(get_option($cflk_key));
 	is_array($cflk) ? $cflk_count = count($cflk) : $cflk_count = 0;
@@ -471,7 +471,7 @@ function cflk_nav($page = '', $list = '') {
 	$main_text = '';
 	$add_text = '';
 	$import_text = '';
-	
+
 	switch ($page) {
 		case 'main':
 			$main_text = 'class="current"';
@@ -485,7 +485,7 @@ function cflk_nav($page = '', $list = '') {
 		default:
 			break;
 	}
-	
+
 	ob_start();
 	include('views/nav.php');
 	$cflk_nav = ob_get_clean();
@@ -494,7 +494,7 @@ function cflk_nav($page = '', $list = '') {
 
 function cflk_edit_select($type) {
 	$select = array();
-	
+
 	$select['url_show'] = 'style="display: none;"';
 	$select['url_select'] = '';
 	$select['rss_show'] = 'style="display: none;"';
@@ -511,7 +511,7 @@ function cflk_edit_select($type) {
 	$select['author_rss_select'] = '';
 	$select['blog_show'] = 'style="display: none;"';
 	$select['blog_select'] = '';
-	
+
 	switch ($type) {
 		case 'url':
 			$select['url_show'] = 'style=""';
@@ -528,23 +528,23 @@ function cflk_edit_select($type) {
 		case 'category':
 			$select['category_show'] = 'style=""';
 			$select['category_select'] = 'selected=selected';
-			break;	
+			break;
 		case 'wordpress':
 			$select['wordpress_show'] = 'style=""';
 			$select['wordpress_select'] = 'selected=selected';
-			break;	
+			break;
 		case 'author':
 			$select['author_show'] = 'style=""';
 			$select['author_select'] = 'selected=selected';
-			break;	
+			break;
 		case 'author_rss':
 			$select['author_rss_show'] = 'style=""';
 			$select['author_rss_select'] = 'selected=selected';
-			break;	
+			break;
 		case 'blog':
 			$select['blog_show'] = 'style=""';
 			$select['blog_select'] = 'selected=selected';
-			break;	
+			break;
 		default:
 			$select['url_show'] = 'style=""';
 			$select['url_select'] = 'selected=selected';
@@ -556,7 +556,7 @@ function cflk_edit_select($type) {
 function cflk_get_type_input($type_array, $show, $key, $show_count, $value) {
 	$return = '';
 	extract($type_array);
-	
+
 	$return .= '<span id="'.$type.'_'.$key.'" '.($show == $nicename ? '' : 'style="display: none;"').'>';
 	switch ($input) {
 		case 'text':
@@ -596,7 +596,7 @@ function cflk_get_type_input($type_array, $show, $key, $show_count, $value) {
 					case 'author_rss':
 						$type_show = 'Author RSS';
 						break;
-				
+
 				}
 				$return .= '<br /><span id="holder_'.$type.'_'.$key.'" style="font-weight:bold;">'.__('Imported item ID does not exist in the system.<br />Please create a new '.$type_show.', then select it from the list above.','cf-links').'</span>';
 			}
@@ -612,7 +612,7 @@ function cflk_get_type_input($type_array, $show, $key, $show_count, $value) {
 				<input type="hidden" name="cflk['.$key.']['.$type.']" id="cflk-'.$type.'-'.$key.'-value" value="'.strip_tags($value).'"/>
 				<div class="select-modal-display"><span>'.$display.'</span> <input type="button" class="button" id="edit-'.$key.'-'.$type.'" name="edit-'.$key.'-'.$type.'" value="Edit" onclick="cflk_edit_select_modal(\''.$key.'\',\''.$value.'\',\''.$type.'\'); return false;"/></div>
 				';
-			
+
 			break;
 	}
 	$return .= '</span>';
@@ -620,9 +620,9 @@ function cflk_get_type_input($type_array, $show, $key, $show_count, $value) {
 }
 
 /**
- * 
+ *
  * CF Links TinyMCE Handling Functions
- * 
+ *
  */
 
 function cflk_dialog() {
@@ -653,9 +653,9 @@ function cflk_addtinymce() {
 add_action('init', 'cflk_addtinymce');
 
 /**
- * 
+ *
  * CF Links Data Handling Functions
- * 
+ *
  */
 
 function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '', $cflk_description = '') {
@@ -691,8 +691,8 @@ function cflk_process($cflk_data = array(), $cflk_key = '', $cflk_nicename = '',
 	}
 	$settings = array(
 		'key' => $cflk_key,
-		'nicename' => stripslashes($cflk_nicename), 
-		'description' => stripslashes($cflk_description), 
+		'nicename' => stripslashes($cflk_nicename),
+		'description' => stripslashes($cflk_description),
 		'data' => $new_data
 	);
 	$settings = apply_filters('cflk_save_list_settings',$settings);
@@ -714,7 +714,7 @@ function cflk_delete($cflk_key) {
 	$delete_keys = array();
 	$widgets = maybe_unserialize(get_option('cf_links_widget'));
 	$sidebars = maybe_unserialize(get_option('sidebars_widgets'));
-	
+
 	if (is_array($widgets) && is_array($sidebars)) {
 		foreach ($widgets as $key => $widget) {
 			if ($widget['select'] == $cflk_key) {
@@ -735,7 +735,7 @@ function cflk_delete($cflk_key) {
 	}
 	do_action('cflk_delete_list',$cflk_key);
 	$res = delete_option($cflk_key);
-	
+
 	// send response
 	header('Content-type: text/javascript');
 	ob_end_clean();
@@ -752,13 +752,13 @@ function cflk_delete($cflk_key) {
 
 function cflk_insert_new($nicename = '', $description = '', $data = array(), $insert_key = false) {
 	if ($nicename == '') { return false; }
-	
+
 	// check to see if a specific key was requested and if that specific key already exists
 	if($insert_key !== false) {
 		$check_list = get_option($key);
 		if(is_array($check_list)) { return false; }
 	}
-	
+
 	$pages = $categories = $authors = $blogs = array();
 	$page_object = get_pages();
 	foreach ($page_object as $page) {
@@ -778,7 +778,7 @@ function cflk_insert_new($nicename = '', $description = '', $data = array(), $in
 			array_push ($blogs, $blog['blog_id']);
 		}
 	}
-	
+
 	$check_name = cflk_name_check(stripslashes($nicename));
 	foreach ($data as $key => $item) {
 		if ($item['type'] == 'page') {
@@ -813,10 +813,10 @@ function cflk_insert_new($nicename = '', $description = '', $data = array(), $in
 	$settings = array('nicename' => $check_name[1], 'description' => $description, 'data' => $data);
 
 	// if key hasn't already been defined, pull the value from the name check routine
-	if(!$insert_key) { 
+	if(!$insert_key) {
 		$insert_key = $check_name[0];
 	}
-	
+
 	// insert and return
 	add_option($insert_key, $settings);
 	return $insert_key;
@@ -849,7 +849,7 @@ function cflk_edit_nicename($cflk_key = '', $cflk_nicename = '') {
 
 function cflk_get_list_links($blog = 0) {
 	global $wpdb, $blog_id;
-	
+
 	// if we're on MU and another blog's details have been requested, change the options table assignment
 	if (!is_null($blog_id) && $blog != 0) {
 		$options = 'wp_'.$wpdb->escape($blog).'_options';
@@ -857,7 +857,7 @@ function cflk_get_list_links($blog = 0) {
 	else {
 		$options = $wpdb->options;
 	}
-	
+
 	$cflk_list = $wpdb->get_results($wpdb->prepare("SELECT option_name, option_value FROM {$options} WHERE option_name LIKE %s", 'cfl-%'));
 	$return = array();
 
@@ -865,7 +865,7 @@ function cflk_get_list_links($blog = 0) {
 		foreach ($cflk_list as $cflk) {
 			$options = maybe_unserialize(maybe_unserialize($cflk->option_value));
 			$return[$cflk->option_name] = array(
-				'nicename' => $options['nicename'], 
+				'nicename' => $options['nicename'],
 				'description' => $options['description'],
 				'count' => count($options['data']),
 			);
@@ -876,9 +876,9 @@ function cflk_get_list_links($blog = 0) {
 }
 
 /**
- * 
+ *
  * CF Links Widget Handling Functions
- * 
+ *
  */
 
 function cflk_widget( $args, $widget_args = 1 ) {
@@ -895,7 +895,7 @@ function cflk_widget( $args, $widget_args = 1 ) {
 		return;
 	$title = $options[$number]['title'];
 	$select = $options[$number]['select'];
-	
+
 	echo $before_widget;
 	if (!empty($title)) {
 		echo $before_title . $title . $after_title;
@@ -943,7 +943,7 @@ function cflk_widget_control( $widget_args = 1 ) {
 		update_option('cf_links_widget', $options);
 		$updated = true;
 	}
-	if ( -1 == $number ) { 
+	if ( -1 == $number ) {
 		$title = '';
 		$select = '';
 		$number = '%i%';
@@ -973,7 +973,7 @@ function cflk_widget_control( $widget_args = 1 ) {
 			foreach ($form_data as $data => $info) {
 				if ($info['option_name'] == $select) {
 					$selected = 'selected=selected';
-				} 
+				}
 				else {
 					$selected = '';
 				}
@@ -1014,9 +1014,9 @@ function cflk_widget_register() {
 add_action( 'widgets_init', 'cflk_widget_register' );
 
 /**
- * 
+ *
  * CF Links Data Retrieval Functions
- * 
+ *
  */
 
 function cflk_handle_shortcode($attrs, $content=null) {
@@ -1066,13 +1066,13 @@ function cflk_get_links_data($key) {
  * Build a links list based on the passed in key and args.
  * This function is called as a template tag and inside widgets.
  *
- * @param string $key 
- * @param array $args 
+ * @param string $key
+ * @param array $args
  * @return html
  */
 function cflk_get_links($key = null, $args = array()) {
 	if (!$key) { return ''; }
-	
+
 	$defaults = array(
 		'before' => '<ul class="cflk-list '.$key.'">',
 		'after' => '</ul>',
@@ -1087,15 +1087,15 @@ function cflk_get_links($key = null, $args = array()) {
 	$args['before'] = cflk_ul_ensure_level_class($args['before']);
 	$args['child_before'] = cflk_ul_ensure_level_class($args['child_before']);
 	$args['key'] = $key;
-	
+
 	$list = cflk_get_links_data($key);
-	
+
 	if (!is_array($list) || $list == FALSE) { echo 'Could not find link list: '.htmlspecialchars($key); return; }
-	
+
 	$ret = '';
 	$i = 0;
 	$listcount = 0;
-	
+
 	// Process the list to see if the href is empty, if it is remove it from the list
 	// so we don't have extra <li>'s that are not needed
 	foreach ($list['data'] as $key => $data) {
@@ -1128,7 +1128,7 @@ function cflk_ul_ensure_level_class($before) {
 	$ul_start = strpos($before,'<ul');
 	$ul_end = (strpos($before,'>',$ul_start)+1)-$ul_start;
 	$ul = substr($before,$ul_start,$ul_end);
-	
+
 	// munge
 	if(!preg_match("|class=|", $ul)) {
 		// add a class attribute
@@ -1138,7 +1138,7 @@ function cflk_ul_ensure_level_class($before) {
 		// modify the existing class attribute
 		$ul_n = preg_replace("|(<ul.*?class=\".*?)(\".*?>)|","$1 level-0$2",$ul);
 	}
-	
+
 	return str_replace($ul,$ul_n,$before);
 }
 
@@ -1147,13 +1147,13 @@ function cflk_ul_ensure_level_class($before) {
  * Does some cleanup on the previous iteration of the code, but is not a full rewrite.
  * Handles a flat list so we don't have to reformat the data array - time permitting
  * this will be modified to work off a nested data array to ease the recursion limits
- * on finding the first/last item in nested lists. 
+ * on finding the first/last item in nested lists.
  *
  * Because the data array is flat, we need the global for array positioning after recursing.
  *
- * @param array $items 
- * @param array $args 
- * @param int $start 
+ * @param array $items
+ * @param array $args
+ * @param int $start
  * @return html
  */
 function cflk_build_list_items(&$items,$args,$start=0) {
@@ -1163,7 +1163,7 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 	// increment the level
 	$before = ($start == 0 ? $args['before'] : $args['child_before']);
 	$ret = preg_replace("|(level-[0-9])|","level-".$items[$start]['level'],$before);
-	
+
 	for($cflk_i = $start; $cflk_i < count($items), $data = $items[$cflk_i]; $cflk_i++) {
 		if (is_array($data)) {
 			$li_class = '';
@@ -1172,7 +1172,7 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 					$li_class .= 'cflk-current-category ';
 				}
 			}
-			
+
 			// see if we're first or last
 			if(!isset($items[$cflk_i-1])) {
 				$li_class .= 'cflk-first ';
@@ -1180,13 +1180,13 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 			elseif(!isset($items[$cflk_i+1])) {
 				$li_class .= 'cflk-last ';
 			}
-			
+
 			// see if we're the current page
 			/* Wordpress urls always have a trailingslash, make sure we have one on the $data['href'] */
 			if ($server_current == str_replace(array('http://', 'http://www.'), '', trailingslashit($data['href']))) {
 				$li_class .= apply_filters('cflk_li_class_current', 'cflk-current');
 			}
-			
+
 			// build & filter link
 			$link = '';
 			if (!empty($data['href'])) {
@@ -1201,7 +1201,7 @@ function cflk_build_list_items(&$items,$args,$start=0) {
 				$link .= '</a>';
 			}
 			$link = apply_filters('cflk-link-item',$link,$data,$key);
-			
+
 			// put it all together
 			$ret .= '<li class="'.$data['class'].' '.$li_class.'">'.$link;
 			if($items[$cflk_i+1]['level'] > $data['level']) {
@@ -1225,12 +1225,12 @@ function cflk_links($key, $args = array()) {
 
 function cflk_get_link_info($link_list,$merge=true) {
 	$data = array();
-	
+
 	if(is_array($link_list)) {
 		foreach ($link_list['data'] as $key => $link) {
 			// legacy compatability: add level if not present - SP
 			if(!isset($link['level'])) { $link['level'] == 0; }
-			
+
 			$href = '';
 			$text = '';
 			$type_text = '';
@@ -1312,7 +1312,7 @@ function cflk_get_link_info($link_list,$merge=true) {
 				default:
 					break;
 			}
-			
+
 			if (empty($link['title'])) {
 				$text = $type_text;
 			}
@@ -1325,15 +1325,15 @@ function cflk_get_link_info($link_list,$merge=true) {
 			}
 			if ($link['opennew']) {
 				$class .= ' cflk-opennewwindow';
-				add_action('wp_footer', 'cflk_front_js');				
+				add_action('wp_footer', 'cflk_front_js');
 			}
-			
+
 			$rel = '';
 			if ($link['nofollow']) {
 				$rel .= 'nofollow';
 			}
 
-			
+
 			if ($href != '') {
 				// removed array push to preserve data key associations for later merging
 				$data[$key] = array('id' => $key, 'href' => $href, 'text' => $text, 'class' => $class, 'rel' => $rel);
@@ -1360,11 +1360,11 @@ function cflk_get_blog_type($id) {
 	if (!empty($id) && $id != 0) {
 		$link = '';
 		$text = '';
-	
+
 		$details = get_blog_details($id);
 		$link = $details->siteurl;
 		$text = $details->blogname;
-		
+
 		if ($link != '' && $text != '') {
 			return array('text' => $text, 'link' => $link);
 		}
@@ -1436,9 +1436,9 @@ function cflk_export_list($key) {
 }
 
 /**
- * 
+ *
  * CF Links Deprecated Functions
- * 
+ *
  */
 
 function get_links_template($key) {
